@@ -1,15 +1,64 @@
+import { useState } from "react";
+import { useRouter } from "next/router";
 import Link from "next/link";
+import { useSession } from "@app/context/UserDataContext";
 
 const Login = () => {
+  const [formData, setFormData] = useState<{
+    email: string;
+    password: string;
+  }>({
+    email: "",
+    password: "",
+  });
+
+  const { updateUser } = useSession();
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        throw new Error(await response.text());
+      }
+
+      const data = await response.json();
+      updateUser(data.user);
+    } catch (error) {
+      console.error("Failed to login:", error);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
       <h1 className="text-3xl font-bold mb-4">Login</h1>
-      <form className="bg-white p-6 rounded shadow-md w-80">
+      <form
+        className="bg-white p-6 rounded shadow-md w-80"
+        onSubmit={handleSubmit}
+      >
         <div className="mb-4">
           <label className="block text-black-700 text-black">Email</label>
           <input
             type="email"
             className="w-full p-2 border border-gray-300 rounded mt-1 text-black"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
           />
         </div>
         <div className="mb-4">
@@ -17,6 +66,9 @@ const Login = () => {
           <input
             type="password"
             className="w-full p-2 border border-gray-300 rounded mt-1 text-black"
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
           />
         </div>
         <button
@@ -36,4 +88,14 @@ const Login = () => {
   );
 };
 
-export default Login;
+const LoginHOC = () => {
+  const { user } = useSession();
+  const router = useRouter();
+
+  if (!user) {
+    return <Login />;
+  }
+  router.push("/dashboard");
+};
+
+export default LoginHOC;
