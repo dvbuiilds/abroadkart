@@ -1,5 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import bcrypt from "bcryptjs"; // For password comparison
+import { v4 as uuidv4 } from "uuid"; // For generating session IDs
 import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
 
 type ResponseData = {
@@ -47,6 +48,22 @@ export default async function handler(
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid credentials." });
     }
+
+    // Create a new session
+    const sessionId = uuidv4();
+    await db.collection("sessions").insertOne({
+      sessionId,
+      userId: user._id,
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // Expires in 15 minutes
+    });
+
+    // Set HttpOnly cookie with the session ID
+    res.setHeader(
+      "Set-Cookie",
+      `sessionID=${sessionId}; HttpOnly; SameSite=Strict; Path=/` // For Development
+      // `sessionID=${sessionId}; HttpOnly; Secure; SameSite=Strict; Path=/` For Production
+    );
 
     // If successful, return the user's details (excluding sensitive information)
     return res.status(200).json({
