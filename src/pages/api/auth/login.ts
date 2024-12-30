@@ -3,6 +3,13 @@ import bcrypt from "bcryptjs"; // For password comparison
 import { v4 as uuidv4 } from "uuid"; // For generating session IDs
 import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
 
+const environment = process.env.ENVIRONMENT ?? "development";
+
+const responseHeaderCookieValue =
+  environment === "development"
+    ? "HttpOnly; SameSite=Strict; Path=/"
+    : "HttpOnly; Secure; SameSite=Strict; Path=/";
+
 type ResponseData = {
   message?: string;
   user?: {
@@ -61,8 +68,7 @@ export default async function handler(
     // Set HttpOnly cookie with the session ID
     res.setHeader(
       "Set-Cookie",
-      `sessionID=${sessionId}; HttpOnly; SameSite=Strict; Path=/` // For Development
-      // `sessionID=${sessionId}; HttpOnly; Secure; SameSite=Strict; Path=/` For Production
+      `sessionID=${sessionId}; ${responseHeaderCookieValue}`
     );
 
     // If successful, return the user's details (excluding sensitive information)
