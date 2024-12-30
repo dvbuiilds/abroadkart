@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
-    "dotenv": "^16.4.7",
     "mongodb": "^6.12.0",
     "mongoose": "^8.9.2",
     "next": "15.1.2",
