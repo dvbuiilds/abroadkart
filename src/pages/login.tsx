@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { useSession } from "@app/context/UserDataContext";
+import { useUserSession } from "@app/context/UserSessionContext";
 
 const Login = () => {
   const [formData, setFormData] = useState<{
@@ -12,7 +13,8 @@ const Login = () => {
     password: "",
   });
 
-  const { updateUser } = useSession();
+  const { triggerLogin } = useUserSession();
+  // const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,25 +25,8 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
-      updateUser(data.user);
-    } catch (error) {
-      console.error("Failed to login:", error);
-    }
+    triggerLogin(formData);
+    // router.push("/dashboard");
   };
 
   return (
@@ -89,8 +74,12 @@ const Login = () => {
 };
 
 const LoginHOC = () => {
-  const { user } = useSession();
+  const { triggerFetchSession, user } = useUserSession();
   const router = useRouter();
+
+  useEffect(() => {
+    triggerFetchSession();
+  }, []);
 
   if (!user) {
     return <Login />;
