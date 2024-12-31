@@ -1,25 +1,24 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import bcrypt from "bcryptjs"; // For password hashing
-import mongoDBClient from "../../../server/db/mongodb"; // Import the MongoClient instance
 
-type ResponseData = {
-  message?: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    phoneNumber: string;
-  };
-  error?: string;
-};
+// THIRD PARTY
+import bcrypt from "bcryptjs"; // For password hashing
+
+// TYPES
+import type { User, ResponseType } from "../../../types/api-types";
+
+// UTILS
+import mongoDBClient from "../../../server/db/mongodb"; // Import the MongoClient instance
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<ResponseType<User>>
 ) {
   // Allow only POST requests
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return res.status(405).json({
+      success: false,
+      error: { message: "Method Not Allowed.", status: 405 },
+    });
   }
 
   // Extract data from the request body
@@ -27,14 +26,21 @@ export default async function handler(
 
   // Validate the request body
   if (!name || !email || !password || !phoneNumber) {
-    return res.status(400).json({ error: "All fields are required" });
+    return res.status(400).json({
+      success: false,
+      error: { message: "All fields are required.", status: 400 },
+    });
   }
 
   // Validate name (only alphabets and spaces)
   const nameRegex = /^[A-Za-z\s]+$/;
   if (!nameRegex.test(name)) {
     return res.status(400).json({
-      error: "Name can only contain alphabets and spaces.",
+      success: false,
+      error: {
+        message: "Name can only contain alphabets and spaces.",
+        status: 400,
+      },
     });
   }
 
@@ -42,8 +48,12 @@ export default async function handler(
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     return res.status(400).json({
-      error:
-        "Invalid email format. Email must contain '@' and '.' with characters in between.",
+      success: false,
+      error: {
+        message:
+          "Invalid email format. Email must contain '@' and '.' with characters in between.",
+        status: 400,
+      },
     });
   }
 
@@ -51,15 +61,23 @@ export default async function handler(
   const phoneRegex = /^[\d+\-]+$/; // Only digits, '+', and '-'
   if (!phoneRegex.test(phoneNumber) || phoneNumber.length < 10) {
     return res.status(400).json({
-      error:
-        "Phone number can only contain digits, '+', '-', and must be at least 10 characters long.",
+      success: false,
+      error: {
+        message:
+          "Phone number can only contain digits, '+', '-', and must be at least 10 characters long.",
+        status: 400,
+      },
     });
   }
 
   // Validate password strength (minimum length of 6 characters)
   if (password.length < 6) {
     return res.status(400).json({
-      error: "Password must be at least 6 characters long.",
+      success: false,
+      error: {
+        message: "Password must be at least 6 characters long.",
+        status: 400,
+      },
     });
   }
 
@@ -74,7 +92,11 @@ export default async function handler(
 
     if (existingUser) {
       return res.status(400).json({
-        error: "A user with this email or phone number already exists.",
+        success: false,
+        error: {
+          message: "A user with this email or phone number already exists.",
+          status: 400,
+        },
       });
     }
 
@@ -93,8 +115,8 @@ export default async function handler(
 
     // Return success response
     return res.status(201).json({
-      message: "User registered successfully",
-      user: {
+      success: true,
+      data: {
         id: newUser.insertedId.toString(),
         name,
         email,
@@ -104,7 +126,11 @@ export default async function handler(
   } catch (error) {
     console.error("Error during signup:", error);
     return res.status(500).json({
-      error: "Internal Server Error. Please try again later.",
+      success: false,
+      error: {
+        message: "Internal Server Error. Please try again later.",
+        status: 500,
+      },
     });
   }
 }
