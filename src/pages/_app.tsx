@@ -6,13 +6,13 @@ import { Navbar } from "@app/components/Navbar";
 
 // STYLES
 import "@app/styles/globals.css";
-import { UserDataProvider } from "@app/context/UserDataContext";
+import { UserSessionProvider } from "@app/context/UserSessionContext";
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <UserDataProvider>
+    <UserSessionProvider>
       <Navbar />
       <Component {...pageProps} />
-    </UserDataProvider>
+    </UserSessionProvider>
   );
 }
