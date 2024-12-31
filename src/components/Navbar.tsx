@@ -1,7 +1,11 @@
-// components/Navbar.js
 import Link from "next/link";
+import { useRouter } from "next/router";
+import { useUserSession } from "@app/context/UserSessionContext";
 
 export const Navbar = () => {
+  const { userSessionStatus, triggerLogout } = useUserSession();
+  const router = useRouter();
+
   return (
     <nav className="bg-blue-500 py-2 px-4 text-white flex justify-between items-center">
       <div className="font-bold text-lg">
@@ -16,12 +20,32 @@ export const Navbar = () => {
         <Link href="/contact" className="mx-2 text-sm">
           Contact
         </Link>
-        {/* Login Button */}
-        <Link href="/login" passHref>
-          <button className="ml-4 bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition">
-            Login
-          </button>
-        </Link>
+        {userSessionStatus === "loggedIn" ? (
+          <>
+            <Link href="/dashboard" className="mx-2 text-sm">
+              Dashboard
+            </Link>
+            <Link href="/login" passHref>
+              {/* Logout Button */}
+              <button
+                className="ml-4 bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition"
+                onClick={() => {
+                  triggerLogout();
+                  router.push("/login");
+                }}
+              >
+                Logout
+              </button>
+            </Link>
+          </>
+        ) : (
+          <Link href="/login" passHref>
+            {/* Login Button */}
+            <button className="ml-4 bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition">
+              Login
+            </button>
+          </Link>
+        )}
       </div>
     </nav>
   );
