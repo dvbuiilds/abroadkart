@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { apiEndPoints, apiPaths } from "@app/config/api-config";
 import type { ResponseType, User } from "../types/api-types";
+import { signIn, signOut } from "next-auth/react";
 
 type UserDataFetchStatusType =
   | "idle"
@@ -15,10 +16,19 @@ type UserSessionStatus = "idle" | "loggedIn" | "loggedOut" | "anonymous";
 interface UserSessionContextType {
   user: User | null;
   userSessionStatus: UserSessionStatus;
-  triggerLogin: (formData: {
-    email: string;
-    password: string;
-  }) => Promise<void>;
+  triggerLogin: (
+    arg:
+      | {
+          provider: "manual";
+          formData: {
+            email: string;
+            password: string;
+          };
+        }
+      | {
+          provider: "google";
+        }
+  ) => Promise<void>;
   triggerLogout: () => void;
   triggerFetchSession: () => Promise<void>;
 }
@@ -35,7 +45,7 @@ const userLoginUrl = `${apiPaths[environment]}${apiEndPoints.login}`;
 const userLogoutUrl = `${apiPaths[environment]}${apiEndPoints.logout}`;
 const userSessionUrl = `${apiPaths[environment]}${apiEndPoints.session}`;
 
-const handleUserLogin = async (
+const handleUserLoginByEmail = async (
   formData: { email: string; password: string },
   onSuccessCallback: (userData: User) => void,
   onFailureCallback: (
@@ -65,6 +75,20 @@ const handleUserLogin = async (
       "error"
     );
   }
+};
+
+const handleUserLoginByAuthProvider = async (provider: string) => {
+  console.log("Inside handleUserLoginByAuthProvider.");
+  // debugger;
+  const response = await signIn(provider, {
+    redirect: false,
+    callbackUrl: "/dashboard",
+  });
+  // debugger;
+  console.log(
+    "@dhairya handleUserLoginByAuthProvider response: ",
+    JSON.stringify(response, null, 2)
+  );
 };
 
 const handleLogout = async (onLogoutCallback: () => void) => {
@@ -116,23 +140,36 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const router = useRouter();
 
-  const triggerLogin = async (formData: {
-    email: string;
-    password: string;
-  }) => {
-    // the fetchStatus is also to be edited here.
-    handleUserLogin(
-      formData,
-      (userData) => {
-        updateUser(userData);
-        updateUserSessionStatus("loggedIn");
-      },
-      (errorMessage, status) => {
-        updateUser(null);
-        updateUserSessionStatus("anonymous");
-        alert(errorMessage);
-      }
-    );
+  const triggerLogin = async (
+    arg:
+      | {
+          provider: "manual";
+          formData: {
+            email: string;
+            password: string;
+          };
+        }
+      | { provider: "google" }
+  ) => {
+    if (arg.provider === "manual") {
+      console.log('Inside triggerLogin. arg.provider === "manual"');
+      // the fetchStatus is also to be edited here.
+      handleUserLoginByEmail(
+        arg.formData,
+        (userData) => {
+          updateUser(userData);
+          updateUserSessionStatus("loggedIn");
+        },
+        (errorMessage, status) => {
+          updateUser(null);
+          updateUserSessionStatus("anonymous");
+          alert(errorMessage);
+        }
+      );
+    } else {
+      console.log('Inside triggerLogin. arg.provider === "google"');
+      handleUserLoginByAuthProvider(arg.provider);
+    }
   };
 
   const triggerLogout = () => {
