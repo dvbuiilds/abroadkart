@@ -71,7 +71,7 @@ export default async function handler(
       sessionId,
       userId: user._id,
       createdAt: new Date(),
-      expiresAt: new Date(Date.now() + EXPIRY_DURATION), // Expires in 15 minutes
+      expiresAt: new Date(Date.now() + EXPIRY_DURATION),
     });
 
     // Set HttpOnly cookie with the session ID
