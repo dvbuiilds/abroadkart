@@ -11,8 +11,10 @@ import { UserSessionProvider } from "@app/context/UserSessionContext";
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <UserSessionProvider>
-      <Navbar />
-      <Component {...pageProps} />
+      <div className="h-screen flex flex-col overflow-y-auto">
+        <Navbar />
+        <Component {...pageProps} />
+      </div>
     </UserSessionProvider>
   );
 }
