@@ -1,7 +1,5 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
+import { useState } from "react";
 import Link from "next/link";
-import { useSession } from "@app/context/UserDataContext";
 import { useUserSession } from "@app/context/UserSessionContext";
 
 const Login = () => {
@@ -14,7 +12,6 @@ const Login = () => {
   });
 
   const { triggerLogin } = useUserSession();
-  // const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -26,7 +23,6 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     triggerLogin(formData);
-    // router.push("/dashboard");
   };
 
   return (
@@ -73,18 +69,4 @@ const Login = () => {
   );
 };
 
-const LoginHOC = () => {
-  const { triggerFetchSession, user } = useUserSession();
-  const router = useRouter();
-
-  useEffect(() => {
-    triggerFetchSession();
-  }, []);
-
-  if (!user) {
-    return <Login />;
-  }
-  router.push("/dashboard");
-};
-
-export default LoginHOC;
+export default Login;
