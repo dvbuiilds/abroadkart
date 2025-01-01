@@ -14,12 +14,7 @@ type UserSessionStatus = "idle" | "loggedIn" | "loggedOut" | "anonymous";
 
 interface UserSessionContextType {
   user: User | null;
-  /**
-   * @deprecated
-   */
-  updateUser: React.Dispatch<React.SetStateAction<User | null>>;
   userSessionStatus: UserSessionStatus;
-  userDataFetchStatus: UserDataFetchStatusType;
   triggerLogin: (formData: {
     email: string;
     password: string;
@@ -79,12 +74,14 @@ const handleLogout = async (onLogoutCallback: () => void) => {
       credentials: "include", // Ensures cookies are sent with the request
     });
 
-    const jsonResponse: ResponseType<User> = await response.json();
-    if (jsonResponse.success) {
-      onLogoutCallback();
-    } else {
-      // something i need to plan like clearing all cookies and then calling the callback.
-    }
+    onLogoutCallback(); // Whatever the response is, we are logging out the user.
+
+    // const jsonResponse: ResponseType<User> = await response.json();
+    // if (jsonResponse.success) {
+    //   onLogoutCallback();
+    // } else {
+    //   // something i need to plan like clearing all cookies and then calling the callback.
+    // }
   } catch (error) {
     console.error("Error during logout:", error);
     alert("Failed to logout. Please try again.");
@@ -114,12 +111,10 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [user, updateUser] = useState<User | null>(null);
-  const [userDataFetchStatus, updateUserDataFetchStatus] =
-    useState<UserDataFetchStatusType>("idle");
   const [userSessionStatus, updateUserSessionStatus] =
     useState<UserSessionStatus>("anonymous");
 
-  // const router = useRouter();
+  const router = useRouter();
 
   const triggerLogin = async (formData: {
     email: string;
@@ -130,12 +125,10 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
       formData,
       (userData) => {
         updateUser(userData);
-        updateUserDataFetchStatus("success");
         updateUserSessionStatus("loggedIn");
       },
       (errorMessage, status) => {
         updateUser(null);
-        updateUserDataFetchStatus(status);
         updateUserSessionStatus("anonymous");
         alert(errorMessage);
       }
@@ -146,8 +139,6 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
     handleLogout(() => {
       updateUser(null);
       updateUserSessionStatus("loggedOut");
-      // Redirect to login page after successful logout
-      // router.push("/login");
     });
   };
 
@@ -167,16 +158,26 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
 
   useEffect(() => {
     console.log("Inside UserSessionContext useEffect.");
-    triggerFetchSession();
-  }, []);
+    // Fetch user session if userSessionStatus is not "loggedIn".
+    if (userSessionStatus !== "loggedIn") {
+      triggerFetchSession();
+    }
+
+    if (userSessionStatus === "loggedIn" && router.pathname === "/login") {
+      router.push("/dashboard"); // Redirect logged-in users to /dashboard
+    } else if (
+      userSessionStatus !== "loggedIn" &&
+      router.pathname === "/dashboard"
+    ) {
+      router.push("/login"); // Redirect logged-out users to /login
+    }
+  }, [userSessionStatus]);
 
   return (
     <UserSessionContext.Provider
       value={{
         user,
-        updateUser,
         userSessionStatus,
-        userDataFetchStatus,
         triggerLogin,
         triggerLogout,
         triggerFetchSession,
