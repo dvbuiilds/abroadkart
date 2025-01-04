@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { apiEndPoints, apiPaths } from "@app/config/api-config";
 import type { ResponseType, User } from "../types/api-types";
-import { signIn, signOut } from "next-auth/react";
+import { useSession, signIn, signOut } from "next-auth/react";
 
 type UserDataFetchStatusType =
   | "idle"
@@ -139,6 +139,11 @@ export const UserSessionProvider: React.FC<{ children: React.ReactNode }> = ({
     useState<UserSessionStatus>("anonymous");
 
   const router = useRouter();
+  const { data, status } = useSession();
+  console.log("@Dhairya inside UserSessionProvider checking useSession: ", {
+    data,
+    status,
+  });
 
   const triggerLogin = async (
     arg:
