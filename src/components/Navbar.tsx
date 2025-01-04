@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useUserSession } from "@app/context/UserSessionContext";
+import { signOut, useSession } from "next-auth/react";
 
 export const Navbar = () => {
   const { userSessionStatus, triggerLogout } = useUserSession();
+  const { status } = useSession();
   const router = useRouter();
 
   return (
@@ -20,7 +22,7 @@ export const Navbar = () => {
         <Link href="/contact" className="mx-2 text-sm">
           Contact
         </Link>
-        {userSessionStatus === "loggedIn" ? (
+        {userSessionStatus === "loggedIn" || status === "authenticated" ? (
           <>
             <Link href="/dashboard" className="mx-2 text-sm">
               Dashboard
@@ -31,6 +33,7 @@ export const Navbar = () => {
                 className="ml-4 bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition"
                 onClick={() => {
                   triggerLogout();
+                  signOut({ callbackUrl: "/login" });
                   router.push("/login");
                 }}
               >
