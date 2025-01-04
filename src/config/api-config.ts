@@ -6,6 +6,7 @@ export const apiPaths = {
 export const apiEndPoints = {
   login: "/api/auth/login",
   signup: "/api/auth/signup",
-  session: "/api/auth/session",
+  session: "/api/auth/db-session",
   logout: "/api/auth/logout",
+  nextAuth: "/api/auth/[...nextauth]",
 };
