@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useUserSession } from "@app/context/UserSessionContext";
-import { signOut, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export const Navbar = () => {
   const { userSessionStatus, triggerLogout } = useUserSession();
@@ -33,7 +33,6 @@ export const Navbar = () => {
                 className="ml-4 bg-white text-blue-500 px-4 py-2 rounded hover:bg-gray-100 transition"
                 onClick={() => {
                   triggerLogout();
-                  signOut({ callbackUrl: "/login" });
                   router.push("/login");
                 }}
               >
