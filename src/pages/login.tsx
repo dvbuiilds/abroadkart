@@ -50,6 +50,10 @@ const Login = () => {
     password: "",
   });
 
+  const disableSubmitButton = Object.entries(formData).reduce((acc, curr) => {
+    return acc || !Boolean(curr[1].length);
+  }, false);
+
   const { triggerLogin, triggerFetchSession } = useUserSession();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +65,8 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    triggerLogin({ provider: "manual", formData });
+    if (disableSubmitButton) return;
+    triggerLogin({ provider: "email", formData });
   };
 
   useEffect(() => {
@@ -73,6 +78,7 @@ const Login = () => {
       <form
         className="bg-white p-6 rounded shadow-md w-80 flex flex-col"
         onSubmit={handleSubmit}
+        aria-disabled={disableSubmitButton}
       >
         <h1 className="text-3xl font-bold mb-4 text-center">Login</h1>
         <button
@@ -110,7 +116,8 @@ const Login = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600 font-bold"
+          className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600 disabled:bg-blue-300 font-bold cursor-pointer disabled:cursor-not-allowed"
+          disabled={disableSubmitButton}
         >
           Login
         </button>
