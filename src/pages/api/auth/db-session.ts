@@ -13,7 +13,7 @@ export default async function getSessionHandler(
   const { sessionID } = req.cookies;
 
   if (!sessionID) {
-    return res.status(401).json({
+    return res.json({
       success: false,
       error: { message: "Not authenticated", status: 401 },
     });
@@ -28,7 +28,7 @@ export default async function getSessionHandler(
     .findOne({ sessionId: sessionID });
 
   if (!session || new Date() > new Date(session.expiresAt)) {
-    return res.status(401).json({
+    return res.json({
       success: false,
       error: { message: "Session expired", status: 401 },
     });
@@ -38,7 +38,7 @@ export default async function getSessionHandler(
   const user = await db.collection("users").findOne({ _id: session.userId });
 
   if (!user) {
-    return res.status(404).json({
+    return res.json({
       success: false,
       error: { message: "User not found", status: 404 },
     });
@@ -54,3 +54,7 @@ export default async function getSessionHandler(
     },
   });
 }
+
+/**
+ * Note: Earlier we were also binding the status code with response in the return statements. For 40X status codes, the browser console window was exposing the api endpoint, hence for security purpose, we are now only returning the status code in the response body.
+ */
