@@ -84,7 +84,6 @@ export const UserSessionProvider: React.FC<{
     if (jsonResponse.success) {
       updateUser(jsonResponse.data);
       updateSessionProvider(jsonResponse.data.provider ?? "credentials");
-      console.log("@Dhairya the fetched details are: ", jsonResponse);
     } else {
       updateUser(null);
       updateSessionProvider("no-provider");
