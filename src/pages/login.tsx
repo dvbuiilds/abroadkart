@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useUserSession } from "@app/context/UserSessionContext";
 
@@ -54,7 +54,7 @@ const Login = () => {
     return acc || !Boolean(curr[1].length);
   }, false);
 
-  const { triggerLogin, triggerFetchSession } = useUserSession();
+  const { triggerLogin } = useUserSession();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -68,10 +68,6 @@ const Login = () => {
     if (disableSubmitButton) return;
     triggerLogin({ provider: "email", formData });
   };
-
-  useEffect(() => {
-    triggerFetchSession();
-  });
 
   return (
     <div className="flex flex-col items-center justify-center grow bg-gray-100">
