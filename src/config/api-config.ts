@@ -4,9 +4,19 @@ export const apiPaths = {
 };
 
 export const apiEndPoints = {
+  /**
+   * @deprecated
+   */
   login: "/api/auth/login",
   signup: "/api/auth/signup",
+  /**
+   * @deprecated
+   */
   session: "/api/auth/db-session",
+  /**
+   * @deprecated
+   */
   logout: "/api/auth/logout",
   nextAuth: "/api/auth/[...nextauth]",
+  getUser: "/api/auth/get-user",
 };
