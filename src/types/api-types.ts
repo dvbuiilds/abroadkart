@@ -1,11 +1,12 @@
 import { WithId } from "mongodb";
 
-// Might have to remove this type in the future
+// This type is for storing the User details after fetching the data from db after logging in.
 export type User = {
   id: string;
   name: string;
   email: string;
   phoneNumber: string;
+  provider: "credentials" | "google";
 };
 
 export interface CredentialsProviderUser extends WithId<Document> {
@@ -34,7 +35,7 @@ export interface GoogleSessionUser {
   name: string;
 }
 
-export type SessionProvider = "no-provider" | "email" | "google";
+export type SessionProvider = "no-provider" | "credentials" | "google";
 
 export type ResponseType<T> =
   | {
