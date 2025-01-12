@@ -15,6 +15,11 @@ import {
 const db = mongoDBClient.db();
 
 export default NextAuth({
+  pages: {
+    signIn: "/login",
+    error: "/login",
+    signOut: "/login",
+  },
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
