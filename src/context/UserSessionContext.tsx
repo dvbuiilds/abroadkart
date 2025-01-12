@@ -5,7 +5,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 
 import type { ResponseType, SessionProvider, User } from "../types/api-types";
 import { apiEndPoints, apiPaths } from "@app/config/api-config";
-import { routesOnlyForLoggedInUsers } from "@app/utils/restricted-routes";
+import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
 
 interface UserSessionContextType {
   user: User | null;
@@ -97,7 +97,7 @@ export const UserSessionProvider: React.FC<{
       if (router.pathname === "/login") router.push("/dashboard");
     } else if (
       activeSession.status === "unauthenticated" &&
-      routesOnlyForLoggedInUsers.includes(router.pathname)
+      checkIfRouteIsProtected(router.pathname)
     ) {
       router.push("/login");
     }
