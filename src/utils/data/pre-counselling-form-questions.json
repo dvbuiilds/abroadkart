@@ -1,0 +1,71 @@
+{
+  "sets": [
+    {
+      "name": "Personal and Academic Background",
+      "questions": [
+        "What is your current state of residence in India?",
+        "Do you hold citizenship of any country other than India?",
+        "What is your highest level of education completed?",
+        "What was your field of study, and what was your GPA or percentage?",
+        "Have you taken any standardized tests (e.g., GRE, GMAT, IELTS, TOEFL, PTE)?",
+        "Do you have any academic achievements or awards?"
+      ]
+    },
+    {
+      "name": "Study Abroad Preferences and Career Goals",
+      "questions": [
+        "Which countries are you considering for higher education?",
+        "Do you have a specific university or program in mind?",
+        "What factors are most important to you when choosing a country or university (e.g., ranking, location, culture, job opportunities)?",
+        "What course or program are you planning to pursue?",
+        "Why have you chosen this field of study?",
+        "What are your short-term and long-term career goals?",
+        "Do you have a preferred specialization within your chosen field?"
+      ]
+    },
+    {
+      "name": "Financial Planning and Work Experience",
+      "questions": [
+        "What is your estimated budget for tuition fees and living expenses?",
+        "Are you planning to apply for scholarships or financial aid?",
+        "Do you have any sponsors or family support for your education abroad?",
+        "Are you open to part-time work during your studies to support yourself?",
+        "Have you explored education loan options?",
+        "Do you have any savings set aside for your studies?",
+        "Do you have any work experience (full-time, part-time, internships)?",
+        "How does your work experience align with your chosen field of study?",
+        "Are you planning to gain work experience in your target country after graduation?"
+      ]
+    },
+    {
+      "name": "Language, Hobbies, and Cultural Adaptability",
+      "questions": [
+        "What languages are you fluent in?",
+        "Have you taken any language proficiency tests (e.g., IELTS, TOEFL, PTE)?",
+        "Are you comfortable studying in a non-English speaking country?",
+        "What are your hobbies or extracurricular activities?",
+        "Have you participated in any competitions, clubs, or volunteer work?",
+        "Do you plan to continue these activities while studying abroad?",
+        "Have you lived away from home before? If yes, how was your experience?",
+        "How do you plan to adapt to a new culture and environment?"
+      ]
+    },
+    {
+      "name": "Visa, Immigration, and Post-Study Plans",
+      "questions": [
+        "Are you aware of the visa requirements for your target country?",
+        "Have you started preparing the necessary documents (e.g., financial statements, acceptance letters)?",
+        "Do you plan to return to India after completing your studies, or would you like to settle abroad?",
+        "Are you aware of the post-study work visa policies in your target country?",
+        "Do you have any health conditions that require special attention?",
+        "Are you aware of the health insurance requirements in your target country?",
+        "Does your family support your decision to study abroad?",
+        "Do you have any relatives or friends in your target country?",
+        "When do you plan to start your studies?",
+        "Have you started the application process, or do you need guidance?",
+        "What are your biggest concerns about studying abroad?",
+        "What do you expect from me as your study abroad counselor?"
+      ]
+    }
+  ]
+}
