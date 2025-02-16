@@ -1,7 +1,21 @@
 import { useState } from "react";
-import { useRouter } from "next/router";
+import Image from "next/image";
 import Link from "next/link";
-import { useSession } from "@app/context/UserDataContext";
+import { useRouter } from "next/router";
+
+import GoogleLogo from "../../public/google-logo-64.png";
+
+import { useUserSession } from "@app/context/UserSessionContext";
+
+const errorMessages: { [key: string]: string } = {
+  CredentialsSignin: "Invalid email or password. Please try again.",
+  OAuthSignin: "Error signing in with OAuth.",
+  OAuthCallback: "Error during OAuth callback.",
+  OAuthCreateAccount: "Could not create OAuth account.",
+  EmailCreateAccount: "Could not create email account.",
+  Callback: "Error during sign-in callback.",
+  Default: "An unknown error occurred.",
+};
 
 const Login = () => {
   const [formData, setFormData] = useState<{
@@ -11,8 +25,18 @@ const Login = () => {
     email: "",
     password: "",
   });
+  const router = useRouter();
+  const { error } = router.query;
 
-  const { updateUser } = useSession();
+  const errorMessage = error
+    ? errorMessages[error as string] || errorMessages.Default
+    : null;
+
+  const disableSubmitButton = Object.entries(formData).reduce((acc, curr) => {
+    return acc || !Boolean(curr[1].length);
+  }, false);
+
+  const { triggerLogin } = useUserSession();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -23,34 +47,38 @@ const Login = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error(await response.text());
-      }
-
-      const data = await response.json();
-      updateUser(data.user);
-    } catch (error) {
-      console.error("Failed to login:", error);
-    }
+    if (disableSubmitButton) return;
+    triggerLogin({ provider: "email", formData });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold mb-4">Login</h1>
+    <div className="flex flex-col items-center justify-center grow bg-gray-100">
       <form
-        className="bg-white p-6 rounded shadow-md w-80"
+        className="bg-white p-6 rounded shadow-md w-80 flex flex-col"
         onSubmit={handleSubmit}
+        aria-disabled={disableSubmitButton}
       >
+        <h1 className="text-3xl font-bold mb-4 text-center">Login</h1>
+        {errorMessage && <p style={{ color: "red" }}>{errorMessage}</p>}
+        <button
+          type="button"
+          className="self-center border border-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center me-2 mb-2 hover:bg-gray-50"
+          onClick={() => triggerLogin({ provider: "google" })}
+        >
+          <Image
+            src={GoogleLogo}
+            alt="Google SignIn Icon"
+            width={20}
+            height={20}
+            className="mr-2"
+          />
+          Sign in with Google
+        </button>
+        <div className="flex items-center justify-center gap-4 py-2">
+          <div className="w-full h-0.5 bg-gray-400"></div>
+          <span className="text-gray-800">OR</span>
+          <div className="w-full h-0.5 bg-gray-400"></div>
+        </div>
         <div className="mb-4">
           <label className="block text-black-700 text-black">Email</label>
           <input
@@ -73,7 +101,8 @@ const Login = () => {
         </div>
         <button
           type="submit"
-          className="w-full bg-blue-500 text-white p-2 rounded mt-4"
+          className="w-full bg-blue-500 text-white p-2 rounded mt-4 hover:bg-blue-600 disabled:bg-blue-300 font-bold cursor-pointer disabled:cursor-not-allowed"
+          disabled={disableSubmitButton}
         >
           Login
         </button>
@@ -88,14 +117,4 @@ const Login = () => {
   );
 };
 
-const LoginHOC = () => {
-  const { user } = useSession();
-  const router = useRouter();
-
-  if (!user) {
-    return <Login />;
-  }
-  router.push("/dashboard");
-};
-
-export default LoginHOC;
+export default Login;

@@ -1,33 +1,33 @@
 import type { NextApiRequest, NextApiResponse } from "next";
+
+// THIRD PARTY
 import bcrypt from "bcryptjs"; // For password comparison
 import { v4 as uuidv4 } from "uuid"; // For generating session IDs
+
+// TYPES
+import type { User, ResponseType } from "../../../types/api-types";
+
+// UTILS
 import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
 
 const environment = process.env.ENVIRONMENT ?? "development";
+const EXPIRY_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
 const responseHeaderCookieValue =
   environment === "development"
     ? "HttpOnly; SameSite=Strict; Path=/"
     : "HttpOnly; Secure; SameSite=Strict; Path=/";
 
-type ResponseData = {
-  message?: string;
-  user?: {
-    id: string;
-    name: string;
-    email: string;
-    phoneNumber: string;
-  };
-  error?: string;
-};
-
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+  res: NextApiResponse<ResponseType<User>>
 ) {
   // Allow only POST requests
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method Not Allowed" });
+    return res.status(405).json({
+      success: false,
+      error: { message: "Method Not Allowed.", status: 405 },
+    });
   }
 
   // Extract email and password from the request body
@@ -35,7 +35,10 @@ export default async function handler(
 
   // Validate input fields
   if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required." });
+    return res.status(400).json({
+      success: false,
+      error: { message: "Email and password are required.", status: 400 },
+    });
   }
 
   try {
@@ -46,14 +49,20 @@ export default async function handler(
     const user = await db.collection("users").findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ error: "User not found." });
+      return res.status(404).json({
+        success: false,
+        error: { message: "User not found.", status: 404 },
+      });
     }
 
     // Compare the provided password with the hashed password in the database
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid credentials." });
+      return res.status(401).json({
+        success: false,
+        error: { message: "Invalid credentials.", status: 401 },
+      });
     }
 
     // Create a new session
@@ -62,7 +71,7 @@ export default async function handler(
       sessionId,
       userId: user._id,
       createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 15 * 60 * 1000), // Expires in 15 minutes
+      expiresAt: new Date(Date.now() + EXPIRY_DURATION),
     });
 
     // Set HttpOnly cookie with the session ID
@@ -73,8 +82,8 @@ export default async function handler(
 
     // If successful, return the user's details (excluding sensitive information)
     return res.status(200).json({
-      message: "Login successful.",
-      user: {
+      success: true,
+      data: {
         id: user._id.toString(),
         name: user.name,
         email: user.email,
@@ -84,7 +93,11 @@ export default async function handler(
   } catch (error) {
     console.error("Error during login:", error);
     return res.status(500).json({
-      error: "Internal Server Error. Please try again later.",
+      success: false,
+      error: {
+        message: "Internal Server Error. Please try again later.",
+        status: 500,
+      },
     });
   }
 }
