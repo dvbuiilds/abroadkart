@@ -19,4 +19,5 @@ export const apiEndPoints = {
   logout: "/api/auth/logout",
   nextAuth: "/api/auth/[...nextauth]",
   getUser: "/api/auth/get-user",
+  preCounsellingForm: "/api/pre-counselling-form",
 };
