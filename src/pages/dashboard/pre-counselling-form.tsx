@@ -16,7 +16,7 @@ import { apiEndPoints, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 
 const totalSteps = formData.sets.length;
-const LOCAL_STORAGE_TIME = 1000 * 2;
+const LOCAL_STORAGE_TIME = 1000 * 30;
 let formChangesDetected = false;
 
 const makeQuestionAnswersObject = () => {
@@ -51,21 +51,27 @@ const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
   return responseData;
 };
 
-export default function PreCounsellingForm() {
+export const getServerSideProps = () => {
+  return {
+    props: {
+      data: makeQuestionAnswersObject(),
+    },
+  };
+};
+
+export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   const { user, fetchUserDetails } = useUserSession();
-  const [formData, updateFormData] = React.useState<Questionnaire>(
-    makeQuestionAnswersObject()
-  );
-  const [currentStep, updateCurrentStep] = React.useState<number>(4);
+  const [formData, updateFormData] = React.useState<Questionnaire>(data);
+  const [currentStep, updateCurrentStep] = React.useState<number>(0);
   const [apiStatus, updateAPIStatus] = React.useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
   const navigation = useRouter();
 
-  const isEveryQuestionAnswered = true;
-  // const isEveryQuestionAnswered = formData[currentStep].info.every(
-  //   (info) => info.answer.length >= 5
-  // );
+  // const isEveryQuestionAnswered = true; // for testing
+  const isEveryQuestionAnswered = formData[currentStep].info.every(
+    (info) => info.answer.length >= 5
+  );
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
