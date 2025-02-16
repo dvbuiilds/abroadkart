@@ -1,74 +1,55 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
+
+// TYPES
+import type { Questionnaire } from "@app/types/form-types";
+import type { ResponseType } from "@app/types/api-types";
+
 // UTILS
 import mongoDBClient from "../../server/db/mongodb"; // Import the MongoClient instance
 
 const db = mongoDBClient.db();
+const collection = db.collection("pre-counselling-form");
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse
+  res: NextApiResponse<ResponseType<Questionnaire>>
 ) {
-  const session = await getSession({ req });
-
-  if (!session) {
-    return res.status(401).json({ success: false, message: "Unauthorized" });
-  }
-
-  const userId = session.user?.id;
-  const collection = db.collection("pre-counselling-form");
-
-  if (req.method === "GET") {
-    try {
-      const formEntry = await collection.findOne({ userId });
-      if (!formEntry) {
-        return res
-          .status(404)
-          .json({ success: false, message: "No entry found" });
-      }
-      return res.status(200).json({ success: true, data: formEntry });
-    } catch (error) {
-      return res.status(500).json({ success: false, message: "Server error" });
-    }
-  }
-
+  const email = req.headers["email"];
   if (req.method === "POST") {
+    const body = req.body as Questionnaire;
+    const qnas = body.map((set) => set.info).flat();
     try {
-      const { answers } = req.body;
-      const newEntry = {
-        userId,
-        answers: answers || {},
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      await collection.insertOne(newEntry);
-      return res
-        .status(201)
-        .json({ success: true, message: "Form entry created" });
+      const dbResponse = await collection.insertOne({ email, form: qnas });
+      return res.status(200).json({ success: true, data: body });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Error saving entry" });
+      return res.status(500).json({
+        success: false,
+        error: {
+          message: "Error in connecting with DB to save form data.",
+          status: 500,
+        },
+      });
     }
-  }
-
-  if (req.method === "PUT") {
+  } else if (req.method === "GET") {
     try {
-      const { answers } = req.body;
-      await collection.updateOne(
-        { userId },
-        { $set: { answers, updatedAt: new Date() } }
-      );
-      return res.status(200).json({ success: true, message: "Draft saved" });
+      const dbResponse = await collection.findOne({ email });
+      return res.status(200).json({ success: true, data: dbResponse });
     } catch (error) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Error saving draft" });
+      return res.status(500).json({
+        success: false,
+        error: {
+          message: "Error in connecting with DB to get form data.",
+          status: 500,
+        },
+      });
     }
+  } else {
+    return res.status(405).json({
+      success: false,
+      error: {
+        message: "Method not allowed.",
+        status: 405,
+      },
+    });
   }
-
-  return res
-    .status(405)
-    .json({ success: false, message: "Method not allowed" });
 }
