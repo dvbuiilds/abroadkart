@@ -11,8 +11,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
 }) => {
   const router = useRouter();
-  const { activeSession } = useUserSession();
-  console.log("@Dhairya DashboardLayout");
+  const { activeSession, user } = useUserSession();
 
   const sidebarTitle =
     activeSession.status === "authenticated" && activeSession.data?.user?.name
@@ -35,6 +34,18 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           >
             Dashboard
           </Link>
+          {!user?.haveFilledPreCounsellingForm ? (
+            <Link
+              href="/dashboard/pre-counselling-form"
+              className={`block p-2 rounded ${
+                router.pathname === "/dashboard/pre-counselling-form"
+                  ? "bg-gray-700 font-bold"
+                  : "hover:bg-gray-700"
+              }`}
+            >
+              Pre-Counselling
+            </Link>
+          ) : null}
           <Link
             href="/dashboard/counselling"
             className={`block p-2 rounded ${
@@ -45,7 +56,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           >
             Counselling
           </Link>
-          <Link
+          {/* <Link
             href="/dashboard/explore-universities"
             className={`block p-2 rounded ${
               router.pathname === "/dashboard/explore-universities"
@@ -54,11 +65,11 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             }`}
           >
             Universities
-          </Link>
+          </Link> */}
         </nav>
       </aside>
 
-      {/* Main Content */}
+      {/* Page Content */}
       <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">{children}</main>
     </div>
   );
