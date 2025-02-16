@@ -2,14 +2,18 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useSession, signIn, signOut } from "next-auth/react";
 
+// TYPES
 import type { Session } from "next-auth";
 import type { ResponseType, SessionProvider, User } from "../types/api-types";
 
+// UTILS
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
+
+// CONFIGS
 import { apiEndPoints, apiPaths } from "@app/config/api-config";
 
 interface UserSessionContextType {
-  user: User | null;
+  user: User;
   sessionProvider: SessionProvider;
   activeSession: {
     status: "authenticated" | "loading" | "unauthenticated";
@@ -29,6 +33,8 @@ interface UserSessionContextType {
         }
   ) => Promise<void>;
   triggerLogout: () => void;
+
+  fetchUserDetails: () => Promise<void>;
 }
 
 const UserSessionContext = createContext<UserSessionContextType | undefined>(
@@ -80,7 +86,7 @@ export const UserSessionProvider: React.FC<{
     const response = await fetch(
       `${apiPaths.development}${
         apiEndPoints.getUser
-      }?email=${encodeURIComponent(activeSession.data?.user?.email)}`
+      }?email=${encodeURIComponent(activeSession.data?.user?.email || "")}`
     );
     const jsonResponse: ResponseType<User> = await response.json();
     if (jsonResponse.success) {
@@ -95,7 +101,12 @@ export const UserSessionProvider: React.FC<{
   useEffect(() => {
     if (activeSession.status === "authenticated") {
       fetchUserDetails();
-      if (router.pathname === "/login") router.push("/dashboard");
+      if (
+        router.pathname === "/login" ||
+        (router.pathname === "/dashboard/pre-counselling-form" &&
+          user?.haveFilledPreCounsellingForm)
+      )
+        router.push("/dashboard");
     } else if (
       activeSession.status === "unauthenticated" &&
       checkIfRouteIsProtected(router.pathname)
@@ -112,6 +123,7 @@ export const UserSessionProvider: React.FC<{
         activeSession,
         triggerLogin,
         triggerLogout,
+        fetchUserDetails,
       }}
     >
       {children}
