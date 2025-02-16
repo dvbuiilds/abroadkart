@@ -16,7 +16,7 @@ import { apiEndPoints, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 
 const totalSteps = formData.sets.length;
-const LOCAL_STORAGE_TIME = 1000 * 30;
+const LOCAL_STORAGE_TIME = 1000 * 2;
 let formChangesDetected = false;
 
 const makeQuestionAnswersObject = () => {
@@ -62,10 +62,10 @@ export default function PreCounsellingForm() {
   >("idle");
   const navigation = useRouter();
 
-  // const isEveryQuestionAnswered = true;
-  const isEveryQuestionAnswered = formData[currentStep].info.every(
-    (info) => info.answer.length >= 5
-  );
+  const isEveryQuestionAnswered = true;
+  // const isEveryQuestionAnswered = formData[currentStep].info.every(
+  //   (info) => info.answer.length >= 5
+  // );
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
@@ -141,12 +141,13 @@ export default function PreCounsellingForm() {
 
   const disableNextButton = !isEveryQuestionAnswered;
 
+  // Upon mounting, the logic below will check if stored form exists and then will update the form data.
   React.useEffect(() => {
     const formDataFromLocalStorage = localStorage.getItem(
       "pre-counselling-form"
     );
     const parsedData: { email: string; formData: Questionnaire } = JSON.parse(
-      formDataFromLocalStorage ?? ""
+      formDataFromLocalStorage || ""
     );
     if (parsedData && parsedData.email === user?.email) {
       updateFormData(parsedData.formData);
@@ -154,6 +155,7 @@ export default function PreCounsellingForm() {
   }, []);
 
   React.useEffect(() => {
+    // This will start an interval to save the form data locally on changes done by the user.
     const intervalId = setInterval(() => {
       saveFormDataLocally();
     }, LOCAL_STORAGE_TIME);
@@ -172,17 +174,19 @@ export default function PreCounsellingForm() {
         stepNames={formNames}
       />
       {/** Current Step Form */}
-      {currentStep < totalSteps ? (
-        <Form
-          currentStep={currentStep}
-          formData={formData[currentStep]}
-          onDataChange={onCurrentFormDataChangeHandler}
-        />
-      ) : (
-        <p className="text-center text-lg my-4">
-          Thanks for answering all the questions. You can now submit the form.
-        </p>
-      )}
+      <div className="h-[500px] overflow-y-auto">
+        {currentStep < totalSteps ? (
+          <Form
+            currentStep={currentStep}
+            formData={formData[currentStep]}
+            onDataChange={onCurrentFormDataChangeHandler}
+          />
+        ) : (
+          <p className="text-center text-lg my-4">
+            Thanks for answering all the questions. You can now submit the form.
+          </p>
+        )}
+      </div>
       {/* Form Navigation Buttons */}
       {apiStatus === "success" || apiStatus === "error" ? (
         <></>
