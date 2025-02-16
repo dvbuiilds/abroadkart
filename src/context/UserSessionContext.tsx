@@ -1,11 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import type { Session } from "next-auth";
 import { useSession, signIn, signOut } from "next-auth/react";
 
+import type { Session } from "next-auth";
 import type { ResponseType, SessionProvider, User } from "../types/api-types";
-import { apiEndPoints, apiPaths } from "@app/config/api-config";
+
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
+import { apiEndPoints, apiPaths } from "@app/config/api-config";
 
 interface UserSessionContextType {
   user: User | null;
