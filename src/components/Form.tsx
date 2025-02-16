@@ -5,29 +5,15 @@ import type { Questionnaire, QuestionnaireItem } from "@app/types/form-types";
 export const Form = ({
   formData,
   currentStep,
-  updateFormData,
+  onDataChange,
 }: {
   formData: QuestionnaireItem;
   currentStep: number;
-  updateFormData: React.Dispatch<React.SetStateAction<Questionnaire>>;
-}) => {
-  const onChangeHandler = (
+  onDataChange: (
     event: React.ChangeEvent<HTMLInputElement>,
     questionIndex: number
-  ) => {
-    updateFormData((prev) => {
-      const formDataInfo = [...prev[currentStep].info];
-      formDataInfo[questionIndex].answer = event.target.value;
-      const currentStepFormData = {
-        name: prev[currentStep].name,
-        info: formDataInfo,
-      };
-      const updatedFormData = [...prev];
-      updatedFormData[currentStep] = currentStepFormData;
-      return updatedFormData;
-    });
-  };
-
+  ) => void;
+}) => {
   return (
     <>
       <p className="text-sm my-4">
@@ -46,7 +32,7 @@ export const Form = ({
               className="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer"
               placeholder=""
               value={infoSet.answer}
-              onChange={(event) => onChangeHandler(event, index)}
+              onChange={(event) => onDataChange(event, index)}
               required
             />
             <label
