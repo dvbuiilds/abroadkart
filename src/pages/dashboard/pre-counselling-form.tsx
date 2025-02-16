@@ -12,7 +12,7 @@ import formData from "@app/utils/data/pre-counselling-form-questions.json";
 import { useUserSession } from "@app/context/UserSessionContext";
 
 // CONFIGS
-import { apiEndPoints, apiPaths } from "@app/config/api-config";
+import { apiEndPoints, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 
 const totalSteps = formData.sets.length;
@@ -38,17 +38,14 @@ const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
   console.log("@@ Submitting the form...", data);
-  const response = await fetch(
-    `${apiPaths.development}${apiEndPoints.preCounsellingForm}`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        email,
-      },
-      body: JSON.stringify(data),
-    }
-  );
+  const response = await fetch(`${apiPath}${apiEndPoints.preCounsellingForm}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      email,
+    },
+    body: JSON.stringify(data),
+  });
   const responseData = await response.json();
   console.log("@@ FORM SUBMIT response: ", responseData);
   return responseData;

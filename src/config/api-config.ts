@@ -3,6 +3,11 @@ export const apiPaths = {
   production: "https://my-production-api.com",
 };
 
+export const apiPath =
+  process.env.ENVIRONMENT === "production"
+    ? apiPaths.production
+    : apiPaths.development;
+
 export const apiEndPoints = {
   /**
    * @deprecated

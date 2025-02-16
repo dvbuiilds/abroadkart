@@ -10,7 +10,7 @@ import type { ResponseType, SessionProvider, User } from "../types/api-types";
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
 
 // CONFIGS
-import { apiEndPoints, apiPaths } from "@app/config/api-config";
+import { apiEndPoints, apiPath } from "@app/config/api-config";
 
 interface UserSessionContextType {
   user: User;
@@ -84,9 +84,9 @@ export const UserSessionProvider: React.FC<{
 
   const fetchUserDetails = async () => {
     const response = await fetch(
-      `${apiPaths.development}${
-        apiEndPoints.getUser
-      }?email=${encodeURIComponent(activeSession.data?.user?.email || "")}`
+      `${apiPath}${apiEndPoints.getUser}?email=${encodeURIComponent(
+        activeSession.data?.user?.email || ""
+      )}`
     );
     const jsonResponse: ResponseType<User> = await response.json();
     if (jsonResponse.success) {
