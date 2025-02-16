@@ -7,6 +7,7 @@ export type User = {
   email: string;
   phoneNumber: string;
   provider: "credentials" | "google";
+  haveFilledPreCounsellingForm: boolean;
 };
 
 export interface CredentialsProviderUser extends WithId<Document> {
