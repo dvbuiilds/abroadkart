@@ -16,7 +16,8 @@ import { apiEndPoints, apiPaths } from "@app/config/api-config";
 import { useRouter } from "next/router";
 
 const totalSteps = formData.sets.length;
-const LOCAL_STORAGE_TIME = 1000 * 60;
+const LOCAL_STORAGE_TIME = 1000 * 30;
+let formChangesDetected = false;
 
 const makeQuestionAnswersObject = () => {
   return formData.sets.map((set) => {
@@ -71,7 +72,7 @@ export default function PreCounsellingForm() {
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
-    const response = await handleFormSubmitAPICall(formData, user.email);
+    const response = await handleFormSubmitAPICall(formData, user?.email);
     if (response.success) {
       updateAPIStatus("success");
       fetchUserDetails();
@@ -79,6 +80,25 @@ export default function PreCounsellingForm() {
     } else {
       updateAPIStatus("error");
       alert("Error in submitting the form. Please try again later.");
+    }
+  };
+
+  const dataForDumping = { email: user?.email, formData };
+
+  const saveFormDataLocally = () => {
+    if (
+      formChangesDetected &&
+      localStorage.getItem("pre-counselling-form") !==
+        JSON.stringify(dataForDumping)
+    ) {
+      localStorage.setItem(
+        "pre-counselling-form",
+        JSON.stringify(dataForDumping)
+      );
+      console.log("@@ formData stored locally.", JSON.stringify(formData));
+      formChangesDetected = false;
+    } else {
+      console.log("@@ formData not stored as there is no change.");
     }
   };
 
@@ -90,6 +110,7 @@ export default function PreCounsellingForm() {
       return;
     }
     if (currentStep < totalSteps) {
+      saveFormDataLocally();
       updateCurrentStep(currentStep + 1);
       return;
     }
@@ -103,19 +124,41 @@ export default function PreCounsellingForm() {
     }
   };
 
+  const onCurrentFormDataChangeHandler = (
+    event: React.ChangeEvent<HTMLInputElement>,
+    questionIndex: number
+  ) => {
+    formChangesDetected = true;
+    updateFormData((prev) => {
+      const formDataInfo = [...prev[currentStep].info];
+      formDataInfo[questionIndex].answer = event.target.value;
+      const currentStepFormData = {
+        name: prev[currentStep].name,
+        info: formDataInfo,
+      };
+      const updatedFormData = [...prev];
+      updatedFormData[currentStep] = currentStepFormData;
+      return updatedFormData;
+    });
+  };
+
   const disableNextButton = !isEveryQuestionAnswered;
 
   React.useEffect(() => {
+    const formDataFromLocalStorage = localStorage.getItem(
+      "pre-counselling-form"
+    );
+    const parsedData: { email: string; formData: Questionnaire } = JSON.parse(
+      formDataFromLocalStorage ?? ""
+    );
+    if (parsedData && parsedData.email === user?.email) {
+      updateFormData(parsedData.formData);
+    }
+  }, []);
+
+  React.useEffect(() => {
     const intervalId = setInterval(() => {
-      if (
-        localStorage.getItem("pre-counselling-form") !==
-        JSON.stringify(formData)
-      ) {
-        localStorage.setItem("pre-counselling-form", JSON.stringify(formData));
-        console.log("@@ formData stored locally.", JSON.stringify(formData));
-      } else {
-        console.log("@@ formData not stored as there is no change.");
-      }
+      saveFormDataLocally();
     }, LOCAL_STORAGE_TIME);
     return () => clearInterval(intervalId);
   }, [formData]);
@@ -134,9 +177,9 @@ export default function PreCounsellingForm() {
       {/** Current Step Form */}
       {currentStep < totalSteps ? (
         <Form
-          formData={formData[currentStep]}
           currentStep={currentStep}
-          updateFormData={updateFormData}
+          formData={formData[currentStep]}
+          onDataChange={onCurrentFormDataChangeHandler}
         />
       ) : (
         <p className="text-center text-lg my-4">
