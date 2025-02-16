@@ -30,6 +30,7 @@ export default async function handler(
 
     // Find the user by email
     const user = await db.collection("users").findOne({ email });
+    const form = await db.collection("pre-counselling-form").findOne({ email });
 
     if (!user) {
       return res.status(404).json({
@@ -47,6 +48,7 @@ export default async function handler(
         email: user.email,
         phoneNumber: user.phoneNumber,
         provider: user.provider,
+        haveFilledPreCounsellingForm: !!form,
       },
     });
   } catch (error) {
