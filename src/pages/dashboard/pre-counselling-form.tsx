@@ -3,6 +3,8 @@ import React from "react";
 import { FormProgressBar } from "@app/components/FormProgressBar/FormProgressBar";
 import { Form } from "@app/components/Form";
 
+import type { Questionnaire } from "@app/types/form-types";
+
 import formData from "@app/utils/data/pre-counselling-form-questions.json";
 
 const totalSteps = formData.sets.length;
@@ -24,19 +26,12 @@ const makeQuestionAnswersObject = () => {
 };
 
 const formNames = formData.sets.map((set) => set.name);
-let locallyStoredFormData: {
-  data: { name: string; info: { question: string; answer: string }[] }[] | null;
-  timeStamp: number;
-} = {
-  data: null,
-  timeStamp: Date.now(),
-};
 
 export default function PreCounsellingForm() {
-  const [formData, updateFormData] = React.useState(
+  const [formData, updateFormData] = React.useState<Questionnaire>(
     makeQuestionAnswersObject()
   );
-  const [currentStep, updateCurrentStep] = React.useState(0);
+  const [currentStep, updateCurrentStep] = React.useState<number>(0);
 
   const isEveryQuestionAnswered = formData[currentStep].info.every(
     (info) => info.answer.length >= 5
@@ -69,10 +64,6 @@ export default function PreCounsellingForm() {
         JSON.stringify(formData)
       ) {
         localStorage.setItem("pre-counselling-form", JSON.stringify(formData));
-        locallyStoredFormData = {
-          data: formData,
-          timeStamp: Date.now(),
-        };
         console.log("@@ formData stored locally.", JSON.stringify(formData));
       } else {
         console.log("@@ formData not stored as there is no change.");

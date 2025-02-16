@@ -1,23 +1,15 @@
 import React from "react";
 
+import type { Questionnaire, QuestionnaireItem } from "@app/types/form-types";
+
 export const Form = ({
   formData,
   currentStep,
   updateFormData,
 }: {
-  formData: { name: string; info: { question: string; answer: string }[] };
+  formData: QuestionnaireItem;
   currentStep: number;
-  updateFormData: React.Dispatch<
-    React.SetStateAction<
-      {
-        name: string;
-        info: {
-          question: string;
-          answer: string;
-        }[];
-      }[]
-    >
-  >;
+  updateFormData: React.Dispatch<React.SetStateAction<Questionnaire>>;
 }) => {
   const onChangeHandler = (
     event: React.ChangeEvent<HTMLInputElement>,
