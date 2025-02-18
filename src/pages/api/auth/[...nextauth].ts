@@ -80,10 +80,10 @@ export default NextAuth({
             id: user.id,
             googleId: profile?.sub ?? "",
             email: profile?.email ?? "",
-            // @ts-ignore - email_verified is being received in the response but is not present in Profile type.
+            // @ts-expect-error - email_verified is being received in the response but is not present in Profile type.
             emailVerified: !!profile?.email_verified,
             name: profile?.name ?? "",
-            // @ts-ignore - picture is being received in the response but is not present in Profile type.
+            // @ts-expect-error - picture is being received in the response but is not present in Profile type.
             picture: profile?.picture ?? "",
             provider: "google",
             phoneNumber: "",
