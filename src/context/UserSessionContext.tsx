@@ -13,7 +13,7 @@ import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
 import { apiEndPoints, apiPath } from "@app/config/api-config";
 
 interface UserSessionContextType {
-  user: User;
+  user: User | null;
   sessionProvider: SessionProvider;
   activeSession: {
     status: "authenticated" | "loading" | "unauthenticated";
