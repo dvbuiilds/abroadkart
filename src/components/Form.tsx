@@ -1,6 +1,6 @@
 import React from "react";
 
-import type { Questionnaire, QuestionnaireItem } from "@app/types/form-types";
+import type { QuestionnaireItem } from "@app/types/form-types";
 
 export const Form = ({
   formData,
