@@ -111,6 +111,8 @@ export default async function handler(
       phoneNumber,
       createdAt: new Date(),
       updatedAt: new Date(),
+      provider: "credentials",
+      haveFilledPreCounsellingForm: false,
     });
 
     // Return success response
@@ -121,6 +123,8 @@ export default async function handler(
         name,
         email,
         phoneNumber,
+        provider: "credentials",
+        haveFilledPreCounsellingForm: false,
       },
     });
   } catch (error) {
