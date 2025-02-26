@@ -1,3 +1,5 @@
+import { type ReactNode } from "react";
+
 // THIRD PARTY
 import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
@@ -11,7 +13,7 @@ import { UserSessionProvider } from "@app/context/UserSessionContext";
 // STYLES
 import "@app/styles/globals.css";
 
-const getLayoutFromPathName = (pathName: string, children: React.ReactNode) => {
+const getLayoutFromPathName = (pathName: string, children: ReactNode) => {
   if (pathName.startsWith("/dashboard")) {
     return <DashboardLayout>{children}</DashboardLayout>;
   }

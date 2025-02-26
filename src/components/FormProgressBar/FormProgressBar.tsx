@@ -1,4 +1,4 @@
-import React from "react";
+import { JSX } from "react";
 import {
   CurrentNumberedCircle,
   FilledBar,
@@ -16,7 +16,7 @@ export const FormProgressBar = ({
   stepNames: string[];
 }) => {
   const renderStepMarksAndBar = () => {
-    const _components: React.JSX.Element[] = [];
+    const _components: JSX.Element[] = [];
     for (let step = 0; step < totalSteps; step++) {
       if (step < currentStep) {
         _components.push(

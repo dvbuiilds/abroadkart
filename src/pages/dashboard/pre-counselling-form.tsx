@@ -1,4 +1,4 @@
-import React from "react";
+import { type ChangeEvent, useEffect, useState } from "react";
 
 // COMPONENTS
 import { FormProgressBar } from "@app/components/FormProgressBar/FormProgressBar";
@@ -61,9 +61,9 @@ export const getServerSideProps = () => {
 
 export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   const { user, fetchUserDetails } = useUserSession();
-  const [formData, updateFormData] = React.useState<Questionnaire>(data);
-  const [currentStep, updateCurrentStep] = React.useState<number>(0);
-  const [apiStatus, updateAPIStatus] = React.useState<
+  const [formData, updateFormData] = useState<Questionnaire>(data);
+  const [currentStep, updateCurrentStep] = useState<number>(0);
+  const [apiStatus, updateAPIStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
   const navigation = useRouter();
@@ -128,7 +128,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   };
 
   const onCurrentFormDataChangeHandler = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: ChangeEvent<HTMLInputElement>,
     questionIndex: number
   ) => {
     formChangesDetected = true;
@@ -148,7 +148,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   // const disableNextButton = !isEveryQuestionAnswered;
 
   // Upon mounting, the logic below will check if stored form exists and then will update the form data.
-  React.useEffect(() => {
+  useEffect(() => {
     const formDataFromLocalStorage = localStorage.getItem(
       "pre-counselling-form"
     );
@@ -160,7 +160,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
     }
   }, []);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // This will start an interval to save the form data locally on changes done by the user.
     const intervalId = setInterval(() => {
       saveFormDataLocally();

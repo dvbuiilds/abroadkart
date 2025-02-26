@@ -1,15 +1,13 @@
-import React from "react";
+import { type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useUserSession } from "@app/context/UserSessionContext";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
-  children,
-}) => {
+export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
   const { activeSession, user } = useUserSession();
 

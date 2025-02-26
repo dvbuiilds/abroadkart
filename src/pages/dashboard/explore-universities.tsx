@@ -1,5 +1,3 @@
-import React from "react";
-
 const ExploreUniversities = () => {
   return (
     <div>

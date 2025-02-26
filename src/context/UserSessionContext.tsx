@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/router";
 import { useSession, signIn, signOut } from "next-auth/react";
 
@@ -41,9 +47,7 @@ const UserSessionContext = createContext<UserSessionContextType | undefined>(
   undefined
 );
 
-export const UserSessionProvider: React.FC<{
-  children: React.ReactNode;
-}> = ({ children }) => {
+export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const activeSession = useSession();
 

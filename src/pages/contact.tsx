@@ -1,4 +1,4 @@
-const Contact: React.FC = () => {
+const Contact = () => {
   return (
     <div className="flex flex-col items-center justify-center grow bg-gray-100">
       <h1 className="text-3xl font-bold">Contact Us</h1>

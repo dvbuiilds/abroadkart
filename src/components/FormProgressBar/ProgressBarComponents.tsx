@@ -1,4 +1,3 @@
-import React from "react";
 import { FaCheck } from "react-icons/fa6";
 
 export const FilledCircle = ({ label }: { label: string }) => (

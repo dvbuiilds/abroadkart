@@ -1,5 +1,4 @@
 import Image from "next/image";
-import React from "react";
 
 import FreeCounselling from "../../../public/free-counselling.png";
 import ExploreUniversities from "../../../public/explore-universities.png";
