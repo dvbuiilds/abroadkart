@@ -4,18 +4,20 @@ import { useRouter } from "next/router";
 
 import { useUserSession } from "@app/context/UserSessionContext";
 
+import { TbLogout } from "react-icons/tb";
+
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
-  const { user } = useUserSession();
+  const { user, triggerLogout } = useUserSession();
 
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-1/8 bg-gray-800 text-white p-4">
+      <aside className="w-1/8 bg-gray-800 text-white p-4 flex flex-col justify-between">
         <nav className="space-y-4">
           <Link
             href="/dashboard"
@@ -50,6 +52,12 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             Counselling
           </Link>
         </nav>
+        <button
+          onClick={triggerLogout}
+          className="flex flex-row items-center p-2 rounded hover:bg-gray-700 gap-2"
+        >
+          <TbLogout /> Logout
+        </button>
       </aside>
 
       {/* Page Content */}
