@@ -1,6 +1,7 @@
 import { type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+
 import { useUserSession } from "@app/context/UserSessionContext";
 
 interface DashboardLayoutProps {
@@ -9,18 +10,12 @@ interface DashboardLayoutProps {
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
-  const { activeSession, user } = useUserSession();
-
-  const sidebarTitle =
-    activeSession.status === "authenticated" && activeSession.data?.user?.name
-      ? `Hi ${activeSession.data?.user?.name.split(" ")[0]}`
-      : null;
+  const { user } = useUserSession();
 
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-1/6 bg-gray-800 text-white p-4">
-        <h2 className="text-2xl font-bold mb-8">{sidebarTitle}</h2>
+      <aside className="w-1/8 bg-gray-800 text-white p-4">
         <nav className="space-y-4">
           <Link
             href="/dashboard"
@@ -54,16 +49,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           >
             Counselling
           </Link>
-          {/* <Link
-            href="/dashboard/explore-universities"
-            className={`block p-2 rounded ${
-              router.pathname === "/dashboard/explore-universities"
-                ? "bg-gray-700 font-bold"
-                : "hover:bg-gray-700"
-            }`}
-          >
-            Universities
-          </Link> */}
         </nav>
       </aside>
 
