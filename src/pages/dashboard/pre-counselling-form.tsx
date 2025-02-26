@@ -75,7 +75,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
-    const response = await handleFormSubmitAPICall(formData, user?.email);
+    const response = await handleFormSubmitAPICall(formData, user?.email || "");
     if (response.success) {
       updateAPIStatus("success");
       fetchUserDetails();
@@ -145,7 +145,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
     });
   };
 
-  const disableNextButton = !isEveryQuestionAnswered;
+  // const disableNextButton = !isEveryQuestionAnswered;
 
   // Upon mounting, the logic below will check if stored form exists and then will update the form data.
   React.useEffect(() => {
