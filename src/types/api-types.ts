@@ -1,14 +1,29 @@
 import { WithId } from "mongodb";
 
+// This type is for the User Data to be saved in DB or to be fetched from DB.
+export interface DBUser {
+  id: string;
+  name: string;
+  email: string;
+  password: string;
+  phoneNumber: string;
+  provider: "credentials" | "google";
+  haveFilledPreCounsellingForm: boolean;
+  picture?: string;
+  nameAbbreviation: string;
+}
+
 // This type is for storing the User details after fetching the data from db after logging in.
-export type User = {
+export interface User {
   id: string;
   name: string;
   email: string;
   phoneNumber: string;
   provider: "credentials" | "google";
   haveFilledPreCounsellingForm: boolean;
-};
+  picture?: string;
+  nameAbbreviation: string;
+}
 
 export interface CredentialsProviderUser extends WithId<Document> {
   id: string;
@@ -17,6 +32,7 @@ export interface CredentialsProviderUser extends WithId<Document> {
   password: string;
   phoneNumber: string;
   provider: "credentials";
+  nameAbbreviation: string;
 }
 
 export interface GoogleProviderUser {
@@ -28,12 +44,7 @@ export interface GoogleProviderUser {
   picture?: string;
   provider: "google";
   phoneNumber?: string;
-}
-
-export interface GoogleSessionUser {
-  email: string;
-  image: string;
-  name: string;
+  nameAbbreviation: string;
 }
 
 export type SessionProvider = "no-provider" | "credentials" | "google";
