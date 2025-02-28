@@ -11,6 +11,7 @@ import {
   CredentialsProviderUser,
   GoogleProviderUser,
 } from "@app/types/api-types";
+import { getNameAbbreviation } from "@app/utils/name-abbreviation";
 
 const db = mongoDBClient.db();
 
@@ -63,6 +64,7 @@ export default NextAuth({
           phoneNumber: user.phoneNumber,
           id: user._id.toString(),
           provider: "credentials",
+          nameAbbreviation: user.nameAbbreviation,
         };
       },
     }),
@@ -87,6 +89,7 @@ export default NextAuth({
             picture: profile?.picture ?? "",
             provider: "google",
             phoneNumber: "",
+            nameAbbreviation: getNameAbbreviation(profile?.name ?? ""),
           };
           const newUserCreated = await db
             .collection("users")

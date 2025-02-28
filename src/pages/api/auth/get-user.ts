@@ -1,10 +1,11 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
 import { ResponseType, User } from "@app/types/api-types";
+import { getNameAbbreviation } from "@app/utils/name-abbreviation";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseType<User | null>>
+  res: NextApiResponse<ResponseType<User>>
 ) {
   // Allow only POST requests
   if (req.method !== "GET") {
@@ -49,6 +50,9 @@ export default async function handler(
         phoneNumber: user.phoneNumber,
         provider: user.provider,
         haveFilledPreCounsellingForm: !!form,
+        picture: user.picture,
+        nameAbbreviation:
+          user.nameAbbreviation ?? getNameAbbreviation(user.name),
       },
     });
   } catch (error) {
