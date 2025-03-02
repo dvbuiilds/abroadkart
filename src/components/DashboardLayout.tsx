@@ -1,10 +1,13 @@
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-import { useUserSession } from "@app/context/UserSessionContext";
-
+// ICONS
 import { TbLogout } from "react-icons/tb";
+import { RiSidebarFoldLine, RiSidebarUnfoldLine } from "react-icons/ri";
+
+// CONTEXT
+import { useUserSession } from "@app/context/UserSessionContext";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -13,22 +16,47 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
   const { user, triggerLogout } = useUserSession();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true); // Sidebar state
 
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-1/8 bg-gray-800 text-white p-4 flex flex-col justify-between">
-        <nav className="space-y-4">
+      <aside
+        className={`bg-gray-800 text-white p-4 flex flex-col items-center justify-between transition-all duration-300 ${
+          isSidebarOpen ? "w-48" : "w-16"
+        }`}
+      >
+        {/* Sidebar Navigation */}
+        <nav
+          className={`space-y-4 flex flex-col ${
+            isSidebarOpen ? "items-start" : "items-center"
+          }`}
+        >
+          {/* Sidebar Toggle Button */}
+          <button
+            className="p-2 rounded hover:bg-gray-700 self-end"
+            type="button"
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          >
+            {isSidebarOpen ? (
+              <RiSidebarFoldLine size={20} />
+            ) : (
+              <RiSidebarUnfoldLine size={20} />
+            )}
+          </button>
+
+          {/* Sidebar Links */}
           <Link
             href="/dashboard"
-            className={`block p-2 rounded ${
+            className={`block p-2 rounded  grow ${
               router.pathname === "/dashboard"
                 ? "bg-gray-700 font-bold"
                 : "hover:bg-gray-700"
             }`}
           >
-            Dashboard
+            {isSidebarOpen ? "Dashboard" : "D"}
           </Link>
+
           {!user?.haveFilledPreCounsellingForm ? (
             <Link
               href="/dashboard/pre-counselling-form"
@@ -38,9 +66,10 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   : "hover:bg-gray-700"
               }`}
             >
-              Pre-Counselling
+              {isSidebarOpen ? "Pre-Counselling" : "P"}
             </Link>
           ) : null}
+
           <Link
             href="/dashboard/counselling"
             className={`block p-2 rounded ${
@@ -49,14 +78,17 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 : "hover:bg-gray-700"
             }`}
           >
-            Counselling
+            {isSidebarOpen ? "Counselling" : "C"}
           </Link>
         </nav>
+
+        {/* Logout Button */}
         <button
           onClick={triggerLogout}
-          className="flex flex-row items-center p-2 rounded hover:bg-gray-700 gap-2"
+          className="flex flex-row items-center p-2 rounded hover:bg-gray-700"
         >
-          <TbLogout /> Logout
+          <TbLogout size={20} />
+          {isSidebarOpen && <span className="ml-2">Logout</span>}
         </button>
       </aside>
 
