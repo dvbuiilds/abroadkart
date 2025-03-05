@@ -63,17 +63,6 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 Pre-Counselling
               </Link>
             ) : null}
-
-            <Link
-              href="/dashboard/counselling"
-              className={`block p-2 rounded ${
-                router.pathname === "/dashboard/counselling"
-                  ? "bg-gray-700 font-bold"
-                  : "hover:bg-gray-700"
-              }`}
-            >
-              Counselling
-            </Link>
           </nav>
         </div>
 
@@ -90,7 +79,7 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       </aside>
 
       {/* Page Content */}
-      <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">{children}</main>
+      <main className="flex-1 bg-gray-100 overflow-y-auto">{children}</main>
     </div>
   );
 };
