@@ -6,7 +6,7 @@ import { RxHamburgerMenu } from "react-icons/rx";
 import { TfiMenu } from "react-icons/tfi";
 
 export const Navbar = () => {
-  const { activeSession, triggerLogout, user } = useUserSession();
+  const { activeSession, user } = useUserSession();
   const router = useRouter();
 
   const ProfilePicComponent = user?.picture ? (
