@@ -1,76 +1,85 @@
-import React from "react";
+import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+
+// ICONS
+import { TbLogout } from "react-icons/tb";
+import { BsLayoutTextSidebar } from "react-icons/bs";
+
+// CONTEXT
 import { useUserSession } from "@app/context/UserSessionContext";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
-  children,
-}) => {
+export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
-  const { activeSession, user } = useUserSession();
-
-  const sidebarTitle =
-    activeSession.status === "authenticated" && activeSession.data?.user?.name
-      ? `Hi ${activeSession.data?.user?.name.split(" ")[0]}`
-      : null;
+  const { user, triggerLogout } = useUserSession();
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true); // Sidebar state
 
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <aside className="w-1/6 bg-gray-800 text-white p-4">
-        <h2 className="text-2xl font-bold mb-8">{sidebarTitle}</h2>
-        <nav className="space-y-4">
-          <Link
-            href="/dashboard"
-            className={`block p-2 rounded ${
-              router.pathname === "/dashboard"
-                ? "bg-gray-700 font-bold"
-                : "hover:bg-gray-700"
+      <aside
+        className={`bg-gray-800 text-white p-2 flex flex-col justify-between transition-all duration-300 ${
+          isSidebarOpen ? "w-46" : "w-12"
+        }`}
+      >
+        <div className="flex flex-col gap-1">
+          {/* Sidebar Header with Toggle Button */}
+          <div className="p-2 rounded flex items-center justify-end">
+            <button onClick={() => setIsSidebarOpen((prev) => !prev)}>
+              <BsLayoutTextSidebar size={16} />
+            </button>
+          </div>
+
+          {/* Navigation Links - Hidden when collapsed */}
+          <nav
+            className={`flex flex-col space-y-4 ${
+              !isSidebarOpen ? "hidden" : ""
             }`}
           >
-            Dashboard
-          </Link>
-          {!user?.haveFilledPreCounsellingForm ? (
             <Link
-              href="/dashboard/pre-counselling-form"
+              href="/dashboard"
               className={`block p-2 rounded ${
-                router.pathname === "/dashboard/pre-counselling-form"
+                router.pathname === "/dashboard"
                   ? "bg-gray-700 font-bold"
                   : "hover:bg-gray-700"
               }`}
             >
-              Pre-Counselling
+              Dashboard
             </Link>
-          ) : null}
-          <Link
-            href="/dashboard/counselling"
-            className={`block p-2 rounded ${
-              router.pathname === "/dashboard/counselling"
-                ? "bg-gray-700 font-bold"
-                : "hover:bg-gray-700"
-            }`}
+
+            {!user?.haveFilledPreCounsellingForm ? (
+              <Link
+                href="/dashboard/pre-counselling-form"
+                className={`block p-2 rounded ${
+                  router.pathname === "/dashboard/pre-counselling-form"
+                    ? "bg-gray-700 font-bold"
+                    : "hover:bg-gray-700"
+                }`}
+              >
+                Pre-Counselling
+              </Link>
+            ) : null}
+          </nav>
+        </div>
+
+        {/* Logout Button - Hidden when collapsed */}
+        {isSidebarOpen && (
+          <button
+            onClick={triggerLogout}
+            className="flex flex-row items-center p-2 rounded hover:bg-gray-700"
           >
-            Counselling
-          </Link>
-          {/* <Link
-            href="/dashboard/explore-universities"
-            className={`block p-2 rounded ${
-              router.pathname === "/dashboard/explore-universities"
-                ? "bg-gray-700 font-bold"
-                : "hover:bg-gray-700"
-            }`}
-          >
-            Universities
-          </Link> */}
-        </nav>
+            <TbLogout />
+            <span className="ml-2">Logout</span>
+          </button>
+        )}
       </aside>
 
       {/* Page Content */}
-      <main className="flex-1 bg-gray-100 p-6 overflow-y-auto">{children}</main>
+      <main className="flex-1 bg-gray-100 overflow-y-auto">{children}</main>
     </div>
   );
 };
