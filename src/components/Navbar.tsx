@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useUserSession } from "@app/context/UserSessionContext";
 import { ProfilePic } from "./ProfilePic";
 import { RxHamburgerMenu } from "react-icons/rx";
@@ -7,7 +6,6 @@ import { TfiMenu } from "react-icons/tfi";
 
 export const Navbar = () => {
   const { activeSession, user } = useUserSession();
-  const router = useRouter();
 
   const ProfilePicComponent = user?.picture ? (
     <ProfilePic profilePicPresent={true} src={user.picture} alt={user.name} />
