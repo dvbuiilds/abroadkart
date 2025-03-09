@@ -1,6 +1,6 @@
 export const apiPaths = {
   development: "http://localhost:3000",
-  production: "https://my-production-api.com",
+  production: "https://abroadkart-gp0v1e9rl-dvbuiilds-projects.vercel.app",
 };
 
 export const apiPath =
