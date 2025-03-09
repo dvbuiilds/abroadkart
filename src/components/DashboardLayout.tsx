@@ -16,7 +16,7 @@ interface DashboardLayoutProps {
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const router = useRouter();
   const { user, triggerLogout } = useUserSession();
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(true); // Sidebar state
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); // Sidebar state
 
   return (
     <div className="flex h-screen">
