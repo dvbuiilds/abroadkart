@@ -6,7 +6,7 @@ import { useRouter } from "next/router";
 import type { DBUser, ResponseType, User } from "@app/types/api-types";
 
 // UTILS
-import { fetchWithTimeout } from "@app/utils/api-utils";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";

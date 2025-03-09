@@ -14,7 +14,7 @@ import type { ResponseType, SessionProvider, User } from "../types/api-types";
 
 // UTILS
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
-import { fetchWithTimeout } from "@app/utils/api-utils";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";

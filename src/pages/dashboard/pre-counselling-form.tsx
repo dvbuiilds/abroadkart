@@ -10,7 +10,7 @@ import type { Questionnaire } from "@app/types/form-types";
 // UTILS
 import formData from "@app/utils/data/pre-counselling-form-questions.json";
 import { useUserSession } from "@app/context/UserSessionContext";
-import { fetchWithTimeout } from "@app/utils/api-utils";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
