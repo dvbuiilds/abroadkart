@@ -20,7 +20,7 @@ export const Alert: React.FC<AlertProps> = ({ message, type }) => {
 
   return (
     <div
-      className={`w-full p-3 border-l-4 rounded-md ${alertColors[type]} flex justify-between items-center`}
+      className={`w-full p-3 border-l-4 rounded-md ${alertColors[type]} flex justify-between items-start`}
     >
       <span>{message}</span>
       <button onClick={() => setIsVisible(false)} className="ml-2">
