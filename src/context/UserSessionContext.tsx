@@ -14,6 +14,7 @@ import type { ResponseType, SessionProvider, User } from "../types/api-types";
 
 // UTILS
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
+import { fetchWithTimeout } from "@app/utils/api-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
@@ -87,7 +88,7 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const fetchUserDetails = async () => {
-    const response = await fetch(
+    const response = await fetchWithTimeout(
       `${apiPath}${apiEndPoints.getUser}?email=${encodeURIComponent(
         activeSession.data?.user?.email || ""
       )}`

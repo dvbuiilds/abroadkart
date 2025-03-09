@@ -5,6 +5,9 @@ import { useRouter } from "next/router";
 // TYPES
 import type { DBUser, ResponseType, User } from "@app/types/api-types";
 
+// UTILS
+import { fetchWithTimeout } from "@app/utils/api-utils";
+
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
 
@@ -61,10 +64,13 @@ const Signup = () => {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await fetch(`${apiPath}${apiEndPoints.signup}`, {
-      method: "POST",
-      body: JSON.stringify(formData),
-    });
+    const response = await fetchWithTimeout(
+      `${apiPath}${apiEndPoints.signup}`,
+      {
+        method: "POST",
+        body: JSON.stringify(formData),
+      }
+    );
     const jsonResponse: ResponseType<User> = await response.json();
     if (!jsonResponse.success) {
       alert(jsonResponse.error.message);
