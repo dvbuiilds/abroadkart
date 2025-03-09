@@ -61,6 +61,27 @@ export const getServerSideProps = () => {
   };
 };
 
+const handleFetchingFormDataFromLocalStorage = async (
+  callback: (data: Questionnaire) => void,
+  userEmail: string
+) => {
+  try {
+    const formDataFromLocalStorage = localStorage.getItem(
+      "pre-counselling-form"
+    );
+    // Ensure there is valid data before parsing
+    if (!formDataFromLocalStorage) return;
+
+    const parsedData: { email: string; formData: Questionnaire } =
+      await JSON.parse(formDataFromLocalStorage);
+    if (parsedData && parsedData.email === userEmail) {
+      callback(parsedData.formData);
+    }
+  } catch (error) {
+    console.error("Error parsing form data from local storage:", error);
+  }
+};
+
 export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   const { user, fetchUserDetails } = useUserSession();
   const [formData, updateFormData] = useState<Questionnaire>(data);
@@ -150,15 +171,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
 
   // Upon mounting, the logic below will check if stored form exists and then will update the form data.
   useEffect(() => {
-    const formDataFromLocalStorage = localStorage.getItem(
-      "pre-counselling-form"
-    );
-    const parsedData: { email: string; formData: Questionnaire } = JSON.parse(
-      formDataFromLocalStorage || ""
-    );
-    if (parsedData && parsedData.email === user?.email) {
-      updateFormData(parsedData.formData);
-    }
+    handleFetchingFormDataFromLocalStorage(updateFormData, user?.email || "");
   }, []);
 
   useEffect(() => {
