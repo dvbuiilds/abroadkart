@@ -10,6 +10,7 @@ import type { Questionnaire } from "@app/types/form-types";
 // UTILS
 import formData from "@app/utils/data/pre-counselling-form-questions.json";
 import { useUserSession } from "@app/context/UserSessionContext";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
@@ -37,17 +38,18 @@ const makeQuestionAnswersObject = () => {
 const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
-  console.log("@@ Submitting the form...", data);
-  const response = await fetch(`${apiPath}${apiEndPoints.preCounsellingForm}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      email,
-    },
-    body: JSON.stringify(data),
-  });
+  const response = await fetchWithTimeout(
+    `${apiPath}${apiEndPoints.preCounsellingForm}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        email,
+      },
+      body: JSON.stringify(data),
+    }
+  );
   const responseData = await response.json();
-  console.log("@@ FORM SUBMIT response: ", responseData);
   return responseData;
 };
 
@@ -57,6 +59,27 @@ export const getServerSideProps = () => {
       data: makeQuestionAnswersObject(),
     },
   };
+};
+
+const handleFetchingFormDataFromLocalStorage = async (
+  callback: (data: Questionnaire) => void,
+  userEmail: string
+) => {
+  try {
+    const formDataFromLocalStorage = localStorage.getItem(
+      "pre-counselling-form"
+    );
+    // Ensure there is valid data before parsing
+    if (!formDataFromLocalStorage) return;
+
+    const parsedData: { email: string; formData: Questionnaire } =
+      await JSON.parse(formDataFromLocalStorage);
+    if (parsedData && parsedData.email === userEmail) {
+      callback(parsedData.formData);
+    }
+  } catch (error) {
+    console.error("Error parsing form data from local storage:", error);
+  }
 };
 
 export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
@@ -98,7 +121,6 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
         "pre-counselling-form",
         JSON.stringify(dataForDumping)
       );
-      console.log("@@ formData stored locally.", JSON.stringify(formData));
       formChangesDetected = false;
     } else {
       console.log("@@ formData not stored as there is no change.");
@@ -149,15 +171,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
 
   // Upon mounting, the logic below will check if stored form exists and then will update the form data.
   useEffect(() => {
-    const formDataFromLocalStorage = localStorage.getItem(
-      "pre-counselling-form"
-    );
-    const parsedData: { email: string; formData: Questionnaire } = JSON.parse(
-      formDataFromLocalStorage || ""
-    );
-    if (parsedData && parsedData.email === user?.email) {
-      updateFormData(parsedData.formData);
-    }
+    handleFetchingFormDataFromLocalStorage(updateFormData, user?.email || "");
   }, []);
 
   useEffect(() => {
@@ -169,7 +183,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   }, [formData]);
 
   return (
-    <div className="flex flex-col align-center">
+    <div className="flex flex-col align-center p-4">
       <h1 className="text-center font-bold text-xl mb-4">
         Pre Counselling Form
       </h1>

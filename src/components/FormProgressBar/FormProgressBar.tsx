@@ -73,7 +73,7 @@ export const FormProgressBar = ({
   return (
     <div className="w-full flex flex-col items-center">
       {/* Progress Bar */}
-      <div className="flex items-start flex-wrap">
+      <div className="flex items-start flex-wrap py-2">
         {renderStepMarksAndBar()}
       </div>
     </div>
