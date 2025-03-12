@@ -1,3 +1,5 @@
+console.log("@@ process.env.ENVIRONMENT: ", process.env.ENVIRONMENT);
+
 export const apiPaths = {
   development: "http://localhost:3000",
   production:

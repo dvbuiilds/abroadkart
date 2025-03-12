@@ -4,6 +4,7 @@ import { useUserSession } from "@app/context/UserSessionContext";
 
 const Dashboard = () => {
   const { user } = useUserSession();
+  console.log("@@ process.env.ENVIRONMENT: ", process.env.ENVIRONMENT);
 
   return (
     <div className="flex items-start justify-center align-center h-full gap-4 bg-white rounded-md p-1">
