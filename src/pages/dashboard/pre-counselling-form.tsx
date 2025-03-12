@@ -15,6 +15,7 @@ import { fetchWithTimeout } from "@app/utils/fetch-utils";
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
+import { IoMdArrowBack, IoMdArrowForward } from "react-icons/io";
 
 const totalSteps = formData.sets.length;
 const LOCAL_STORAGE_TIME = 1000 * 30;
@@ -38,6 +39,7 @@ const makeQuestionAnswersObject = () => {
 const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
+  console.log("@@ handleFormSubmitAPICall apiPath", apiPath);
   const response = await fetchWithTimeout(
     `${apiPath}${apiEndPoints.preCounsellingForm}`,
     {
@@ -91,10 +93,10 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   >("idle");
   const navigation = useRouter();
 
-  // const isEveryQuestionAnswered = true; // for testing
-  const isEveryQuestionAnswered = formData[currentStep].info.every(
-    (info) => info.answer.length >= 5
-  );
+  const isEveryQuestionAnswered = true; // for testing
+  // const isEveryQuestionAnswered = formData[currentStep].info.every(
+  //   (info) => info.answer.length >= 2
+  // );
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
@@ -130,7 +132,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   const nextStep = () => {
     if (!isEveryQuestionAnswered) {
       alert(
-        "Please consider answering all the questions before proceeding to the next part."
+        "Please consider answering all the questions before proceeding to the next part. Answers should have at least 2 characters."
       );
       return;
     }
@@ -193,8 +195,30 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
         currentStep={currentStep}
         stepNames={formNames}
       />
+      {/* Form Navigation Buttons */}
+      {apiStatus === "success" || apiStatus === "error" ? (
+        <></>
+      ) : (
+        <div className="flex space-x-4 justify-center mt-4">
+          <button
+            onClick={prevStep}
+            disabled={!currentStep}
+            className="px-4 py-2 bg-gray-400 text-white rounded disabled:opacity-50 w-40 flex flex-row items-center gap-2 justify-center"
+          >
+            <IoMdArrowBack />
+            Previous
+          </button>
+          <button
+            onClick={nextStep}
+            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 w-40 flex flex-row items-center gap-2 justify-center"
+          >
+            {currentStep === totalSteps ? "Submit" : "Next"}
+            <IoMdArrowForward />
+          </button>
+        </div>
+      )}
       {/** Current Step Form */}
-      <div className="h-[500px] overflow-y-auto">
+      <div className="">
         {currentStep < totalSteps ? (
           <Form
             currentStep={currentStep}
@@ -207,27 +231,6 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
           </p>
         )}
       </div>
-      {/* Form Navigation Buttons */}
-      {apiStatus === "success" || apiStatus === "error" ? (
-        <></>
-      ) : (
-        <div className="flex space-x-4 justify-center mt-4">
-          <button
-            onClick={prevStep}
-            disabled={!currentStep}
-            className="px-4 py-2 bg-gray-400 text-white rounded disabled:opacity-50"
-          >
-            Previous
-          </button>
-          <button
-            onClick={nextStep}
-            // disabled={disableNextButton}
-            className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
-          >
-            {currentStep === totalSteps ? "Submit" : "Next"}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
