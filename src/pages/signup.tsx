@@ -64,6 +64,7 @@ const Signup = () => {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    console.log("@@ onSubmit apiPath", apiPath);
     const response = await fetchWithTimeout(
       `${apiPath}${apiEndPoints.signup}`,
       {
