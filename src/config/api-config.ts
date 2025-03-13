@@ -1,17 +1,14 @@
-console.log(
-  "@@ process.env.NEXT_PUBLIC_ENVIRONMENT: ",
-  process.env.NEXT_PUBLIC_ENVIRONMENT
-);
-
 export const apiPaths = {
   development: "http://localhost:3000",
-  production:
-    "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
+  preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
+  production: "",
 };
 
 export const apiPath =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
     ? apiPaths.production
+    : process.env.NEXT_PUBLIC_ENVIRONMENT === "preview"
+    ? apiPaths.preview
     : apiPaths.development;
 
 export const apiEndPoints = {
