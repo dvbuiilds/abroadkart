@@ -9,7 +9,7 @@ export const getNameAbbreviation = (name: string): string => {
   const words = name.split(" ");
   let abbreviation = "";
   words.forEach((word, index) => {
-    if (index <= 1) {
+    if (index <= 1 && word && word.length) {
       abbreviation += word[0].toUpperCase();
     }
   });
