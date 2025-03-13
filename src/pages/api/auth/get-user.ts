@@ -7,7 +7,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseType<User>>
 ) {
-  // Allow only POST requests
+  // Allow only GET requests
   if (req.method !== "GET") {
     return res.status(405).json({
       success: false,
