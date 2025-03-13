@@ -21,7 +21,7 @@ To run this project, you will need to add the following environment variables to
 
 `MONGODB_URI` - the complete url of your mongo db cloud cluster url that should include username, password (with escape characters if any), db name.
 
-`ENVIRONMENT` - either 'development' or 'production'.
+`NEXT_PUBLIC_ENVIRONMENT` - either 'development' or 'production'.
 
 ## Getting Started
 

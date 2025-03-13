@@ -1,4 +1,7 @@
-console.log("@@ process.env.ENVIRONMENT: ", process.env.ENVIRONMENT);
+console.log(
+  "@@ process.env.NEXT_PUBLIC_ENVIRONMENT: ",
+  process.env.NEXT_PUBLIC_ENVIRONMENT
+);
 
 export const apiPaths = {
   development: "http://localhost:3000",
@@ -7,7 +10,7 @@ export const apiPaths = {
 };
 
 export const apiPath =
-  process.env.ENVIRONMENT === "production"
+  process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
     ? apiPaths.production
     : apiPaths.development;
 

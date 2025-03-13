@@ -1,5 +1,8 @@
 const Home = () => {
-  console.log("@@ process.env.ENVIRONMENT: ", process.env.ENVIRONMENT);
+  console.log(
+    "@@ process.env.NEXT_PUBLIC_ENVIRONMENT: ",
+    process.env.NEXT_PUBLIC_ENVIRONMENT
+  );
   return (
     <div className="flex flex-col items-center justify-center grow bg-gray-100">
       <h1 className="text-4xl font-bold">Welcome to AbroadKart.com</h1>
