@@ -88,7 +88,6 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const fetchUserDetails = async () => {
-    console.log("@@ fetchUserDetails apiPath", apiPath);
     const response = await fetchWithTimeout(
       `${apiPath}${apiEndPoints.getUser}?email=${encodeURIComponent(
         activeSession.data?.user?.email || ""

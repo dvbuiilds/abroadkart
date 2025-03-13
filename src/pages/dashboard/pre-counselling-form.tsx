@@ -39,7 +39,6 @@ const makeQuestionAnswersObject = () => {
 const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
-  console.log("@@ handleFormSubmitAPICall apiPath", apiPath);
   const response = await fetchWithTimeout(
     `${apiPath}${apiEndPoints.preCounsellingForm}`,
     {
