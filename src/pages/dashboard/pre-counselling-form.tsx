@@ -102,6 +102,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
     const response = await handleFormSubmitAPICall(formData, user?.email || "");
     if (response.success) {
       updateAPIStatus("success");
+      localStorage.removeItem("pre-counselling-form");
       fetchUserDetails();
       navigation.push("/dashboard");
     } else {
@@ -167,8 +168,6 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
       return updatedFormData;
     });
   };
-
-  // const disableNextButton = !isEveryQuestionAnswered;
 
   // Upon mounting, the logic below will check if stored form exists and then will update the form data.
   useEffect(() => {
