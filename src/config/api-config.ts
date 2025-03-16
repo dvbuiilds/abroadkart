@@ -16,4 +16,5 @@ export const apiEndPoints = {
   nextAuth: "/api/auth/[...nextauth]",
   getUser: "/api/auth/get-user",
   preCounsellingForm: "/api/pre-counselling-form",
+  getBlogData: "/api/blogs/get-blog",
 };
