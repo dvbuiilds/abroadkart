@@ -1,5 +1,8 @@
 import React from "react";
 
+import Link from "next/link";
+import Image from "next/image";
+
 // ICONS
 import { BsDot } from "react-icons/bs";
 
@@ -103,7 +106,9 @@ const renderSection = (
       );
     }
     case PageSectionKeysMap.img: {
-      return <img className="" key={`img-${index}`} src={content} />;
+      return (
+        <Image className="" key={`img-${index}`} src={content} alt="Alt Text" />
+      );
     }
     // case PageSectionKeysMap.a: {
     //   return <
@@ -118,9 +123,9 @@ const BlogPage = (props: { pageData: PageDataType }) => {
   return (
     <div className="px-2 py-2 md:px-32 lg:px-48">
       <div className="flex flex-row items-center justify-center ">
-        <a href="/blogs" className="text-decoration-none">
+        <Link href="/blogs" className="text-decoration-none">
           Blogs
-        </a>
+        </Link>
         <BsDot size={32} />
         <p>{"Title of the Page"}</p>
       </div>
