@@ -50,8 +50,13 @@ const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
       body: JSON.stringify(data),
     }
   );
-  const responseData = await response.json();
-  return responseData;
+  if (!response.success) {
+    console.log("@@ fetch response is unsuccessful.");
+    return {
+      notFound: true,
+    };
+  }
+  return response.data;
 };
 
 export const getServerSideProps = () => {

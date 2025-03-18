@@ -93,7 +93,14 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
         activeSession.data?.user?.email || ""
       )}`
     );
-    const jsonResponse: ResponseType<User> = await response.json();
+    if (!response.success) {
+      console.log("@@ Error in fetching user details: ", response);
+      updateUser(null);
+      updateSessionProvider("no-provider");
+      return;
+    }
+
+    const jsonResponse: ResponseType<User> = response.data;
     if (jsonResponse.success) {
       updateUser(jsonResponse.data);
       updateSessionProvider(jsonResponse.data.provider ?? "credentials");

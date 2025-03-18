@@ -71,7 +71,11 @@ const Signup = () => {
         body: JSON.stringify(formData),
       }
     );
-    const jsonResponse: ResponseType<User> = await response.json();
+    if (!response.success) {
+      alert("Error in submitting form. Please try after some time.");
+      return;
+    }
+    const jsonResponse: ResponseType<User> = response.data;
     if (!jsonResponse.success) {
       alert(jsonResponse.error.message);
     }

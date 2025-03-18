@@ -41,7 +41,14 @@ export const getServerSideProps = async (
   const response = await fetchWithTimeout(
     `${apiPath}${apiEndPoints.getBlogData}?pageId=${pageId}`
   );
-  const jsonResponse: ResponseType<PageDataType> = await response.json();
+  if (!response.success) {
+    console.log("@@ fetch response is unsuccessful.");
+    return {
+      notFound: true,
+    };
+  }
+
+  const jsonResponse: ResponseType<PageDataType> = response.data;
 
   if (!jsonResponse.success) {
     console.error("pageData not fetched. ", jsonResponse.error);
