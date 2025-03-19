@@ -13,6 +13,7 @@ import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
 import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { PageSectionKeysMap } from "@app/components/BlogTemplates/Template1/config";
 
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
@@ -37,9 +38,33 @@ export const getServerSideProps = async (
     };
   }
 
+  // generating BreadCrumbs
+  const breadcrumbs = [
+    { label: "Blogs", link: "/blogs" },
+    {
+      label: jsonResponse.data.category
+        .split("")
+        .map((char, index) => {
+          if (index === 0) return char.toUpperCase();
+          return char;
+        })
+        .join(""),
+      link: encodeURI(jsonResponse.data.category),
+    },
+    { label: jsonResponse.data.title, link: "#" },
+  ];
+
+  const pageData: BlogPageData["pageData"] = [
+    { sectionType: PageSectionKeysMap.breadcrumbs, content: breadcrumbs },
+    ...jsonResponse.data.pageData,
+  ];
+
   return {
     props: {
-      pageData: jsonResponse.data,
+      pageData: {
+        ...jsonResponse.data,
+        pageData,
+      },
     },
   };
 };
