@@ -1,13 +1,16 @@
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { BsDot } from "react-icons/bs";
 import { FaUsersLine } from "react-icons/fa6";
 import type { BlogPageData, BlogSectionType } from "./types";
 import { PageSectionKeysMap } from "./config";
+import { BreadcrumbsSection } from "./BreadcrumbsSection";
 
-const renderSection = (section: BlogSectionType, index: number) => {
+const renderSection = (section: BlogSectionType) => {
   switch (section.sectionType) {
+    case PageSectionKeysMap.breadcrumbs: {
+      return <BreadcrumbsSection data={section.content} />;
+    }
     case PageSectionKeysMap.h1: {
       return (
         <h1 className="text-2xl font-semibold py-3 md:font-bold md:text-3xl">
@@ -73,16 +76,9 @@ const renderSection = (section: BlogSectionType, index: number) => {
 export const Page = (props: { data: BlogPageData }) => {
   return (
     <div className="px-2 py-2 md:px-32 lg:px-48">
-      <div className="flex flex-row items-center justify-center ">
-        <Link href="/blogs" className="text-decoration-none">
-          Blogs
-        </Link>
-        <BsDot size={32} />
-        <p>{"Title of the Page"}</p>
-      </div>
       {props.data.pageData.map((section, index) => (
         <div key={`section-${section.sectionType}_${index}`} className="py-1">
-          {renderSection(section, index)}
+          {renderSection(section)}
         </div>
       ))}
     </div>
