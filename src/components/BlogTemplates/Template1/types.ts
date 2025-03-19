@@ -8,6 +8,7 @@ export interface BlogPageData {
 }
 
 export type BlogSectionType =
+  | BreadcrumbsSection
   | H1Section
   | H2Section
   | H3Section
@@ -17,6 +18,16 @@ export type BlogSectionType =
   | ImgSection
   | InterlinkingSection
   | FAQSection;
+
+interface BreadcrumbsSection {
+  sectionType: typeof PageSectionKeysMap.breadcrumbs;
+  content: Breadcrumbs;
+}
+
+export type Breadcrumbs = {
+  label: string;
+  link: string;
+}[];
 
 interface H1Section {
   sectionType: typeof PageSectionKeysMap.h1;
