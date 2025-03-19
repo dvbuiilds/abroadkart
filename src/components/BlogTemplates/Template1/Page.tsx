@@ -50,7 +50,11 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.a: {
       return (
-        <Link href={section.href}>{`${section.label}: ${section.cta}`}</Link>
+        <Link href={section.href}>
+          <div className="border-l-2 border-black rounded-sm pl-2">
+            {`${section.label}: ${section.cta}`}
+          </div>
+        </Link>
       );
     }
     case PageSectionKeysMap.info: {
