@@ -9,10 +9,11 @@ export interface BlogPageData {
 
 export type BlogSectionType =
   | BreadcrumbsSection
-  | H1Section
-  | H2Section
-  | H3Section
-  | H4Section
+  | HeadingSection
+  //   | H1Section
+  //   | H2Section
+  //   | H3Section
+  //   | H4Section
   | PSection
   | InfoSection
   | ImgSection
@@ -28,6 +29,16 @@ export type Breadcrumbs = {
   label: string;
   link: string;
 }[];
+
+interface HeadingSection {
+  sectionType:
+    | typeof PageSectionKeysMap.h1
+    | typeof PageSectionKeysMap.h2
+    | typeof PageSectionKeysMap.h3
+    | typeof PageSectionKeysMap.h4;
+  id: string;
+  content: string;
+}
 
 interface H1Section {
   sectionType: typeof PageSectionKeysMap.h1;
