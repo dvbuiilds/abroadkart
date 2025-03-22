@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaUsersLine } from "react-icons/fa6";
 import { BreadcrumbsSection } from "./BreadcrumbsSection";
+import { FAQSection } from "./FAQSection";
 import { TableOfContents } from "./TableOfContent";
 import type { BlogPageData, BlogSectionType } from "./types";
 import { PageSectionKeysMap } from "./config";
@@ -14,7 +15,10 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.h1: {
       return (
-        <h1 className="text-2xl font-semibold py-3 px-3 md:font-bold md:text-3xl">
+        <h1
+          className="text-2xl font-semibold py-3 px-3 md:font-bold md:text-3xl"
+          id={section.id}
+        >
           {section.content}
         </h1>
       );
@@ -31,14 +35,14 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.h3: {
       return (
-        <h3 className=" px-3" id={section.id}>
+        <h3 className="px-3" id={section.id}>
           {section.content}
         </h3>
       );
     }
     case PageSectionKeysMap.h4: {
       return (
-        <h4 className=" px-3" id={section.id}>
+        <h4 className="px-3" id={section.id}>
           {section.content}
         </h4>
       );
@@ -48,7 +52,7 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.img: {
       return (
-        <div className="flex flex-col items-center justify-center gap-1  px-3">
+        <div className="flex flex-col items-center justify-center gap-1 px-3">
           <Image
             src={section.src}
             alt={section.alt}
@@ -56,7 +60,7 @@ const renderSection = (section: BlogSectionType) => {
             height={600}
             priority
           />
-          <p className="text-center">{section.imgCredit}</p>
+          <p className="text-center">{section.imgCredits}</p>
         </div>
       );
     }
@@ -79,12 +83,15 @@ const renderSection = (section: BlogSectionType) => {
               <p className="text-xs">{section.authorBio}</p>
             </div>
           </div>
-          <p className="italic">{section.datePublished}</p>
+          <p className="italic">{section.publishedDate}</p>
         </div>
       );
     }
     case PageSectionKeysMap.tableOfContents: {
       return <TableOfContents data={section} />;
+    }
+    case PageSectionKeysMap.faq: {
+      return <FAQSection data={section} />;
     }
     default: {
       return null;
