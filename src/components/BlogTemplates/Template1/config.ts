@@ -9,4 +9,5 @@ export const PageSectionKeysMap = {
   a: "a",
   info: "info",
   faq: "faq",
+  tableOfContents: "tableOfContents",
 } as const;
