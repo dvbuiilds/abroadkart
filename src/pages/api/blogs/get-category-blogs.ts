@@ -2,10 +2,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 // UTILS
 import mongoDBClient from "../../../server/db/mongodb";
-import {
-  BlogPageData,
-  BlogSectionType,
-} from "@app/components/BlogTemplates/Template1/types";
+import { BlogSectionType } from "@app/components/BlogTemplates/Template1/types";
 
 const db = mongoDBClient.db();
 const blogsCollection = db.collection("blogs");
