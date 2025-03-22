@@ -48,11 +48,11 @@ export const fetchWithTimeout = async (
   try {
     jsonResponse = await response.json();
   } catch (error) {
-    console.error("@@ parsing error in response.");
+    console.error(`@@ parsing error in response. ${error}`);
     return {
       success: false,
       error: {
-        message: "Parsing Error in Response.",
+        message: `Parsing Error in Response.${error}`,
         status: 400,
       },
     };
