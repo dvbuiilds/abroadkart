@@ -2,9 +2,10 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { FaUsersLine } from "react-icons/fa6";
+import { BreadcrumbsSection } from "./BreadcrumbsSection";
+import { TableOfContents } from "./TableOfContent";
 import type { BlogPageData, BlogSectionType } from "./types";
 import { PageSectionKeysMap } from "./config";
-import { BreadcrumbsSection } from "./BreadcrumbsSection";
 
 const renderSection = (section: BlogSectionType) => {
   switch (section.sectionType) {
@@ -13,30 +14,41 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.h1: {
       return (
-        <h1 className="text-2xl font-semibold py-3 md:font-bold md:text-3xl">
+        <h1 className="text-2xl font-semibold py-3 px-3 md:font-bold md:text-3xl">
           {section.content}
         </h1>
       );
     }
     case PageSectionKeysMap.h2: {
       return (
-        <h2 className="text-xl font-medium py-2 md:font-semibold md:text-2xl">
+        <h2
+          className="text-xl font-medium py-2 px-3 md:font-semibold md:text-2xl"
+          id={section.id}
+        >
           {section.content}
         </h2>
       );
     }
     case PageSectionKeysMap.h3: {
-      return <h3 className="">{section.content}</h3>;
+      return (
+        <h3 className=" px-3" id={section.id}>
+          {section.content}
+        </h3>
+      );
     }
     case PageSectionKeysMap.h4: {
-      return <h4 className="">{section.content}</h4>;
+      return (
+        <h4 className=" px-3" id={section.id}>
+          {section.content}
+        </h4>
+      );
     }
     case PageSectionKeysMap.p: {
-      return <p className="text-justify">{section.content}</p>;
+      return <p className="text-justify px-3">{section.content}</p>;
     }
     case PageSectionKeysMap.img: {
       return (
-        <div className="flex flex-col items-center justify-center gap-1">
+        <div className="flex flex-col items-center justify-center gap-1  px-3">
           <Image
             src={section.src}
             alt={section.alt}
@@ -59,7 +71,7 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.info: {
       return (
-        <div className="flex flex-row items-center justify-between">
+        <div className="flex flex-row items-center justify-between px-3">
           <div className="flex flex-row items-center justify-center gap-3">
             <FaUsersLine size={42} />
             <div className="flex flex-col justify-center">
@@ -70,6 +82,9 @@ const renderSection = (section: BlogSectionType) => {
           <p className="italic">{section.datePublished}</p>
         </div>
       );
+    }
+    case PageSectionKeysMap.tableOfContents: {
+      return <TableOfContents data={section} />;
     }
     default: {
       return null;
