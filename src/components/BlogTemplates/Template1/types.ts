@@ -1,10 +1,45 @@
 import { PageSectionKeysMap } from "./config";
 
+// Below is the type of the response that BE will send us.
+export interface BlogMetaData {
+  title: string;
+  description: string;
+  author: string;
+  authorBio: string;
+  publishedDate: string;
+  lastModifiedDate: string;
+  keywords: string;
+}
+
+export interface BlogResponse {
+  pageId: string;
+  title: string;
+  category: string;
+  blogMetaData: BlogMetaData;
+  featuredImg: {
+    src: string;
+    alt: string;
+    imgCredits: string;
+  };
+  breadcrumbs: Breadcrumbs;
+  faqs: Omit<FAQSection, "sectionType">;
+  pageData: BlogResponseSectionType[];
+}
+
+export type BlogResponseSectionType =
+  | HeadingSection
+  | PSection
+  | ImgSection
+  | InterlinkingSection
+  | TableOfContentsSection;
+
+// Below are the types for the data that we will use to render Blog data.
 export interface BlogPageData {
   pageId: string;
   title: string;
   category: string;
   pageData: BlogSectionType[];
+  metaData: BlogMetaData;
 }
 
 export type BlogSectionType =
@@ -66,14 +101,14 @@ interface InfoSection {
   sectionType: typeof PageSectionKeysMap.info;
   authorName: string;
   authorBio: string;
-  datePublished: string;
+  publishedDate: string;
 }
 
 interface ImgSection {
   sectionType: typeof PageSectionKeysMap.img;
   src: string;
   alt: string;
-  imgCredit: string;
+  imgCredits: string;
 }
 
 interface InterlinkingSection {
@@ -83,8 +118,9 @@ interface InterlinkingSection {
   cta: string;
 }
 
-interface FAQSection {
+export interface FAQSection {
   sectionType: typeof PageSectionKeysMap.faq;
+  title: string;
   content: { q: string; a: string }[];
 }
 
