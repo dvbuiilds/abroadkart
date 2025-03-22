@@ -10,15 +10,12 @@ export interface BlogPageData {
 export type BlogSectionType =
   | BreadcrumbsSection
   | HeadingSection
-  //   | H1Section
-  //   | H2Section
-  //   | H3Section
-  //   | H4Section
   | PSection
   | InfoSection
   | ImgSection
   | InterlinkingSection
-  | FAQSection;
+  | FAQSection
+  | TableOfContentsSection;
 
 interface BreadcrumbsSection {
   sectionType: typeof PageSectionKeysMap.breadcrumbs;
@@ -89,4 +86,16 @@ interface InterlinkingSection {
 interface FAQSection {
   sectionType: typeof PageSectionKeysMap.faq;
   content: { q: string; a: string }[];
+}
+
+export interface TableOfContentsNode {
+  label: string;
+  id: string;
+  children: TableOfContentsNode[];
+}
+
+export interface TableOfContentsSection {
+  sectionType: typeof PageSectionKeysMap.tableOfContents;
+  title: string;
+  content: TableOfContentsNode[];
 }
