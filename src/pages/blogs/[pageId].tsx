@@ -71,7 +71,10 @@ export const getServerSideProps = async (
         section.sectionType === PageSectionKeysMap.h3 ||
         section.sectionType === PageSectionKeysMap.h4
       ) {
-        const sectionId = `#${encodeURI(section.content)}`;
+        const sectionId = `#${section.content
+          .split(" ")
+          .map((word) => word.toLowerCase())
+          .join("-")}`;
         if (section.sectionType === PageSectionKeysMap.h2) {
           tableOfContentsData.push({
             label: section.content,
