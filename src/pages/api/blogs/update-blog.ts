@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 
 // TYPES
-import { BlogPageData } from "@app/components/BlogTemplates/Template1/types";
+import { BlogResponse } from "@app/components/BlogTemplates/Template1/types";
 
 // UTILS
 import mongoDBClient from "../../../server/db/mongodb";
@@ -16,20 +16,31 @@ export default async function handler(
   if (req.method !== "PUT") {
     return res.status(405).json({
       success: false,
-      error: { message: "HTTP Method not allowed. " },
+      error: { message: "HTTP Method not allowed. ", status: 405 },
     });
   }
 
   try {
-    const data: BlogPageData =
+    const data: BlogResponse =
       typeof req.body === "string" ? await JSON.parse(req.body) : req.body;
 
     // Validation: Check if required fields are present
     if (!data.pageId || !data.title || !data.category || !data.pageData) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Missing required fields" });
+      return res.status(400).json({
+        success: false,
+        error: { message: "Missing required fields", status: 400 },
+      });
     }
+
+    // Setting lastModifiedDate to current date.
+    data.blogMetaData.lastModifiedDate = new Date().toLocaleDateString(
+      "en-US",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
 
     // Find and update the blog entry in the database
     const updatedBlog = await blogsCollection.findOneAndUpdate(
@@ -53,7 +64,7 @@ export default async function handler(
     console.error("Error updating the blog: ", error);
     return res.status(500).json({
       success: false,
-      message: "Error updating blog.",
+      error: { message: "Error updating blog.", status: 500 },
     });
   }
 }
