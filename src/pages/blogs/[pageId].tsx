@@ -8,7 +8,8 @@ import type { GetServerSidePropsContext } from "next";
 import type { ResponseType } from "../../types/api-types";
 import type {
   BlogPageData,
-  TableOfContentsNode,
+  BlogResponse,
+  BlogSectionType,
 } from "@app/components/BlogTemplates/Template1/types";
 
 // UTILS
@@ -33,7 +34,7 @@ export const getServerSideProps = async (
     };
   }
 
-  const jsonResponse: ResponseType<BlogPageData> = response.data;
+  const jsonResponse: ResponseType<BlogResponse> = response.data;
   if (!jsonResponse.success) {
     console.error("pageData not fetched. ", jsonResponse.error);
     return {
@@ -41,83 +42,103 @@ export const getServerSideProps = async (
     };
   }
 
-  // generating BreadCrumbs
-  const breadcrumbs = [
-    { label: "Blogs", link: "/blogs" },
+  const pageData: BlogSectionType[] = [
     {
-      label: jsonResponse.data.category
-        .split("")
-        .map((char, index) => {
-          if (index === 0) return char.toUpperCase();
-          return char;
-        })
-        .join(""),
-      link: encodeURI(jsonResponse.data.category),
+      sectionType: PageSectionKeysMap.breadcrumbs,
+      content: jsonResponse.data.breadcrumbs,
     },
-    { label: jsonResponse.data.title, link: "#" },
+    {
+      sectionType: PageSectionKeysMap.h1,
+      id: jsonResponse.data.pageId,
+      content: jsonResponse.data.title,
+    },
+    {
+      sectionType: PageSectionKeysMap.info,
+      authorName: jsonResponse.data.blogMetaData.author,
+      authorBio: jsonResponse.data.blogMetaData.authorBio,
+      publishedDate: jsonResponse.data.blogMetaData.publishedDate,
+    },
+    {
+      sectionType: PageSectionKeysMap.img,
+      src: jsonResponse.data.featuredImg.src,
+      alt: jsonResponse.data.featuredImg.alt,
+      imgCredits: jsonResponse.data.featuredImg.imgCredits,
+    },
+    ...jsonResponse.data.pageData,
+    { sectionType: PageSectionKeysMap.faq, ...jsonResponse.data.faqs },
   ];
 
-  const tableOfContentsData: TableOfContentsNode[] = [];
-  let firstH2Index = 0;
-  let firstH2IndexFound = false;
-
-  // Simultaneously generating Table of Contents and pageData.
-  const pageData: BlogPageData["pageData"] = [
-    { sectionType: PageSectionKeysMap.breadcrumbs, content: breadcrumbs },
-    ...jsonResponse.data.pageData.map((section, index) => {
-      if (
-        section.sectionType === PageSectionKeysMap.h1 ||
-        section.sectionType === PageSectionKeysMap.h2 ||
-        section.sectionType === PageSectionKeysMap.h3 ||
-        section.sectionType === PageSectionKeysMap.h4
-      ) {
-        const sectionId = `#${section.content
-          .split(" ")
-          .map((word) => word.toLowerCase())
-          .join("-")}`;
-        if (section.sectionType === PageSectionKeysMap.h2) {
-          tableOfContentsData.push({
-            label: section.content,
-            id: sectionId,
-            children: [],
-          });
-          if (!firstH2IndexFound) {
-            firstH2Index = index;
-            firstH2IndexFound = true;
-          }
-        } else if (section.sectionType === PageSectionKeysMap.h3) {
-          tableOfContentsData[tableOfContentsData.length - 1].children.push({
-            label: section.content,
-            id: sectionId,
-            children: [],
-          });
-        } else if (section.sectionType === PageSectionKeysMap.h4) {
-          tableOfContentsData[tableOfContentsData.length - 1].children[
-            tableOfContentsData[tableOfContentsData.length - 1].children
-              .length - 1
-          ].children.push({
-            label: section.content,
-            id: sectionId,
-            children: [],
-          });
-        }
-        return { ...section, id: sectionId };
-      }
-      return section;
-    }),
-  ];
-
-  pageData.splice(firstH2Index + 1, 0, {
-    sectionType: PageSectionKeysMap.tableOfContents,
-    title: "Table of Contents",
-    content: tableOfContentsData,
-  });
+  const seoSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: jsonResponse.data.blogMetaData.title,
+        description: jsonResponse.data.blogMetaData.description,
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": `https://abroadkart.com/blogs/${jsonResponse.data.pageId}`,
+        },
+        author: {
+          "@type": "Person",
+          name: jsonResponse.data.blogMetaData.author,
+          url: "https://abroadkart.com",
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "AbroadKart",
+          logo: {
+            "@type": "ImageObject",
+            url: "https://abroadkart.com/logo.png",
+          },
+        },
+        datePublished: jsonResponse.data.blogMetaData.publishedDate,
+        dateModified: jsonResponse.data.blogMetaData.lastModifiedDate,
+        image: {
+          "@type": "ImageObject",
+          url: jsonResponse.data.featuredImg.src,
+          width: 1000,
+          height: 600,
+        },
+        url: `https://abroadkart.com/blogs/${jsonResponse.data.pageId}`,
+        articleSection: jsonResponse.data.category,
+        keywords: jsonResponse.data.blogMetaData.keywords,
+        wordCount: 1000,
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: jsonResponse.data.breadcrumbs.map(
+          (breadcrumbs, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            name: breadcrumbs.label,
+            item: breadcrumbs.link,
+          })
+        ),
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: jsonResponse.data.faqs.content.map((faq) => ({
+          "@type": "Question",
+          name: faq.q,
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: faq.a,
+          },
+        })),
+      },
+    ],
+  };
 
   return {
     props: {
       pageData: {
         ...jsonResponse.data,
         pageData,
+        metaData: {
+          ...jsonResponse.data.blogMetaData,
+          seoSchema,
+        },
       },
     },
   };
