@@ -1,6 +1,6 @@
 export const apiPaths = {
   development: "http://localhost:3000",
-  preview: "https://abroadkart-git-fbblogs-dvbuiilds-projects.vercel.app",
+  preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
   production: "",
 };
 
