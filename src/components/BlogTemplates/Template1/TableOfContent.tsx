@@ -21,26 +21,32 @@ export const TableOfContents = (props: { data: TableOfContentsSection }) => {
             <li key={`node-${index}`}>
               <a
                 href={node.id}
-                className=""
+                className="text-blue-600 hover:underline"
                 title={node.label}
                 onClick={() => handleScroll(node.id)}
               >
                 {node.label}
               </a>
-              <ol className="list-decimal list-inside">
+              <ol className="list-decimal list-inside pl-4">
                 {node.children.map((childNode, childIndex) => (
                   <li key={`childNode-${childIndex}`}>
-                    <a href={childNode.id} className="" title={childNode.label}>
+                    <a
+                      href={childNode.id}
+                      className="text-blue-600 hover:underline"
+                      title={childNode.label}
+                      onClick={() => handleScroll(node.id)}
+                    >
                       {childNode.label}
                     </a>
-                    <ol className="list-decimal list-inside">
+                    <ol className="list-decimal list-inside pl-4">
                       {childNode.children.map(
                         (grandChildNode, grandChildIndex) => (
                           <li key={`grandChildNode-${grandChildIndex}`}>
                             <a
                               href={grandChildNode.id}
-                              className=""
+                              className="text-blue-600 hover:underline"
                               title={grandChildNode.label}
+                              onClick={() => handleScroll(node.id)}
                             >
                               {grandChildNode.label}
                             </a>
