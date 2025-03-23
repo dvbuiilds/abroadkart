@@ -29,7 +29,7 @@ export const BlogLayout: React.FC<BlogLayoutProps> = ({
       <div className="flex flex-col md:flex-row w-full max-w-[1280px] mx-auto px-4 lg:px-8 gap-4">
         {/* Left - Table of Contents */}
         <aside className="w-full md:w-[220px] lg:w-[250px] flex-shrink-0">
-          <div className="sticky top-10">
+          <div className="md:sticky md:top-10">
             {authorInfo ? <BlogInfo data={authorInfo} /> : null}
             {tableOfContents ? (
               <TableOfContents data={tableOfContents} />
@@ -42,7 +42,7 @@ export const BlogLayout: React.FC<BlogLayoutProps> = ({
 
         {/* Right - Form */}
         <aside className="w-full md:w-[280px] flex-shrink-0">
-          <div className="sticky top-10">
+          <div className="md:sticky md:top-10">
             <Form />
           </div>
         </aside>
