@@ -11,6 +11,7 @@ import type {
   BlogResponse,
   BlogSectionType,
 } from "@app/components/BlogTemplates/Template1/types";
+import { BlogLayout } from "@app/components/BlogTemplates/Template1/BlogLayout";
 
 // UTILS
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
@@ -43,21 +44,6 @@ export const getServerSideProps = async (
   }
 
   const pageData: BlogSectionType[] = [
-    {
-      sectionType: PageSectionKeysMap.breadcrumbs,
-      content: jsonResponse.data.breadcrumbs,
-    },
-    {
-      sectionType: PageSectionKeysMap.h1,
-      id: jsonResponse.data.pageId,
-      content: jsonResponse.data.title,
-    },
-    {
-      sectionType: PageSectionKeysMap.info,
-      authorName: jsonResponse.data.blogMetaData.author,
-      authorBio: jsonResponse.data.blogMetaData.authorBio,
-      publishedDate: jsonResponse.data.blogMetaData.publishedDate,
-    },
     {
       sectionType: PageSectionKeysMap.img,
       src: jsonResponse.data.featuredImg.src,
@@ -137,7 +123,7 @@ export const getServerSideProps = async (
         pageData,
         metaData: {
           ...jsonResponse.data.blogMetaData,
-          seoSchema,
+          seoSchema: JSON.stringify(seoSchema),
         },
       },
     },
@@ -145,7 +131,22 @@ export const getServerSideProps = async (
 };
 
 const BlogPage = (props: { pageData: BlogPageData }) => {
-  return <BlogPageTemplate data={props.pageData} />;
+  return (
+    <BlogLayout
+      breadcrumbs={props.pageData.breadcrumbs}
+      title={props.pageData.title}
+      authorInfo={{
+        sectionType: PageSectionKeysMap.info,
+        authorName: props.pageData.metaData.author,
+        authorBio: props.pageData.metaData.authorBio,
+        publishedDate: props.pageData.metaData.publishedDate,
+        lastModifiedDate: props.pageData.metaData.lastModifiedDate,
+      }}
+      tableOfContents={props.pageData.tableOfContents}
+    >
+      <BlogPageTemplate data={props.pageData} />
+    </BlogLayout>
+  );
 };
 
 export default BlogPage;
