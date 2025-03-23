@@ -83,9 +83,6 @@ const transformDataForDB = (data: BlogResponse): BlogResponse => {
 
   // Logic to create table of contents from pageData at the time of blog creation to save computation at the time of page request by client.
   const tableOfContentsData: TableOfContentsNode[] = [];
-  let firstH2Index = 0;
-  let firstH2IndexFound = false;
-
   for (let index = 0; index < data.pageData.length; ++index) {
     const section = data.pageData[index];
     if (
@@ -105,10 +102,6 @@ const transformDataForDB = (data: BlogResponse): BlogResponse => {
           id: sectionId,
           children: [],
         });
-        if (!firstH2IndexFound) {
-          firstH2Index = index;
-          firstH2IndexFound = true;
-        }
       } else if (section.sectionType === PageSectionKeysMap.h3) {
         tableOfContentsData[tableOfContentsData.length - 1].children.push({
           label: section.content,
@@ -128,12 +121,12 @@ const transformDataForDB = (data: BlogResponse): BlogResponse => {
     }
   }
 
-  // Inserting table of contents right before first h2.
-  data.pageData.splice(firstH2Index, 0, {
-    sectionType: PageSectionKeysMap.tableOfContents,
-    title: "Table of Contents",
-    content: tableOfContentsData,
-  });
-
-  return data;
+  return {
+    ...data,
+    tableOfContents: {
+      sectionType: PageSectionKeysMap.tableOfContents,
+      title: "Table of Contents",
+      content: tableOfContentsData,
+    },
+  };
 };
