@@ -24,6 +24,7 @@ export interface BlogResponse {
   breadcrumbs: Breadcrumbs;
   faqs: Omit<FAQSection, "sectionType">;
   pageData: BlogResponseSectionType[];
+  tableOfContents: TableOfContentsSection;
 }
 
 export type BlogResponseSectionType =
@@ -40,6 +41,8 @@ export interface BlogPageData {
   category: string;
   pageData: BlogSectionType[];
   metaData: BlogMetaData;
+  breadcrumbs: Breadcrumbs;
+  tableOfContents: TableOfContentsSection;
 }
 
 export type BlogSectionType =
@@ -97,11 +100,12 @@ interface PSection {
   content: string;
 }
 
-interface InfoSection {
+export interface InfoSection {
   sectionType: typeof PageSectionKeysMap.info;
   authorName: string;
   authorBio: string;
   publishedDate: string;
+  lastModifiedDate: string;
 }
 
 interface ImgSection {
