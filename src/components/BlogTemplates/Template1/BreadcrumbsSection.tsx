@@ -4,7 +4,7 @@ import type { Breadcrumbs } from "./types";
 
 export const BreadcrumbsSection = (props: { data: Breadcrumbs }) => {
   return (
-    <ul className="flex text-sm text-gray-600">
+    <ul className="flex text-sm text-gray-600 px-3">
       {props.data.map((item, index) => (
         <li key={`${item.link}_${index}`} className="flex items-center">
           <Link
