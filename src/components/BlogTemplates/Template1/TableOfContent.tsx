@@ -11,7 +11,7 @@ export const TableOfContents = (props: { data: TableOfContentsSection }) => {
   };
 
   return (
-    <div className="px-3">
+    <div>
       <h2 className="text-xl font-medium py-2 md:font-semibold md:text-2xl">
         {props.data.title}
       </h2>
