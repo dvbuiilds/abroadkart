@@ -40,13 +40,17 @@ export const Form = () => {
     console.log("@@ form submitted", formData);
   };
 
+  const isAnyFieldEmpty = !Object.entries(formData).every(
+    ([_, val]) => val.length > 0
+  );
+
   return (
     <div className="flex flex-col gap-2">
       <p className="text-lg font-semibold">
         Request a Callback for FREE COUNSELLING!
       </p>
-      <form onSubmit={onClickHandler}>
-        <div className="py-1">
+      <form className="py-1 flex flex-col gap-2" onSubmit={onClickHandler}>
+        <div>
           <label
             htmlFor="email"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -63,7 +67,7 @@ export const Form = () => {
             required
           />
         </div>
-        <div className="py-1">
+        <div>
           <label
             htmlFor="fullName"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -80,7 +84,7 @@ export const Form = () => {
             required
           />
         </div>
-        <div className="py-1">
+        <div>
           <label
             htmlFor="whatsappNumber"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -98,7 +102,7 @@ export const Form = () => {
           />
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="targetCountry"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -122,7 +126,7 @@ export const Form = () => {
           </select>
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="targetUniversity"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -139,7 +143,7 @@ export const Form = () => {
           />
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="targetCourse"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -156,7 +160,7 @@ export const Form = () => {
           />
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="targetYear"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -178,7 +182,7 @@ export const Form = () => {
           </select>
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="message"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -195,7 +199,7 @@ export const Form = () => {
           ></textarea>
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="counsellingMode"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -215,7 +219,7 @@ export const Form = () => {
           </select>
         </div>
 
-        <div className="py-1">
+        <div>
           <label
             htmlFor="budget"
             className="block mb-2 text-sm font-medium text-gray-900"
@@ -233,7 +237,8 @@ export const Form = () => {
         </div>
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 w-40 flex flex-row items-center gap-2 justify-center"
+          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 w-40 items-center justify-center"
+          disabled={isAnyFieldEmpty}
         >
           Submit
         </button>
