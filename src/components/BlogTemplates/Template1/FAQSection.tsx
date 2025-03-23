@@ -3,7 +3,7 @@ import { FAQSection as FAQSectionNode } from "./types";
 
 export const FAQSection = (props: { data: FAQSectionNode }) => {
   return (
-    <section className="px-3">
+    <section>
       <h2 className="text-2xl py-2 font-bold">{props.data.title}</h2>
       <div className="">
         {props.data.content.map(({ q, a }, index) => (
