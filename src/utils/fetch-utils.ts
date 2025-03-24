@@ -30,7 +30,7 @@ export const fetchWithTimeout = async (
     response = await fetch(url, { ...options, signal });
     // Clear timeout once fetch completes
     clearTimeout(timeoutId);
-    if (!response.ok || response.status !== 200) {
+    if (!response.ok && response.status !== 400 && response.status !== 200) {
       return {
         success: false,
         error: { message: "Response Fetch Failed.", status: response.status },
@@ -47,6 +47,12 @@ export const fetchWithTimeout = async (
   let jsonResponse = null;
   try {
     jsonResponse = await response.json();
+    if (!jsonResponse.success) {
+      return {
+        success: false,
+        error: jsonResponse.error,
+      };
+    }
   } catch (error) {
     console.error(`@@ parsing error in response. ${error}`);
     return {
