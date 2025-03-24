@@ -10,7 +10,6 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const email = req.headers["email"];
   if (req.method === "POST") {
     const {
       email,
