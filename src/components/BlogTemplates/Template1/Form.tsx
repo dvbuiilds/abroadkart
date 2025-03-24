@@ -1,5 +1,8 @@
 import React, { useState } from "react";
+import { useRouter } from "next/router";
 import { FreeCounsellingFormData } from "./types";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
+import { apiEndPoints, apiPath } from "@app/config/api-config";
 
 export const Form = () => {
   const [formData, updateFormData] = useState<FreeCounsellingFormData>({
@@ -14,6 +17,7 @@ export const Form = () => {
     counsellingMode: "Call",
     budget: 0,
   });
+  const navigation = useRouter();
 
   const onChangeHandler = (
     event: React.ChangeEvent<
@@ -23,14 +27,38 @@ export const Form = () => {
     updateFormData({ ...formData, [event.target.name]: event.target.value });
   };
 
-  const onClickHandler = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    console.log("@@ form submitted", formData);
-  };
-
   const isAnyFieldEmpty = !Object.entries(formData).every(
     ([_, val]) => val.length > 0
   );
+
+  const onClickHandler = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (isAnyFieldEmpty) {
+      alert("Please fill all the required fields.");
+      return;
+    }
+    const response = await fetchWithTimeout(
+      `${apiEndPoints}${apiPath.freeCounsellingForm}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      }
+    );
+    if (!response.success) {
+      console.error(response.error.message);
+      if (response.error.status === 400) {
+        alert(response.error.message);
+        return;
+      }
+      alert("Error in submitting form. Please try after some time.");
+      return;
+    }
+    alert("Form submitted successfully.");
+    navigation.reload();
+  };
 
   return (
     <div className="flex flex-col gap-2">
