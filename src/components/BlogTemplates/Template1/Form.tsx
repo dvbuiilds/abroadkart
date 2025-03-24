@@ -1,20 +1,8 @@
 import React, { useState } from "react";
-
-interface FormData {
-  email: string;
-  fullName: string;
-  whatsappNumber: string;
-  targetCountry: string;
-  targetUniversity: string;
-  targetCourse: string;
-  targetYear: string;
-  message: string;
-  counsellingMode?: string;
-  budget: number;
-}
+import { FreeCounsellingFormData } from "./types";
 
 export const Form = () => {
-  const [formData, updateFormData] = useState<FormData>({
+  const [formData, updateFormData] = useState<FreeCounsellingFormData>({
     email: "",
     fullName: "",
     whatsappNumber: "",
