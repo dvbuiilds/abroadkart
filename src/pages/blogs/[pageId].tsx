@@ -26,7 +26,7 @@ export const getServerSideProps = async (
   const pageId = context.params?.pageId;
 
   const response = await fetchWithTimeout(
-    `${apiPath}${apiEndPoints.getBlogData}?pageId=${pageId}`
+    `${apiEndPoints}${apiPath.getBlogData}?pageId=${pageId}`
   );
   if (!response.success) {
     console.log("@@ fetch response is unsuccessful.");

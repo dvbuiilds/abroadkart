@@ -40,7 +40,7 @@ const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
   const response = await fetchWithTimeout(
-    `${apiPath}${apiEndPoints.preCounsellingForm}`,
+    `${apiEndPoints}${apiPath.preCounsellingForm}`,
     {
       method: "POST",
       headers: {

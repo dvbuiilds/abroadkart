@@ -65,7 +65,7 @@ const Signup = () => {
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const response = await fetchWithTimeout(
-      `${apiPath}${apiEndPoints.signup}`,
+      `${apiEndPoints}${apiPath.signup}`,
       {
         method: "POST",
         body: JSON.stringify(formData),
