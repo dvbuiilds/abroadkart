@@ -37,7 +37,7 @@ export default async function handler(
       "en-US",
       {
         year: "numeric",
-        month: "long",
+        month: "numeric",
         day: "numeric",
       }
     );
