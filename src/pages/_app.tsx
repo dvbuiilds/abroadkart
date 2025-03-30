@@ -12,12 +12,18 @@ import { UserSessionProvider } from "@app/context/UserSessionContext";
 
 // STYLES
 import "@app/styles/globals.css";
+import { Footer } from "@app/components/Footer";
 
 const getLayoutFromPathName = (pathName: string, children: ReactNode) => {
   if (pathName.startsWith("/dashboard")) {
     return <DashboardLayout>{children}</DashboardLayout>;
   }
-  return children;
+  return (
+    <>
+      {children}
+      <Footer />
+    </>
+  );
 };
 
 export default function App({ Component, pageProps }: AppProps) {
