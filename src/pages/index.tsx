@@ -236,7 +236,7 @@ const Home = () => {
         </p>
         <Link href="#counselling-form">
           <button
-            className="mt-6 bg-white text-blue-600 font-semibold py-2 rounded-lg"
+            className="mt-6 bg-white text-blue-600 font-semibold py-2 rounded-lg px-6"
             onClick={() => {
               const element = document.getElementById("counselling-form");
               if (element) {
@@ -303,7 +303,7 @@ const Home = () => {
             ))}
           </div>
           <div className="text-center mt-6">
-            <Link href="/blogs" className="text-blue-600 underline">
+            <Link href="/blogs" className="text-blue-600 hover:underline">
               Explore More Blogs &gt;
             </Link>
           </div>
