@@ -22,7 +22,7 @@ export const BlogCard = ({
         </h3>
         <div className="mt-6">
           <Link href={`/blog/${data.pageId}`}>
-            <button className="bg-blue-600 text-white py-2 px-4 rounded-lg w-full">
+            <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg w-full">
               Read More
             </button>
           </Link>

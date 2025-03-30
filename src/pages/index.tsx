@@ -253,7 +253,7 @@ const Home = () => {
         </p>
         <Link href="#counselling-form">
           <button
-            className="mt-6 bg-white text-blue-600 font-semibold py-2 rounded-lg px-6"
+            className="mt-6 bg-white hover:bg-gray-200 text-blue-600 font-semibold py-2 rounded-lg px-6"
             onClick={() => {
               const element = document.getElementById("counselling-form");
               if (element) {
