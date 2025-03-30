@@ -1,184 +1,260 @@
 import Image from "next/image";
 import Link from "next/link";
-import { FaCheckCircle, FaUniversity } from "react-icons/fa";
-import { FaBookOpen, FaGlobe, FaUserCheck } from "react-icons/fa6";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@app/components/ui/accordion";
+import { FaUniversity } from "react-icons/fa";
+import { FaGlobe, FaUserGraduate } from "react-icons/fa6";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@app/components/ui/card";
+import {
+  BookOpenCheck,
+  CheckCircle,
+  GraduationCap,
+  Headset,
+  School,
+  Smile,
+} from "lucide-react";
+import HeaderImg from "../../public/abroadkart-services.png";
+import { Label } from "@app/components/ui/label";
+import { Input } from "@app/components/ui/input";
+import { Button } from "@app/components/ui/button";
+
+const formFields = [
+  { id: "name", type: "text", label: "Full Name" },
+  { id: "email", type: "email", label: "Email Address" },
+  { id: "whatsapp", type: "tel", label: "WhatsApp Number" },
+  { id: "year", type: "text", label: "Target Year" },
+  { id: "country", type: "text", label: "Target Country" },
+  { id: "course", type: "text", label: "Target Course" },
+];
+const metrics = [
+  {
+    icon: <FaGlobe size={30} />,
+    value: "20+",
+    text: "Countries Covered",
+  },
+  {
+    icon: <FaUserGraduate size={30} />,
+    value: "100+",
+    text: "Courses Enrolled",
+  },
+  {
+    icon: <FaUniversity size={30} />,
+    value: "500+",
+    text: "Partner Universities",
+  },
+];
+const howItWorksSteps = [
+  {
+    title: "Sign Up & Fill Form",
+    description: "Join for free and complete the Pre-Counselling form.",
+    Icon: <CheckCircle className="text-blue-600 h-12 w-12" />,
+  },
+  {
+    title: "One-on-One Consultation",
+    description: "Discuss your higher education goals with our experts.",
+    Icon: <Headset className="text-blue-600 h-12 w-12" />,
+  },
+  {
+    title: "Choose Your Counsellor",
+    description: "Select the best mentor aligned with your aspirations.",
+    Icon: <Smile className="text-blue-600 h-12 w-12" />,
+  },
+  {
+    title: "Shortlist Universities",
+    description: "Begin your study abroad journey with college selection.",
+    Icon: <School className="text-blue-600 h-12 w-12" />,
+  },
+  {
+    title: "Prepare for Entrance & Scholarships",
+    description: "Get expert guidance for exams and scholarships.",
+    Icon: <GraduationCap className="text-blue-600 h-12 w-12" />,
+  },
+  {
+    title: "Visa & Accommodation Assistance",
+    description: "While you pack, we handle your visa and stay arrangements.",
+    Icon: <BookOpenCheck className="text-blue-600 h-12 w-12" />,
+  },
+];
+const faqs = [
+  {
+    id: 1,
+    question: "How does AbroadKart connect me with counsellors?",
+    answer:
+      "AbroadKart uses a sophisticated matching algorithm that considers your academic background, target destinations, budget, and specific requirements to connect you with the most compatible counsellors from our extensive network of verified education experts.",
+  },
+  {
+    id: 2,
+    question: "What qualifications do your counsellors have?",
+    answer:
+      "All counsellors on our platform are thoroughly vetted professionals with a minimum of 5 years of experience in international education consulting. Many hold advanced degrees in education or related fields and have successful track records of placing students in top universities worldwide.",
+  },
+  {
+    id: 3,
+    question: "How much does it cost to use AbroadKart?",
+    answer:
+      "Creating an account and browsing counsellor profiles on AbroadKart is completely free. You only pay for the specific counselling services you choose to book, with transparent pricing displayed on each counsellor's profile. We offer packages ranging from one-time consultations to comprehensive application support.",
+  },
+  {
+    id: 4,
+    question: "Can I get help with scholarship applications?",
+    answer:
+      "Absolutely! Many of our counsellors specialize in identifying scholarship opportunities and guiding students through the application process. They can help you find scholarships that match your profile and assist in crafting compelling applications to increase your chances of success.",
+  },
+  {
+    id: 5,
+    question: "Is AbroadKart available for students from any country?",
+    answer:
+      "Yes, AbroadKart serves students globally. Our platform connects students from around the world with international education experts who can provide guidance regardless of your current location or destination interests.",
+  },
+  {
+    id: 6,
+    question: "What if I'm not satisfied with my counsellor?",
+    answer:
+      "Your satisfaction is our priority. If you're not completely satisfied with your initial session, you can request a match with a different counsellor. We also offer a satisfaction guarantee for our premium packages, ensuring you receive the quality guidance you deserve.",
+  },
+];
 
 const Home = () => {
   return (
-    <div className="w-full max-w-7xl mx-auto">
+    <div className="w-full mx-auto">
       {/* Header Section */}
-      <header className="relative bg-blue-50 py-16 px-6 lg:px-20">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
-          {/* Left Section */}
-          <div className="lg:w-1/2 text-center lg:text-left">
-            <div className="flex gap-2 mb-4">
-              <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">
-                500+ Universities
-              </span>
-              <span className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-xs">
-                100+ Courses
-              </span>
-            </div>
-            <h1 className="text-4xl font-bold text-gray-900 leading-tight">
-              Your Journey to Study Abroad Starts Here
-            </h1>
-            <p className="mt-4 text-lg text-gray-600">
-              Expert guidance for your dream university. Connect with top
-              advisors and start with a free counselling session today!
-            </p>
+      <header className="bg-white text-gray-900 pb-16 md:pt-8 w-full">
+        <div className="max-w-5xl mx-auto px-4 flex flex-col items-center justify-center">
+          {/* Chip */}
+          <div className="mt-4 inline-block bg-blue-600/10 text-blue-600 font-semibold px-4 py-2 rounded-full text-sm mb-6">
+            Your Journey to Global Education Begins Here
           </div>
+          {/* Title */}
+          <h1 className="text-3xl md:text-4xl font-bold text-center mb-8">
+            Study Abroad Counselling – Your Future Starts Here
+          </h1>
 
-          {/* Free Counselling Form */}
-          <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md lg:w-1/3">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Request Free Counselling
-            </h2>
-            <form className="space-y-4">
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="input-field"
-                required
+          {/* Content Layout */}
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            {/* Left Side - Description & Metrics */}
+            <div className="flex flex-col items-center">
+              <Image
+                src={HeaderImg}
+                alt="AbroadKart's services to meet all study abroad needs"
+                width={420}
+                height={360}
+                className="mb-4"
               />
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="input-field"
-                required
-              />
-              <input
-                type="text"
-                placeholder="WhatsApp Number"
-                className="input-field"
-                required
-              />
-              <select className="input-field">
-                <option>Select Target Country</option>
-                <option>USA</option>
-                <option>Canada</option>
-                <option>UK</option>
-              </select>
-              <button className="bg-blue-600 text-white py-2 px-4 rounded-lg w-full">
+              <p className="text-lg leading-relaxed text-justify">
+                Connect with experienced counsellors who will guide you through
+                every step of your international education journey, from
+                university selection to visa approval.
+              </p>
+              {/* Metrics */}
+              <div className="mt-8 flex flex-wrap gap-1 justify-around w-full">
+                {metrics.map((metric, index) => (
+                  <div
+                    key={index}
+                    className="flex flex-col items-center justify-center w-28 h-28 md:w-36 md:h-36 bg-gray-100 text-blue-600 rounded-full shadow-md p-4"
+                  >
+                    {metric.icon}
+                    <h3 className="text-xl md:text-2xl font-bold mt-1">
+                      {metric.value}
+                    </h3>
+                    <p className="text-xs md:text-base text-center">
+                      {metric.text}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right Side - Free Counselling Form */}
+            <form
+              id="counselling-form"
+              className="p-6 rounded-lg shadow-md border space-y-4 bg-white"
+            >
+              <h2 className="text-xl font-semibold text-center mb-4">
                 Get Free Counselling
-              </button>
+              </h2>
+              {formFields.map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label htmlFor={field.id}>{field.label}</Label>
+                  <Input
+                    id={field.id}
+                    type={field.type}
+                    className="focus:ring-2 focus:ring-blue-600 focus:border-blue-600 active:border-blue-600"
+                    required
+                  />
+                </div>
+              ))}
+              <Button
+                type="submit"
+                className="w-full bg-blue-600 hover:bg-blue-700  font-semibold"
+              >
+                Request Counselling
+              </Button>
             </form>
           </div>
         </div>
       </header>
 
-      {/* Metrics Section */}
-      <section className="py-16 bg-blue-100">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Why Choose Us?
-          </h2>
-          <div className="mt-10 flex flex-wrap justify-center gap-8">
-            {[
-              {
-                number: "20+",
-                text: "Countries Covered",
-                icon: <FaGlobe size={32} className="text-blue-600" />,
-              },
-              {
-                number: "100+",
-                text: "Courses Enrolled",
-                icon: <FaBookOpen size={32} className="text-blue-600" />,
-              },
-              {
-                number: "500+",
-                text: "Partner Universities",
-                icon: <FaUniversity size={32} className="text-blue-600" />,
-              },
-            ].map((metric, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-lg rounded-lg p-6 w-48 h-48 flex flex-col justify-center items-center"
-              >
-                {metric.icon}
-                <span className="text-3xl font-bold text-blue-600 mt-2">
-                  {metric.number}
-                </span>
-                <p className="text-gray-700 text-center">{metric.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How It Works Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold text-gray-900">How It Works</h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
-            {[
-              {
-                step: "Step 1",
-                text: "Sign up for free onboarding",
-                icon: (
-                  <FaUserCheck size={40} className="text-blue-600 mx-auto" />
-                ),
-              },
-              {
-                step: "Step 2",
-                text: "Fill in your academic details",
-                icon: (
-                  <FaCheckCircle size={40} className="text-blue-600 mx-auto" />
-                ),
-              },
-              {
-                step: "Step 3",
-                text: "Speak with our experts to set your goals",
-                icon: (
-                  <FaUserCheck size={40} className="text-blue-600 mx-auto" />
-                ),
-              },
-              {
-                step: "Step 4",
-                text: "Get a personalized counselling session",
-                icon: (
-                  <FaCheckCircle size={40} className="text-blue-600 mx-auto" />
-                ),
-              },
-              {
-                step: "Step 5",
-                text: "Start your study abroad journey",
-                icon: (
-                  <FaUniversity size={40} className="text-blue-600 mx-auto" />
-                ),
-              },
-            ].map((item, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-md p-6 rounded-lg text-center flex flex-col items-center"
-              >
-                {item.icon}
-                <h3 className="text-lg font-bold text-blue-600 mt-4">
-                  {item.step}
-                </h3>
-                <p className="text-gray-700 mt-2">{item.text}</p>
-              </div>
+      <section className="bg-gray-100 px-4 py-16">
+        <div className="max-w-5xl mx-auto flex flex-col items-center">
+          <h2 className="text-2xl font-bold text-center mb-2">How It Works</h2>
+          <p className="text-justify mb-8">
+            Step-by-Step Guide to Your Study Abroad Journey – From Counselling
+            to Campus!
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {howItWorksSteps.map((step, index) => (
+              <Card key={index} className="shadow-md flex flex-col p-4 gap-4">
+                <CardHeader className="flex items-center gap-4 space-x-2 p-0">
+                  {step.Icon}
+                  <CardTitle>{step.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-gray-600 text-justify p-0">
+                  {step.description}
+                </CardContent>
+              </Card>
             ))}
           </div>
         </div>
       </section>
 
       {/* Call to Action Section */}
-      <section className="py-16 bg-blue-600 text-white text-center">
+      <section className="py-16 bg-blue-600 text-white text-center px-4">
         <h2 className="text-2xl font-semibold">Ready to Begin Your Journey?</h2>
-        <p className="mt-4">
+        <p className="mt-2">
           Start with a free counselling session and take the first step toward
           your dream university.
         </p>
-        <Link href="#form">
-          <button className="mt-6 bg-white text-blue-600 py-2 px-6 rounded-lg">
+        <Link href="#counselling-form">
+          <button
+            className="mt-6 bg-white text-blue-600 font-semibold py-2 rounded-lg"
+            onClick={() => {
+              const element = document.getElementById("counselling-form");
+              if (element) {
+                element.scrollIntoView({
+                  behavior: "smooth",
+                  block: "start",
+                });
+              }
+            }}
+          >
             Get Free Counselling
           </button>
         </Link>
       </section>
 
       {/* Blog Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
+      <section className="bg-gray-100 py-16 px-4">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-semibold text-gray-900 text-center">
             Latest Blogs
           </h2>
@@ -227,185 +303,48 @@ const Home = () => {
             ))}
           </div>
           <div className="text-center mt-6">
-            <Link href="/blog">
-              <button className="bg-blue-600 text-white py-2 px-6 rounded-lg">
-                Explore More Blogs
-              </button>
+            <Link href="/blogs" className="text-blue-600 underline">
+              Explore More Blogs &gt;
             </Link>
           </div>
         </div>
       </section>
-    </div>
-  );
 
-  return (
-    <div className="w-full">
-      {/* Header Section */}
-      <header className="relative bg-blue-50 py-16 px-6 lg:px-20">
-        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-10">
-          <div className="text-center lg:text-left">
-            <h1 className="text-4xl font-bold text-gray-900 leading-tight">
-              Study Abroad Made Simple
-            </h1>
-            <p className="mt-4 text-lg text-gray-600">
-              Get expert guidance for your study abroad journey. Choose from
-              500+ universities across 20+ countries. Start with a free
-              consultation!
+      {/** FAQs */}
+      <section className="section-padding bg-counselor-light py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-gray-600 max-w-3xl mx-auto">
+              Find answers to the most common questions about our platform and
+              services.
             </p>
           </div>
-          {/* Free Counselling Form */}
-          <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">
-              Request Free Counselling
-            </h2>
-            <form className="space-y-4">
-              <input
-                type="text"
-                placeholder="Your Name"
-                className="input-field"
-                required
-              />
-              <input
-                type="email"
-                placeholder="Your Email"
-                className="input-field"
-                required
-              />
-              <input
-                type="text"
-                placeholder="WhatsApp Number"
-                className="input-field"
-                required
-              />
-              <select className="input-field">
-                <option>Select Target Country</option>
-                <option>USA</option>
-                <option>Canada</option>
-                <option>UK</option>
-              </select>
-              <button className="bg-blue-600 text-white py-2 px-4 rounded-lg w-full">
-                Get Free Counselling
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
 
-      {/* Metrics Section */}
-      <section className="py-16 bg-gray-100">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold text-gray-900">
-            Why Choose Us?
-          </h2>
-          <div className="mt-10 flex flex-wrap justify-center gap-8">
-            {[
-              { number: "20+", text: "Countries Covered" },
-              { number: "100+", text: "Courses Enrolled" },
-              { number: "500+", text: "Partner Universities" },
-            ].map((metric, index) => (
-              <div
-                key={index}
-                className="bg-white shadow-lg rounded-full p-6 w-48 h-48 flex flex-col justify-center items-center"
-              >
-                <span className="text-3xl font-bold text-blue-600">
-                  {metric.number}
-                </span>
-                <p className="text-gray-700 text-center">{metric.text}</p>
-              </div>
-            ))}
+          <div className="w-xl mx-auto">
+            <Accordion type="single" collapsible className="w-full">
+              {faqs.map((faq) => (
+                <AccordionItem
+                  key={faq.id}
+                  value={`item-${faq.id}`}
+                  className="bg-white my-4 rounded-lg shadow-sm border border-gray-100 overflow-hidden"
+                >
+                  <AccordionTrigger className="px-6 py-4 hover:no-underline hover:bg-gray-50 transition-colors">
+                    <span className="text-left font-medium text-lg">
+                      {faq.question}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="px-6 pb-4 pt-2">
+                    <p className="text-gray-600">{faq.answer}</p>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
           </div>
         </div>
       </section>
-
-      {/* How It Works Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto text-center">
-          <h2 className="text-2xl font-semibold text-gray-900">How It Works</h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
-            {[
-              { step: "Step 1", text: "Sign up for free onboarding" },
-              { step: "Step 2", text: "Fill in your academic details" },
-              {
-                step: "Step 3",
-                text: "Speak with our experts to set your goals",
-              },
-              {
-                step: "Step 4",
-                text: "Get a personalized counselling session",
-              },
-              { step: "Step 5", text: "Start your study abroad journey" },
-            ].map((item, index) => (
-              <div key={index} className="bg-white shadow-md p-6 rounded-lg">
-                <h3 className="text-lg font-bold text-blue-600">{item.step}</h3>
-                <p className="text-gray-700 mt-2">{item.text}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Call to Action Section */}
-      <section className="py-16 bg-blue-600 text-white text-center">
-        <h2 className="text-2xl font-semibold">Ready to Begin Your Journey?</h2>
-        <p className="mt-4">
-          Start with a free counselling session and take the first step toward
-          your dream university.
-        </p>
-        <Link href="#form">
-          <button className="mt-6 bg-white text-blue-600 py-2 px-6 rounded-lg">
-            Get Free Counselling
-          </button>
-        </Link>
-      </section>
-
-      {/* Blog Section */}
-      <section className="py-16 px-6">
-        <div className="max-w-6xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-900 text-center">
-            Latest Blogs
-          </h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Top 10 Universities in the UK",
-                link: "/blog/top-uk-universities",
-              },
-              {
-                title: "How to Get a Student Visa for the USA",
-                link: "/blog/usa-student-visa",
-              },
-              {
-                title: "Best Countries for Studying AI & Data Science",
-                link: "/blog/study-ai-abroad",
-              },
-            ].map((blog, index) => (
-              <div key={index} className="bg-white shadow-md p-6 rounded-lg">
-                <h3 className="text-lg font-bold text-gray-900">
-                  {blog.title}
-                </h3>
-                <Link href={blog.link} className="text-blue-600 mt-2 block">
-                  Read More →
-                </Link>
-              </div>
-            ))}
-          </div>
-          <div className="text-center mt-6">
-            <Link href="/blog">
-              <button className="bg-blue-600 text-white py-2 px-6 rounded-lg">
-                Explore More Blogs
-              </button>
-            </Link>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-  return (
-    <div className="flex flex-col items-center justify-center grow bg-gray-100">
-      <h1 className="text-4xl font-bold">Welcome to AbroadKart.com</h1>
-      <p className="mt-4 text-lg text-gray-700">
-        Your gateway to global opportunities.
-      </p>
     </div>
   );
 };
