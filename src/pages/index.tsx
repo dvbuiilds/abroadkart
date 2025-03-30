@@ -26,6 +26,7 @@ import HeaderImg from "../../public/abroadkart-services.png";
 import { Label } from "@app/components/ui/label";
 import { Input } from "@app/components/ui/input";
 import { Button } from "@app/components/ui/button";
+import { BlogCard } from "@app/components/BlogCard";
 
 const formFields = [
   { id: "name", type: "text", label: "Full Name" },
@@ -82,6 +83,26 @@ const howItWorksSteps = [
     title: "Visa & Accommodation Assistance",
     description: "While you pack, we handle your visa and stay arrangements.",
     Icon: <BookOpenCheck className="text-blue-600 h-12 w-12" />,
+  },
+];
+const blogs = [
+  {
+    pageId: "top-10-universities",
+    title: "Top 10 Universities in the UK",
+    date: "March 15, 2025",
+    imgUrl: "/uk-universities.jpg",
+  },
+  {
+    pageId: "top-10-universities",
+    title: "How to Get a Student Visa for the USA",
+    date: "March 10, 2025",
+    imgUrl: "/usa-visa.jpg",
+  },
+  {
+    pageId: "top-10-universities",
+    title: "Best Countries for Studying AI & Data Science",
+    date: "March 5, 2025",
+    imgUrl: "/ai-study.jpg",
   },
 ];
 const faqs = [
@@ -255,47 +276,8 @@ const Home = () => {
             Latest Blogs
           </h2>
           <div className="mt-10 grid md:grid-cols-3 gap-6">
-            {[
-              {
-                title: "Top 10 Universities in the UK",
-                date: "March 15, 2025",
-                img: "/uk-universities.jpg",
-              },
-              {
-                title: "How to Get a Student Visa for the USA",
-                date: "March 10, 2025",
-                img: "/usa-visa.jpg",
-              },
-              {
-                title: "Best Countries for Studying AI & Data Science",
-                date: "March 5, 2025",
-                img: "/ai-study.jpg",
-              },
-            ].map((blog, index) => (
-              <div key={index} className="bg-white shadow-md p-6 rounded-lg">
-                <Image
-                  src={blog.img}
-                  width={300}
-                  height={200}
-                  alt={blog.title}
-                  className="rounded-md"
-                />
-                <p className="text-gray-500 text-sm mt-2">{blog.date}</p>
-                <h3 className="text-lg font-bold text-gray-900 mt-2">
-                  {blog.title}
-                </h3>
-                <div className="mt-6">
-                  <Link
-                    href={`/blog/${blog.title
-                      .toLowerCase()
-                      .replace(/\s+/g, "-")}`}
-                  >
-                    <button className="bg-blue-600 text-white py-2 px-4 rounded-lg w-full">
-                      Read More
-                    </button>
-                  </Link>
-                </div>
-              </div>
+            {blogs.map((blog, index) => (
+              <BlogCard key={`blog_${index}_${blog.pageId}`} data={blog} />
             ))}
           </div>
           <div className="text-center mt-6">
