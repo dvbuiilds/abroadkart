@@ -37,8 +37,8 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <NavLink href="/">Home</NavLink>
-            <NavLink href="/about">About</NavLink>
-            <NavLink href="/contact">Contact</NavLink>
+            <NavLink href="/about">About Us</NavLink>
+            <NavLink href="/contact">Contact Us</NavLink>
             {/* Auth Actions (Desktop) */}
             <div className="hidden md:flex items-center space-x-4">
               {activeSession?.status === "authenticated" ? (
@@ -82,13 +82,13 @@ export function Navbar() {
                     Home
                   </MobileNavLink>
                   <MobileNavLink href="/about" onClick={() => setIsOpen(false)}>
-                    About
+                    About Us
                   </MobileNavLink>
                   <MobileNavLink
                     href="/contact"
                     onClick={() => setIsOpen(false)}
                   >
-                    Contact
+                    Contact Us
                   </MobileNavLink>
                   {/* Auth Actions (Mobile) */}
                   {activeSession?.status === "authenticated" ? (
