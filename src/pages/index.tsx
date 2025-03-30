@@ -159,15 +159,11 @@ const Home = () => {
                 {metrics.map((metric, index) => (
                   <div
                     key={index}
-                    className="flex flex-col items-center justify-center w-28 h-28 md:w-36 md:h-36 bg-gray-100 text-blue-600 rounded-full shadow-md p-4"
+                    className="flex flex-col items-center justify-center w-28 h-28 md:w-36 md:h-36 bg-gray-100 text-blue-600 rounded-full shadow-md p-6"
                   >
                     {metric.icon}
-                    <h3 className="text-xl md:text-2xl font-bold mt-1">
-                      {metric.value}
-                    </h3>
-                    <p className="text-xs md:text-base text-center">
-                      {metric.text}
-                    </p>
+                    <h3 className="text-2xl font-bold mt-1">{metric.value}</h3>
+                    <p className="text-sm text-center">{metric.text}</p>
                   </div>
                 ))}
               </div>
