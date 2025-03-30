@@ -48,7 +48,12 @@ export function Navbar() {
                 </>
               ) : (
                 <Link href="/login" passHref>
-                  <Button variant="outline">Login</Button>
+                  <Button
+                    variant="outline"
+                    className="hover:scale-105 duration-600 ease-in-out cursor-pointer hover:bg-blue-100"
+                  >
+                    Login
+                  </Button>
                 </Link>
               )}
             </div>
@@ -128,7 +133,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className="text-gray-700 hover:text-blue-600 font-medium relative group transition duration-300"
+      className="text-gray-700 hover:text-blue-600 text-sm relative group transition duration-300"
     >
       {children}
       <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 group-hover:w-full transition-all duration-300"></span>
