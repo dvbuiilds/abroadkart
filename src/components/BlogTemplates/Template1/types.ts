@@ -141,14 +141,10 @@ export interface TableOfContentsSection {
 }
 
 export interface FreeCounsellingFormData {
-  email: string;
   fullName: string;
+  email: string;
   whatsappNumber: string;
-  targetCountry: string;
-  targetUniversity: string;
-  targetCourse: string;
   targetYear: string;
-  message: string;
-  counsellingMode?: string;
-  budget: number;
+  targetCountry: string;
+  targetCourse: string;
 }

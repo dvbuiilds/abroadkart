@@ -1,42 +1,55 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { object as zObject, string as zString } from "zod";
+import {
+  Form as SCForm,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@app/components/ui/form";
+import { Input } from "@app/components/ui/input";
+import { Button } from "@app/components/ui/button";
 import { FreeCounsellingFormData } from "./types";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { useRouter } from "next/router";
+
+const formSchema = zObject({
+  fullName: zString().min(2, "Full Name must be at least 2 characters."),
+  email: zString().email("Invalid email address."),
+  whatsappNumber: zString().regex(
+    /^\d{10}$/,
+    "WhatsApp Number must be a 10-digit number."
+  ),
+  targetYear: zString().min(4, "Please enter a valid year."),
+  targetCountry: zString().min(
+    2,
+    "Target Country must be at least 2 characters."
+  ),
+  targetCourse: zString().min(
+    2,
+    "Target Course must be at least 2 characters."
+  ),
+});
 
 export const Form = () => {
-  const [formData, updateFormData] = useState<FreeCounsellingFormData>({
-    email: "",
-    fullName: "",
-    whatsappNumber: "",
-    targetCountry: "",
-    targetUniversity: "",
-    targetCourse: "",
-    targetYear: "",
-    message: "",
-    counsellingMode: "Call",
-    budget: 0,
-  });
   const navigation = useRouter();
+  const form = useForm<FreeCounsellingFormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      whatsappNumber: "",
+      targetYear: "",
+      targetCountry: "",
+      targetCourse: "",
+    },
+  });
 
-  const onChangeHandler = (
-    event: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => {
-    updateFormData({ ...formData, [event.target.name]: event.target.value });
-  };
-
-  const isAnyFieldEmpty = !Object.entries(formData).every(
-    ([_, val]) => val.length > 0
-  );
-
-  const onClickHandler = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (isAnyFieldEmpty) {
-      alert("Please fill all the required fields.");
-      return;
-    }
+  async function onSubmit(values: FreeCounsellingFormData) {
+    console.log(values);
     const response = await fetchWithTimeout(
       `${apiEndPoints}${apiPath.freeCounsellingForm}`,
       {
@@ -44,7 +57,7 @@ export const Form = () => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(values),
       }
     );
     if (!response.success) {
@@ -58,207 +71,113 @@ export const Form = () => {
     }
     alert("Form submitted successfully.");
     navigation.reload();
-  };
+  }
 
   return (
-    <div className="flex flex-col gap-2">
-      <p className="text-lg font-semibold">
-        Request a Callback for FREE COUNSELLING!
-      </p>
-      <form className="py-1 flex flex-col gap-2" onSubmit={onClickHandler}>
-        <div>
-          <label
-            htmlFor="email"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Email <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="email"
-            name="email"
-            id="email"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.email}
-            onChange={onChangeHandler}
-            required
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="fullName"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Full Name <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="text"
-            name="fullName"
-            id="fullName"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.fullName}
-            onChange={onChangeHandler}
-            required
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="whatsappNumber"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            WhatsApp Number <span className="text-red-600">*</span>
-          </label>
-          <input
-            type="tel"
-            name="whatsappNumber"
-            id="whatsappNumber"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.whatsappNumber}
-            onChange={onChangeHandler}
-            required
-          />
-        </div>
+    <SCForm {...form}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-2 p-4 rounded-lg shadow-md border bg-white"
+      >
+        <h2 className="text-xl font-semibold text-center mb-4">
+          Get Free Counselling
+        </h2>
 
-        <div>
-          <label
-            htmlFor="targetCountry"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Target Country <span className="text-red-600">*</span>
-          </label>
-          <select
-            name="targetCountry"
-            id="targetCountry"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.targetCountry}
-            onChange={onChangeHandler}
-            required
-          >
-            <option value="">Select Country</option>
-            <option value="USA">USA</option>
-            <option value="Canada">Canada</option>
-            <option value="UK">UK</option>
-            <option value="Australia">Australia</option>
-            <option value="Germany">Germany</option>
-          </select>
-        </div>
+        <FormField
+          control={form.control}
+          name="fullName"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your full name" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="targetUniversity"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Target University
-          </label>
-          <input
-            type="text"
-            name="targetUniversity"
-            id="targetUniversity"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.targetUniversity}
-            onChange={onChangeHandler}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input type="email" placeholder="Enter your email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="targetCourse"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Target Course
-          </label>
-          <input
-            type="text"
-            name="targetCourse"
-            id="targetCourse"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.targetCourse}
-            onChange={onChangeHandler}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="whatsappNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>WhatsApp Number</FormLabel>
+              <FormControl>
+                <Input
+                  type="tel"
+                  placeholder="Enter your WhatsApp number"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="targetYear"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Target Year <span className="text-red-600">*</span>
-          </label>
-          <select
-            name="targetYear"
-            id="targetYear"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.targetYear}
-            onChange={onChangeHandler}
-            required
-          >
-            <option value="">Select Year</option>
-            <option value="2025">2025</option>
-            <option value="2026">2026</option>
-            <option value="2027">2027</option>
-          </select>
-        </div>
+        <FormField
+          control={form.control}
+          name="targetYear"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Target Year</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your target year" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="message"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Message
-          </label>
-          <textarea
-            name="message"
-            id="message"
-            rows={3}
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.message}
-            onChange={onChangeHandler}
-          ></textarea>
-        </div>
+        <FormField
+          control={form.control}
+          name="targetCountry"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Target Country</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your target country" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="counsellingMode"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Preferred Mode of Counselling
-          </label>
-          <select
-            name="counsellingMode"
-            id="counsellingMode"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.counsellingMode}
-            onChange={onChangeHandler}
-          >
-            <option value="Email">Email</option>
-            <option value="WhatsApp">WhatsApp</option>
-            <option value="Call">Call</option>
-          </select>
-        </div>
+        <FormField
+          control={form.control}
+          name="targetCourse"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Target Course</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your target course" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-        <div>
-          <label
-            htmlFor="budget"
-            className="block mb-2 text-sm font-medium text-gray-900"
-          >
-            Estimated Budget for Studies (USD)
-          </label>
-          <input
-            type="number"
-            name="budget"
-            id="budget"
-            className="border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            value={formData.budget}
-            onChange={onChangeHandler}
-          />
-        </div>
-        <button
+        <Button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50 w-40 items-center justify-center"
-          disabled={isAnyFieldEmpty}
+          className="w-full bg-blue-600 hover:bg-blue-700 font-semibold"
         >
-          Submit
-        </button>
+          Request Counselling
+        </Button>
       </form>
-    </div>
+    </SCForm>
   );
 };
