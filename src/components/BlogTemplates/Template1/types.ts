@@ -148,3 +148,13 @@ export interface FreeCounsellingFormData {
   targetCountry: string;
   targetCourse: string;
 }
+
+export interface BlogsAPIResponse {
+  start: number;
+  end: number;
+  isLastPage: boolean;
+  blogs: Omit<
+    BlogResponse,
+    "breadcrumbs" | "faqs" | "pageData" | "tableOfContents"
+  >[];
+}
