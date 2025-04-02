@@ -16,7 +16,7 @@ export const BlogsListingLayout = ({
       </h1>
       <div className="flex flex-col justify-center md:flex-row mx-auto gap-4">
         {/* Left - Table of Contents */}
-        <aside className="pr-2 md:border-r md:border-gray-200">
+        <aside className="pb-4 md:pb-0 md:pr-2 border-b md:border-r md:border-gray-200">
           <div className="md:sticky md:top-20">{LeftSideElement}</div>
         </aside>
 
