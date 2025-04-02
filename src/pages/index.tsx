@@ -23,20 +23,9 @@ import {
   Smile,
 } from "lucide-react";
 import HeaderImg from "../../public/abroadkart-services.png";
-import { Label } from "@app/components/ui/label";
-import { Input } from "@app/components/ui/input";
-import { Button } from "@app/components/ui/button";
 import { BlogCard } from "@app/components/BlogCard";
 import { Form } from "@app/components/BlogTemplates/Template1/Form";
 
-const formFields = [
-  { id: "name", type: "text", label: "Full Name" },
-  { id: "email", type: "email", label: "Email Address" },
-  { id: "whatsapp", type: "tel", label: "WhatsApp Number" },
-  { id: "year", type: "text", label: "Target Year" },
-  { id: "country", type: "text", label: "Target Country" },
-  { id: "course", type: "text", label: "Target Course" },
-];
 const metrics = [
   {
     icon: <FaGlobe size={30} />,
