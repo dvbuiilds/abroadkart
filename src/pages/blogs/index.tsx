@@ -39,24 +39,7 @@ export const getServerSideProps = async (
   return {
     props: {
       title: "Our Blogs - One Stop for all your requirements",
-      blogs: [
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-        ...jsonResponse.data.blogs,
-      ],
+      blogs: jsonResponse.data.blogs,
       paginationParams: {
         start: jsonResponse.data.start,
         end: jsonResponse.data.end,
