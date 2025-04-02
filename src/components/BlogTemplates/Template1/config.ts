@@ -11,3 +11,6 @@ export const PageSectionKeysMap = {
   faq: "faq",
   tableOfContents: "tableOfContents",
 } as const;
+
+// All categories covered should be mentioned here
+export const BlogCategories = ["Study Abroad", "Scholarship"];
