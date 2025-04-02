@@ -3,6 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 // UTILS
 import mongoDBClient from "../../../server/db/mongodb";
 
+const PAGE_SIZE = 9;
 const db = mongoDBClient.db();
 const blogsCollection = db.collection("blogs");
 
@@ -11,24 +12,51 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const order = req.query.order ?? "desc";
-    const sortParam = order === "desc" ? -1 : 1;
-    if (req.method !== "GET") {
-      return res.status(405).json({
-        success: false,
-        error: { message: "HTTP Method not allowed. ", status: 405 },
-      });
+    // Extract query params
+    const { start = "0", category } = req.query;
+    const startIndex = parseInt(start as string, 10) || 0;
+
+    // Build query filter
+    const filter: any = {};
+
+    if (category) {
+      const categories = Array.isArray(category) ? category : [category];
+      filter.category = { $in: categories };
     }
-    const response = await blogsCollection.find().sort(sortParam).toArray();
-    if (!response) {
+
+    // Fetch blogs from MongoDB
+    const blogs = await blogsCollection
+      .find(filter)
+      .sort({ publishedAt: -1 }) // Descending order
+      .skip(startIndex)
+      .limit(PAGE_SIZE)
+      .toArray();
+
+    if (!blogs) {
       return res.status(404).json({
         success: false,
         error: { message: "Pages Not Found.", status: 404 },
       });
     }
+
+    // Get total blog count for pagination logic
+    const totalBlogs = await blogsCollection.countDocuments(filter);
+    const isLastPage = startIndex + PAGE_SIZE >= totalBlogs;
+
     return res.status(200).json({
       success: true,
-      data: response,
+      data: {
+        start: startIndex,
+        end: startIndex + blogs.length - 1,
+        isLastPage,
+        blogs: blogs.map((blog) => ({
+          pageId: blog.pageId,
+          title: blog.title,
+          category: blog.category,
+          blogMetaData: blog.blogMetaData,
+          featuredImg: blog.featuredImg,
+        })),
+      },
     });
   } catch (error) {
     console.error("Error fetching blogs data: ", error);
