@@ -16,6 +16,7 @@ export const apiPath = {
   nextAuth: "/api/auth/[...nextauth]",
   getUser: "/api/auth/get-user",
   preCounsellingForm: "/api/pre-counselling-form",
-  getBlogData: "/api/blogs/get-blog",
   freeCounsellingForm: "/api/free-counselling-form",
+  getBlogData: "/api/blogs/get-blog",
+  getAllBlogs: "/api/blogs/get-all-blogs",
 };
