@@ -23,19 +23,9 @@ import {
   Smile,
 } from "lucide-react";
 import HeaderImg from "../../public/abroadkart-services.png";
-import { Label } from "@app/components/ui/label";
-import { Input } from "@app/components/ui/input";
-import { Button } from "@app/components/ui/button";
 import { BlogCard } from "@app/components/BlogCard";
+import { Form } from "@app/components/BlogTemplates/Template1/Form";
 
-const formFields = [
-  { id: "name", type: "text", label: "Full Name" },
-  { id: "email", type: "email", label: "Email Address" },
-  { id: "whatsapp", type: "tel", label: "WhatsApp Number" },
-  { id: "year", type: "text", label: "Target Year" },
-  { id: "country", type: "text", label: "Target Country" },
-  { id: "course", type: "text", label: "Target Course" },
-];
 const metrics = [
   {
     icon: <FaGlobe size={30} />,
@@ -90,19 +80,19 @@ const blogs = [
     pageId: "top-10-universities",
     title: "Top 10 Universities in the UK",
     date: "March 15, 2025",
-    imgUrl: "/uk-universities.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
   {
     pageId: "top-10-universities",
     title: "How to Get a Student Visa for the USA",
     date: "March 10, 2025",
-    imgUrl: "/usa-visa.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
   {
     pageId: "top-10-universities",
     title: "Best Countries for Studying AI & Data Science",
     date: "March 5, 2025",
-    imgUrl: "/ai-study.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
 ];
 const faqs = [
@@ -168,7 +158,8 @@ const Home = () => {
                 alt="AbroadKart's services to meet all study abroad needs"
                 width={420}
                 height={360}
-                className="mb-4"
+                priority
+                className="mb-4 w-auto h-auto"
               />
               <p className="text-lg leading-relaxed text-justify">
                 Connect with experienced counsellors who will guide you through
@@ -191,31 +182,7 @@ const Home = () => {
             </div>
 
             {/* Right Side - Free Counselling Form */}
-            <form
-              id="counselling-form"
-              className="p-6 rounded-lg shadow-md border space-y-4 bg-white"
-            >
-              <h2 className="text-xl font-semibold text-center mb-4">
-                Get Free Counselling
-              </h2>
-              {formFields.map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label htmlFor={field.id}>{field.label}</Label>
-                  <Input
-                    id={field.id}
-                    type={field.type}
-                    className="focus:ring-2 focus:ring-blue-600 focus:border-blue-600 active:border-blue-600"
-                    required
-                  />
-                </div>
-              ))}
-              <Button
-                type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700  font-semibold"
-              >
-                Request Counselling
-              </Button>
-            </form>
+            <Form />
           </div>
         </div>
       </header>

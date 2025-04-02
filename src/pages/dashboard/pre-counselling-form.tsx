@@ -13,7 +13,7 @@ import { useUserSession } from "@app/context/UserSessionContext";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 import { IoMdArrowBack, IoMdArrowForward } from "react-icons/io";
 
@@ -40,7 +40,7 @@ const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
   const response = await fetchWithTimeout(
-    `${apiPath}${apiEndPoints.preCounsellingForm}`,
+    `${apiEndPoint}${apiPath.preCounsellingForm}`,
     {
       method: "POST",
       headers: {
@@ -50,8 +50,13 @@ const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
       body: JSON.stringify(data),
     }
   );
-  const responseData = await response.json();
-  return responseData;
+  if (!response.success) {
+    console.log("@@ fetch response is unsuccessful.");
+    return {
+      notFound: true,
+    };
+  }
+  return response.data;
 };
 
 export const getServerSideProps = () => {

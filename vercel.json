@@ -5,5 +5,11 @@
       "dest": "/api/index.js",
       "methods": ["GET", "POST"]
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/update-sitemap",
+      "schedule": "0 0 * * *"
+    }
   ]
 }

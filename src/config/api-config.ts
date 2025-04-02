@@ -1,19 +1,22 @@
-export const apiPaths = {
+const apiEndPoints = {
   development: "http://localhost:3000",
   preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
   production: "",
 };
 
-export const apiPath =
+export const apiEndPoint =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
-    ? apiPaths.production
+    ? apiEndPoints.production
     : process.env.NEXT_PUBLIC_ENVIRONMENT === "preview"
-    ? apiPaths.preview
-    : apiPaths.development;
+    ? apiEndPoints.preview
+    : apiEndPoints.development;
 
-export const apiEndPoints = {
+export const apiPath = {
   signup: "/api/auth/signup",
   nextAuth: "/api/auth/[...nextauth]",
   getUser: "/api/auth/get-user",
   preCounsellingForm: "/api/pre-counselling-form",
+  freeCounsellingForm: "/api/free-counselling-form",
+  getBlogData: "/api/blogs/get-blog",
+  getAllBlogs: "/api/blogs/get-all-blogs",
 };
