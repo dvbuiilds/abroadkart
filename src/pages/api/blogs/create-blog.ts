@@ -42,7 +42,6 @@ export default async function handler(
 
     // Data Transformation
     const transformedData = transformDataForDB(data);
-    console.log("@@ transformedData: ", transformedData);
 
     const response = await blogsCollection.insertOne(transformedData);
     if (!response.acknowledged) {
