@@ -17,7 +17,7 @@ import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 
 interface UserSessionContextType {
   user: User | null;
@@ -89,7 +89,7 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUserDetails = async () => {
     const response = await fetchWithTimeout(
-      `${apiEndPoints}${apiPath.getUser}?email=${encodeURIComponent(
+      `${apiEndPoint}${apiPath.getUser}?email=${encodeURIComponent(
         activeSession.data?.user?.email || ""
       )}`
     );

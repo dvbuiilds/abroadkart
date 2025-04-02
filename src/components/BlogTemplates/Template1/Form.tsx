@@ -13,7 +13,7 @@ import { Input } from "@app/components/ui/input";
 import { Button } from "@app/components/ui/button";
 import { FreeCounsellingFormData } from "./types";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 
 const formSchema = zObject({
@@ -51,7 +51,7 @@ export const Form = () => {
   async function onSubmit(values: FreeCounsellingFormData) {
     console.log(values);
     const response = await fetchWithTimeout(
-      `${apiEndPoints}${apiPath.freeCounsellingForm}`,
+      `${apiEndPoint}${apiPath.freeCounsellingForm}`,
       {
         method: "POST",
         headers: {

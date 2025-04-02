@@ -13,7 +13,7 @@ import { useUserSession } from "@app/context/UserSessionContext";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 import { useRouter } from "next/router";
 import { IoMdArrowBack, IoMdArrowForward } from "react-icons/io";
 
@@ -40,7 +40,7 @@ const formNames = formData.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: Questionnaire, email: string) => {
   const response = await fetchWithTimeout(
-    `${apiEndPoints}${apiPath.preCounsellingForm}`,
+    `${apiEndPoint}${apiPath.preCounsellingForm}`,
     {
       method: "POST",
       headers: {

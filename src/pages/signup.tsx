@@ -9,7 +9,7 @@ import type { DBUser, ResponseType, User } from "@app/types/api-types";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 
 const Signup = () => {
   const [formData, updateFormData] = useState<
@@ -64,13 +64,10 @@ const Signup = () => {
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const response = await fetchWithTimeout(
-      `${apiEndPoints}${apiPath.signup}`,
-      {
-        method: "POST",
-        body: JSON.stringify(formData),
-      }
-    );
+    const response = await fetchWithTimeout(`${apiEndPoint}${apiPath.signup}`, {
+      method: "POST",
+      body: JSON.stringify(formData),
+    });
     if (!response.success) {
       alert("Error in submitting form. Please try after some time.");
       return;

@@ -80,19 +80,19 @@ const blogs = [
     pageId: "top-10-universities",
     title: "Top 10 Universities in the UK",
     date: "March 15, 2025",
-    imgUrl: "/uk-universities.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
   {
     pageId: "top-10-universities",
     title: "How to Get a Student Visa for the USA",
     date: "March 10, 2025",
-    imgUrl: "/usa-visa.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
   {
     pageId: "top-10-universities",
     title: "Best Countries for Studying AI & Data Science",
     date: "March 5, 2025",
-    imgUrl: "/ai-study.jpg",
+    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
   },
 ];
 const faqs = [

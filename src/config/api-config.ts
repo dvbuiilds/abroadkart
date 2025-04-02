@@ -1,15 +1,15 @@
-export const apiPaths = {
+const apiEndPoints = {
   development: "http://localhost:3000",
   preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
   production: "",
 };
 
-export const apiEndPoints =
+export const apiEndPoint =
   process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
-    ? apiPaths.production
+    ? apiEndPoints.production
     : process.env.NEXT_PUBLIC_ENVIRONMENT === "preview"
-    ? apiPaths.preview
-    : apiPaths.development;
+    ? apiEndPoints.preview
+    : apiEndPoints.development;
 
 export const apiPath = {
   signup: "/api/auth/signup",

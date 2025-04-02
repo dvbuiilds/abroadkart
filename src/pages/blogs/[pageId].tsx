@@ -17,7 +17,7 @@ import { BlogLayout } from "@app/components/BlogTemplates/Template1/BlogLayout";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 // CONFIGS
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 import { PageSectionKeysMap } from "@app/components/BlogTemplates/Template1/config";
 
 export const getServerSideProps = async (
@@ -26,7 +26,7 @@ export const getServerSideProps = async (
   const pageId = context.params?.pageId;
 
   const response = await fetchWithTimeout(
-    `${apiEndPoints}${apiPath.getBlogData}?pageId=${pageId}`
+    `${apiEndPoint}${apiPath.getBlogData}?pageId=${pageId}`
   );
   if (!response.success) {
     console.log("@@ fetch response is unsuccessful.");

@@ -8,7 +8,7 @@ import { Loader } from "lucide-react";
 import type { GetServerSidePropsContext } from "next";
 import type { ResponseType } from "@app/types/api-types";
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
-import { apiEndPoints, apiPath } from "@app/config/api-config";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 import { BlogCategories } from "@app/components/BlogTemplates/Template1/config";
 
 interface BlogsProps {
@@ -22,7 +22,7 @@ export const getServerSideProps = async (
 ) => {
   const category = context.query.category;
   const url =
-    `${apiEndPoints}${apiPath.getAllBlogs}` +
+    `${apiEndPoint}${apiPath.getAllBlogs}` +
     (typeof category === "string"
       ? `?category=${category}`
       : Array.isArray(category)
@@ -96,7 +96,7 @@ const Blogs: FC<BlogsProps> = ({ title, blogs, paginationParams }) => {
     }
     updateAPIStatus("loading");
     const url =
-      `${apiEndPoints}${apiPath.getAllBlogs}?start=${updatedPaginationParams.end}` +
+      `${apiEndPoint}${apiPath.getAllBlogs}?start=${updatedPaginationParams.end}` +
       (selectedCategories.length
         ? selectedCategories.map((category) => `?category=${category}`).join("")
         : "");
