@@ -7,10 +7,10 @@ export const BlogCard = ({
   data: { imgUrl: string; date: string; title: string; pageId: string };
 }) => {
   return (
-    <div className="bg-white shadow-md p-6 rounded-lg">
+    <div className="bg-white shadow-md p-4 rounded-lg border border-gray-100">
       <Image
         src={data.imgUrl}
-        width={300}
+        width={400}
         height={200}
         alt={data.title}
         className="rounded-md"
@@ -21,7 +21,7 @@ export const BlogCard = ({
           {data.title}
         </h3>
         <div className="mt-6">
-          <Link href={`/blog/${data.pageId}`}>
+          <Link href={`/blogs/${data.pageId}`}>
             <button className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg w-full">
               Read More
             </button>
