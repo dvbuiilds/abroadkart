@@ -11,7 +11,7 @@ export const BlogsListingLayout = ({
 }) => {
   return (
     <div className="gap-2 pt-4 pb-8">
-      <h1 className="text-2xl text-center font-semibold pt-3 pb-10 px-3 md:font-bold md:text-3xl">
+      <h1 className="text-2xl text-center font-semibold py-3 md:pt-3 md:pb-10 px-3 md:font-bold md:text-3xl">
         {title}
       </h1>
       <div className="flex flex-col justify-center md:flex-row mx-auto gap-4">
@@ -25,7 +25,7 @@ export const BlogsListingLayout = ({
 
         {/* Right - Form */}
         <aside className="w-full md:w-[350px]">
-          <div className="md:sticky md:top-20">
+          <div className="md:sticky md:top-20 px-4">
             <Form />
           </div>
         </aside>
