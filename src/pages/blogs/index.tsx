@@ -20,8 +20,16 @@ interface BlogsProps {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
+  const category = context.query.category;
+  const url =
+    `${apiEndPoints}${apiPath.getAllBlogs}` +
+    (typeof category === "string"
+      ? `?category=${category}`
+      : Array.isArray(category)
+      ? category.map((cat) => `?category=${cat}`).join("")
+      : "");
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
-    await fetchWithTimeout(`${apiEndPoints}${apiPath.getAllBlogs}`);
+    await fetchWithTimeout(url);
   if (!response.success) {
     console.error("blogs API response not fetched. ", response.error);
     return {
@@ -89,9 +97,9 @@ const Blogs: FC<BlogsProps> = ({ title, blogs, paginationParams }) => {
     updateAPIStatus("loading");
     const url =
       `${apiEndPoints}${apiPath.getAllBlogs}?start=${updatedPaginationParams.end}` +
-      selectedCategories.length
+      (selectedCategories.length
         ? selectedCategories.map((category) => `?category=${category}`).join("")
-        : "";
+        : "");
 
     const response: ResponseType<ResponseType<BlogsAPIResponse>> =
       await fetchWithTimeout(url);
