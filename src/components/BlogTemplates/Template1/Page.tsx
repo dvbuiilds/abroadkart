@@ -1,9 +1,10 @@
-import React from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { BlogPageData, BlogSectionType } from "./types";
+import { BlogCard } from "@app/components/BlogCard";
 import { FAQSection } from "./FAQSection";
 import { PageSectionKeysMap } from "./config";
+
+import type { BlogPageData, BlogSectionType } from "./types";
 
 const renderSection = (section: BlogSectionType) => {
   switch (section.sectionType) {
@@ -53,6 +54,27 @@ const renderSection = (section: BlogSectionType) => {
     }
     case PageSectionKeysMap.faq: {
       return <FAQSection data={section} />;
+    }
+    case PageSectionKeysMap.relatedBlogs: {
+      return (
+        <section className="py-4">
+          <h2 className="text-xl font-medium py-2 md:font-semibold md:text-2xl">
+            Related Blogs
+          </h2>
+          <div className="flex flex-row gap-2 flex-wrap">
+            {section.blogs.map((blog, index) => (
+              <BlogCard
+                data={{
+                  date: blog.blogMetaData.publishedDate,
+                  imgUrl: blog.featuredImg.src,
+                  pageId: blog.pageId,
+                  title: blog.title,
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      );
     }
     default: {
       return null;
