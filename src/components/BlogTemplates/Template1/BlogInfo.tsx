@@ -1,4 +1,3 @@
-import React from "react";
 import type { InfoSection } from "./types";
 
 export const BlogInfo = (props: { data: InfoSection }) => {

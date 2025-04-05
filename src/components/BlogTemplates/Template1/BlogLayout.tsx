@@ -1,4 +1,3 @@
-import React from "react";
 import { Breadcrumbs, InfoSection, TableOfContentsSection } from "./types";
 import { BreadcrumbsSection } from "./BreadcrumbsSection";
 import { BlogInfo } from "./BlogInfo";

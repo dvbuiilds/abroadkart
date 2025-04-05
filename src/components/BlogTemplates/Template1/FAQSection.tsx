@@ -1,4 +1,3 @@
-import React from "react";
 import { FAQSection as FAQSectionNode } from "./types";
 import {
   Accordion,
