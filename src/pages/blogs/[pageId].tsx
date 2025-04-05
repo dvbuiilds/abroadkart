@@ -1,5 +1,3 @@
-import React from "react";
-
 // COMPONENTS
 import { Page as BlogPageTemplate } from "@app/components/BlogTemplates/Template1/Page";
 
@@ -9,6 +7,7 @@ import type { ResponseType } from "../../types/api-types";
 import type {
   BlogPageData,
   BlogResponse,
+  BlogsAPIResponse,
   BlogSectionType,
 } from "@app/components/BlogTemplates/Template1/types";
 import { BlogLayout } from "@app/components/BlogTemplates/Template1/BlogLayout";
@@ -53,6 +52,35 @@ export const getServerSideProps = async (
     ...jsonResponse.data.pageData,
     { sectionType: PageSectionKeysMap.faq, ...jsonResponse.data.faqs },
   ];
+
+  const relatedBlogsResponse = await fetchWithTimeout(
+    `${apiEndPoint}${apiPath.getAllBlogs}?category=${jsonResponse.data.category}`
+  );
+  if (relatedBlogsResponse.success) {
+    const relatedBlogsJsonResponse: ResponseType<BlogsAPIResponse> =
+      relatedBlogsResponse.data;
+    if (relatedBlogsJsonResponse.success) {
+      const relatedBlogs = relatedBlogsJsonResponse.data.blogs.filter(
+        (blog) => blog.pageId !== jsonResponse.data.pageId
+      );
+      if (relatedBlogs.length) {
+        pageData.push({
+          sectionType: PageSectionKeysMap.relatedBlogs,
+          title: "Related Blogs",
+          blogs: relatedBlogs,
+        });
+      } else {
+        console.error("@@ Related Blogs API Error: No related blogs found.");
+      }
+    } else {
+      console.error(
+        "@@ Related Blogs Data Error: ",
+        relatedBlogsJsonResponse.error
+      );
+    }
+  } else {
+    console.error("@@ Related Blogs API Error: ", relatedBlogsResponse.error);
+  }
 
   const seoSchema = {
     "@context": "https://schema.org",
