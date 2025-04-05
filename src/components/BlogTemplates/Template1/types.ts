@@ -53,7 +53,8 @@ export type BlogSectionType =
   | ImgSection
   | InterlinkingSection
   | FAQSection
-  | TableOfContentsSection;
+  | TableOfContentsSection
+  | RelatedBlogsSection;
 
 interface BreadcrumbsSection {
   sectionType: typeof PageSectionKeysMap.breadcrumbs;
@@ -138,6 +139,15 @@ export interface TableOfContentsSection {
   sectionType: typeof PageSectionKeysMap.tableOfContents;
   title: string;
   content: TableOfContentsNode[];
+}
+
+export interface RelatedBlogsSection {
+  sectionType: typeof PageSectionKeysMap.relatedBlogs;
+  title: string;
+  blogs: Omit<
+    BlogResponse,
+    "breadcrumbs" | "faqs" | "pageData" | "tableOfContents"
+  >[];
 }
 
 export interface FreeCounsellingFormData {

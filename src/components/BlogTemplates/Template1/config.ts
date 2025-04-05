@@ -10,6 +10,7 @@ export const PageSectionKeysMap = {
   info: "info",
   faq: "faq",
   tableOfContents: "tableOfContents",
+  relatedBlogs: "relatedBlogs",
 } as const;
 
 // All categories covered should be mentioned here
