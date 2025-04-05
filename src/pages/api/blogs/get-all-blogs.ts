@@ -32,7 +32,7 @@ export default async function handler(
       .limit(PAGE_SIZE)
       .toArray();
 
-    if (!blogs) {
+    if (!blogs || !blogs?.length) {
       return res.status(404).json({
         success: false,
         error: { message: "Pages Not Found.", status: 404 },
