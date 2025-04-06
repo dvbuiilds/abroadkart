@@ -28,6 +28,7 @@ export const getServerSideProps = async (
       : Array.isArray(category)
       ? category.map((cat) => `?category=${cat}`).join("")
       : "");
+  console.log("@@ Blogs URL: ", url);
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
     await fetchWithTimeout(url);
   if (!response.success) {
