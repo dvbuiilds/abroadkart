@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 import { useUserSession } from "@app/context/UserSessionContext";
 
@@ -17,20 +18,20 @@ import { ProfileMenu } from "./ProfilePic";
 
 import { Menu, X } from "lucide-react";
 
+import LogoBlack from "../../public/abroadkart-logo-black.png";
+
 export function Navbar() {
   const { activeSession, user, triggerLogout } = useUserSession();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white shadow-sm sticky top-0 z-2">
+    <nav className="w-full bg-white shadow-sm sticky top-0 z-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <div className="h-8 w-32 bg-blue-600 rounded-sm flex items-center justify-center text-white font-semibold">
-                AbroadKart
-              </div>
+              <Image src={LogoBlack} width={40} alt="Abroadkart logo footer" />
             </Link>
           </div>
 

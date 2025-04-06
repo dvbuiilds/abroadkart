@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { Instagram, Youtube, Linkedin, MapPin, Mail } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
+import Image from "next/image";
+
+import LogoWhite from "../../public/abroadkart-expanded-logo-white.png";
 
 export function Footer() {
   return (
@@ -8,7 +11,12 @@ export function Footer() {
       <div className="max-w-7xl flex flex-col md:flex-row justify-center md:justify-between gap-4">
         {/* Left Section - Company Info */}
         <div className="max-w-xl">
-          <h2 className="text-5xl font-semibold">AbroadKart</h2>
+          <Image
+            src={LogoWhite}
+            width={350}
+            height={50}
+            alt="Abroadkart logo footer"
+          />
           <p className="mt-2 text-gray-400">
             Empowering Your Study Abroad Journey with Expert Guidance.
           </p>
