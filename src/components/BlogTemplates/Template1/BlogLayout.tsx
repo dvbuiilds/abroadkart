@@ -28,7 +28,7 @@ export const BlogLayout: React.FC<BlogLayoutProps> = ({
       <div className="flex flex-col md:flex-row w-full max-w-[1280px] mx-auto px-4 lg:px-8 gap-4">
         {/* Left - Table of Contents */}
         <aside className="w-full md:w-[220px] lg:w-[250px] flex-shrink-0">
-          <div className="md:sticky md:top-20 z-[-1]">
+          <div className="md:sticky md:top-20">
             {authorInfo ? <BlogInfo data={authorInfo} /> : null}
             {tableOfContents ? (
               <TableOfContents data={tableOfContents} />
