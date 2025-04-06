@@ -22,7 +22,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="w-full bg-white shadow-sm sticky top-0">
+    <nav className="w-full bg-white shadow-sm sticky top-0 z-2">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
