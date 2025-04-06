@@ -188,7 +188,7 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
   }, [formData]);
 
   return (
-    <div className="flex flex-col align-center p-4">
+    <div className="flex flex-col align-center px-4">
       <h1 className="text-center font-bold text-xl mb-4">
         Pre Counselling Form
       </h1>
@@ -198,11 +198,24 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
         currentStep={currentStep}
         stepNames={formNames}
       />
+
+      {/** Current Step Form */}
+      {currentStep < totalSteps ? (
+        <Form
+          currentStep={currentStep}
+          formData={formData[currentStep]}
+          onDataChange={onCurrentFormDataChangeHandler}
+        />
+      ) : (
+        <p className="text-center text-lg my-4">
+          Thanks for answering all the questions. You can now submit the form.
+        </p>
+      )}
       {/* Form Navigation Buttons */}
       {apiStatus === "success" || apiStatus === "error" ? (
         <></>
       ) : (
-        <div className="flex space-x-4 justify-center mt-4">
+        <div className="flex space-x-4 justify-center my-2">
           <button
             onClick={prevStep}
             disabled={!currentStep}
@@ -220,20 +233,6 @@ export default function PreCounsellingForm({ data }: { data: Questionnaire }) {
           </button>
         </div>
       )}
-      {/** Current Step Form */}
-      <div className="">
-        {currentStep < totalSteps ? (
-          <Form
-            currentStep={currentStep}
-            formData={formData[currentStep]}
-            onDataChange={onCurrentFormDataChangeHandler}
-          />
-        ) : (
-          <p className="text-center text-lg my-4">
-            Thanks for answering all the questions. You can now submit the form.
-          </p>
-        )}
-      </div>
     </div>
   );
 }
