@@ -52,7 +52,7 @@ const Login = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center grow bg-gray-100">
+    <div className="flex flex-col items-center justify-center grow bg-gray-100 py-12">
       <form
         className="bg-white p-6 rounded shadow-md w-80 flex flex-col"
         onSubmit={handleSubmit}

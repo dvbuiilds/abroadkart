@@ -80,7 +80,7 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center grow bg-gray-100 py-5">
+    <div className="flex flex-col items-center justify-center grow bg-gray-100 py-12">
       <h1 className="text-3xl font-bold mb-4">Sign Up</h1>
       <form className="bg-white p-6 rounded shadow-md w-80" onSubmit={onSubmit}>
         <div className="mb-4">
