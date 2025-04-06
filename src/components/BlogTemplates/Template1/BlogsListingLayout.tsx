@@ -10,7 +10,7 @@ export const BlogsListingLayout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="gap-2 pt-4 pb-8">
+    <div className="gap-2 pt-4 pb-8 px-8">
       <h1 className="text-2xl text-center font-semibold py-3 md:pt-3 md:pb-10 px-3 md:font-bold md:text-3xl">
         {title}
       </h1>
