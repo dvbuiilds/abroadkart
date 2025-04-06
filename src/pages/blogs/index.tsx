@@ -20,8 +20,10 @@ interface BlogsProps {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
+  console.log("@@ cookie : ", context.req.headers.cookie);
   const category = context.query.category;
   const url =
+    // `http://localhost:3000/api/blogs/get-all-blogs` +
     `${apiEndPoint}${apiPath.getAllBlogs}` +
     (typeof category === "string"
       ? `?category=${category}`
@@ -30,7 +32,13 @@ export const getServerSideProps = async (
       : "");
   console.log("@@ Blogs URL: ", url);
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
-    await fetchWithTimeout(url);
+    await fetchWithTimeout(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: context.req.headers.cookie || "", // Pass cookies if needed
+      },
+    });
   if (!response.success) {
     console.error("blogs API response not fetched. ", response.error);
     return {

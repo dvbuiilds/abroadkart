@@ -14,9 +14,10 @@ export const fetchWithTimeout = async (
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
     headers?: {
       "Content-Type": "application/json";
+      cookie?: string;
       email?: string;
     };
-    body: string;
+    body?: string;
   },
   timeout: number = 10000
 ): Promise<ResponseType<any>> => {
@@ -31,6 +32,10 @@ export const fetchWithTimeout = async (
     // Clear timeout once fetch completes
     clearTimeout(timeoutId);
     if (!response.ok && response.status !== 400 && response.status !== 200) {
+      console.error("@@ fetch response: ", {
+        responseOk: response.ok,
+        responseStatus: response.status,
+      });
       return {
         success: false,
         error: { message: "Response Fetch Failed.", status: response.status },
@@ -48,6 +53,10 @@ export const fetchWithTimeout = async (
   try {
     jsonResponse = await response.json();
     if (!jsonResponse.success) {
+      console.error("@@ jsonResponse not success: ", {
+        success: jsonResponse.success,
+        error: jsonResponse.error.message,
+      });
       return {
         success: false,
         error: jsonResponse.error,
