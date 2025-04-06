@@ -2,84 +2,127 @@ import { useState, type ReactNode } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
+// COMPONENTS
+import { ProfileMenu } from "./ProfilePic";
+
 // ICONS
 import { TbLogout } from "react-icons/tb";
 import { BsLayoutTextSidebar } from "react-icons/bs";
 
 // CONTEXT
 import { useUserSession } from "@app/context/UserSessionContext";
+import { User } from "@app/types/api-types";
 
 interface DashboardLayoutProps {
   children: ReactNode;
 }
 
 export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const router = useRouter();
   const { user, triggerLogout } = useUserSession();
-  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false); // Sidebar state
 
   return (
-    <div className="flex h-screen">
-      {/* Sidebar */}
-      <aside
-        className={`bg-gray-800 text-white p-2 flex flex-col justify-between transition-all duration-300 ${
-          isSidebarOpen ? "w-46" : "w-12"
-        }`}
-      >
-        <div className="flex flex-col gap-1">
-          {/* Sidebar Header with Toggle Button */}
-          <div className="p-2 rounded flex items-center justify-end">
-            <button onClick={() => setIsSidebarOpen((prev) => !prev)}>
-              <BsLayoutTextSidebar size={16} />
-            </button>
-          </div>
-
-          {/* Navigation Links - Hidden when collapsed */}
-          <nav
-            className={`flex flex-col space-y-4 ${
-              !isSidebarOpen ? "hidden" : ""
-            }`}
-          >
-            <Link
-              href="/dashboard"
-              className={`block p-2 rounded ${
-                router.pathname === "/dashboard"
-                  ? "bg-gray-700 font-bold"
-                  : "hover:bg-gray-700"
-              }`}
-            >
-              Dashboard
+    <div className="flex flex-col h-screen w-full">
+      {/* Navbar */}
+      <nav className="w-full bg-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex justify-between h-16 items-center">
+            {/* Logo */}
+            <Link href="/" className="flex items-center">
+              <div className="text-white font-semibold">AbroadKart</div>
             </Link>
+            <ProfileMenu user={user} onLogout={triggerLogout} />
+          </div>
+        </div>
+      </nav>
+      <div className="flex flex-row overflow-hidden h-screen">
+        {/* Sidebar */}
+        <DashboardSideBar user={user} triggerLogout={triggerLogout} />
 
-            {!user?.haveFilledPreCounsellingForm ? (
-              <Link
-                href="/dashboard/pre-counselling-form"
-                className={`block p-2 rounded ${
-                  router.pathname === "/dashboard/pre-counselling-form"
-                    ? "bg-gray-700 font-bold"
-                    : "hover:bg-gray-700"
-                }`}
-              >
-                Pre-Counselling
-              </Link>
-            ) : null}
-          </nav>
+        {/* Scrollable Page Content */}
+        <main className="flex-1 overflow-y-auto bg-gray-100 p-4">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
+
+const SidebarLink = ({
+  href,
+  label,
+  active,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+}) => (
+  <Link
+    href={href}
+    className={`block px-3 py-2 rounded transition-colors ${
+      active ? "bg-gray-700 font-bold" : "hover:bg-gray-700"
+    }`}
+  >
+    {label}
+  </Link>
+);
+
+export const DashboardSideBar = ({
+  user,
+  triggerLogout,
+}: {
+  user: User | null;
+  triggerLogout: () => void;
+}) => {
+  const router = useRouter();
+  const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
+
+  return (
+    <aside
+      className={`bg-gray-800 text-white p-2 flex flex-col justify-between transition-all duration-300 ${
+        isSidebarOpen ? "w-48" : "w-14"
+      }`}
+    >
+      {/* Top: Toggle + Nav */}
+      <div className="flex flex-col gap-2 flex-grow">
+        {/* Toggle Button */}
+        <div className="p-2 flex items-center justify-end">
+          <button
+            onClick={() => setIsSidebarOpen((prev) => !prev)}
+            className="text-white"
+          >
+            <BsLayoutTextSidebar size={18} />
+          </button>
         </div>
 
-        {/* Logout Button - Hidden when collapsed */}
-        {isSidebarOpen && (
-          <button
-            onClick={triggerLogout}
-            className="flex flex-row items-center p-2 rounded hover:bg-gray-700"
-          >
-            <TbLogout />
-            <span className="ml-2">Logout</span>
-          </button>
-        )}
-      </aside>
+        {/* Navigation Links */}
+        <nav
+          className={`${!isSidebarOpen && "hidden"} flex flex-col space-y-2`}
+        >
+          <SidebarLink
+            href="/dashboard"
+            label="Dashboard"
+            active={router.pathname === "/dashboard"}
+          />
+          {!user?.haveFilledPreCounsellingForm && (
+            <SidebarLink
+              href="/dashboard/pre-counselling-form"
+              label="Pre-Counselling"
+              active={router.pathname === "/dashboard/pre-counselling-form"}
+            />
+          )}
+        </nav>
+      </div>
 
-      {/* Page Content */}
-      <main className="flex-1 bg-gray-100 overflow-y-auto">{children}</main>
-    </div>
+      {/* Logout */}
+      {isSidebarOpen && (
+        <button
+          onClick={triggerLogout}
+          className="flex items-center gap-2 p-2 rounded hover:bg-gray-700"
+        >
+          <TbLogout />
+          <span>Logout</span>
+        </button>
+      )}
+    </aside>
   );
 };
