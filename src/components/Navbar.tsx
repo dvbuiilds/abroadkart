@@ -31,7 +31,7 @@ export function Navbar() {
           {/* Logo */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center">
-              <Image src={LogoBlack} width={40} alt="Abroadkart logo footer" />
+              <Image src={LogoBlack} width={40} alt="Abroadkart logo header" />
             </Link>
           </div>
 
