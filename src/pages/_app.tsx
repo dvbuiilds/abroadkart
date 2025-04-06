@@ -20,6 +20,7 @@ const getLayoutFromPathName = (pathName: string, children: ReactNode) => {
   }
   return (
     <>
+      <Navbar />
       {children}
       <Footer />
     </>
@@ -37,7 +38,6 @@ export default function App({ Component, pageProps }: AppProps) {
     <SessionProvider session={pageProps.session}>
       <UserSessionProvider>
         <div className="h-screen flex flex-col overflow-y-auto">
-          <Navbar />
           {ComponentWithLayout}
         </div>
       </UserSessionProvider>
