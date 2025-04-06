@@ -20,23 +20,21 @@ interface BlogsProps {
 export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
-  console.log("@@ cookie : ", context.req.headers.cookie);
   const category = context.query.category;
   const url =
-    // `http://localhost:3000/api/blogs/get-all-blogs` +
     `${apiEndPoint}${apiPath.getAllBlogs}` +
     (typeof category === "string"
       ? `?category=${category}`
       : Array.isArray(category)
       ? category.map((cat) => `?category=${cat}`).join("")
       : "");
-  console.log("@@ Blogs URL: ", url);
+  // console.log("@@ Blogs URL: ", url);
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
     await fetchWithTimeout(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        cookie: context.req.headers.cookie || "", // Pass cookies if needed
+        cookie: context.req.headers.cookie ?? "",
       },
     });
   if (!response.success) {

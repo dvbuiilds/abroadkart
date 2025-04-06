@@ -25,7 +25,14 @@ export const getServerSideProps = async (
   const pageId = context.params?.pageId;
 
   const response = await fetchWithTimeout(
-    `${apiEndPoint}${apiPath.getBlogData}?pageId=${pageId}`
+    `${apiEndPoint}${apiPath.getBlogData}?pageId=${pageId}`,
+    {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: context.req.headers.cookie ?? "",
+      },
+    }
   );
   if (!response.success) {
     console.log("@@ fetch response is unsuccessful.");
