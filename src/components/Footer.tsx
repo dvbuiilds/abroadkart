@@ -3,7 +3,7 @@ import { Instagram, Youtube, Linkedin, MapPin, Mail } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
 import Image from "next/image";
 
-import LogoWhite from "../../public/abroadkart-expanded-logo-white.png";
+import LogoWhite from "../../public/abroadkart-logo-white.png";
 
 export function Footer() {
   return (
