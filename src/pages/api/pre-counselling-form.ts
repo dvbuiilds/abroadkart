@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 // TYPES
-import type { Questionnaire } from "@app/types/form-types";
+import type { QuestionsSets } from "@app/types/form-types";
 import type { ResponseType } from "@app/types/api-types";
 
 // UTILS
@@ -12,12 +12,12 @@ const collection = db.collection("pre-counselling-form");
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<ResponseType<Questionnaire>>
+  res: NextApiResponse<ResponseType<QuestionsSets>>
 ) {
   const email = req.headers["email"];
   if (req.method === "POST") {
-    const body = req.body as Questionnaire;
-    const qnas = body.map((set) => set.info).flat();
+    const body = req.body as QuestionsSets;
+    const qnas = body.map((set) => set.questions).flat();
     try {
       const dbResponse = await collection.insertOne({ email, form: qnas });
       if (!dbResponse) {
