@@ -60,6 +60,10 @@ const Dashboard = () => {
           Explore Blogs &gt;
         </Link>
       </section>
+      <section className="flex flex-col gap-2 items-center">
+        Feel free to reach out to us if you have any questions or need any
+        assistance. [+]91[-]9911720868 | tech.abroadkart@gmail.com
+      </section>
     </div>
   );
 };
