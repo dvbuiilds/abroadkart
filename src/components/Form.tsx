@@ -92,7 +92,11 @@ export const Form = ({ formData, currentStep, onDataChange }: FormProps) => {
                   </SelectTrigger>
                   <SelectContent>
                     {questionObj.options.map((opt, i) => (
-                      <SelectItem key={i} value={opt}>
+                      <SelectItem
+                        key={i}
+                        value={opt}
+                        className="cursor-pointer"
+                      >
                         {opt}
                       </SelectItem>
                     ))}
@@ -110,7 +114,10 @@ export const Form = ({ formData, currentStep, onDataChange }: FormProps) => {
                 </Label>
                 <div className="space-y-2">
                   {questionObj.options.map((opt, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div
+                      key={i}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <Checkbox
                         checked={answer.includes(opt)}
                         onCheckedChange={() =>
@@ -118,7 +125,10 @@ export const Form = ({ formData, currentStep, onDataChange }: FormProps) => {
                         }
                         id={`question-${index}-opt-${i}`}
                       />
-                      <Label htmlFor={`question-${index}-opt-${i}`}>
+                      <Label
+                        htmlFor={`question-${index}-opt-${i}`}
+                        className="cursor-pointer"
+                      >
                         {opt}
                       </Label>
                     </div>
