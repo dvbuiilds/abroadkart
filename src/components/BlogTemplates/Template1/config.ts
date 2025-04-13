@@ -14,4 +14,8 @@ export const PageSectionKeysMap = {
 } as const;
 
 // All categories covered should be mentioned here
-export const BlogCategories = ["Study Abroad", "Scholarship"];
+export const BlogCategories = [
+  "Study Abroad",
+  "Entrance Exams",
+  "Application Process",
+];
