@@ -20,9 +20,11 @@
   html {
     scroll-behavior: smooth;
   }
+  ul {
+    list-style: disc;
+    padding-left: 1.5rem;
+  }
 }
-
-
 
 @layer base {
   :root {
@@ -79,8 +81,6 @@
     --chart-5: 340 75% 55%;
   }
 }
-
-
 
 @layer base {
   * {
