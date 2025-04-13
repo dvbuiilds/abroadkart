@@ -16,7 +16,7 @@ export const TableOfContents = (props: { data: TableOfContentsSection }) => {
         {props.data.title}
       </h2>
       <nav>
-        <ol className="list-decimal list-inside">
+        <ol className="list-inside">
           {props.data.content.map((node, index) => (
             <li key={`node-${index}`}>
               <a
@@ -27,7 +27,7 @@ export const TableOfContents = (props: { data: TableOfContentsSection }) => {
               >
                 {node.label}
               </a>
-              <ol className="list-decimal list-inside pl-4">
+              <ol className="list-inside pl-4">
                 {node.children.map((childNode, childIndex) => (
                   <li key={`childNode-${childIndex}`}>
                     <a
@@ -38,7 +38,7 @@ export const TableOfContents = (props: { data: TableOfContentsSection }) => {
                     >
                       {childNode.label}
                     </a>
-                    <ol className="list-decimal list-inside pl-4">
+                    <ol className="list-inside pl-4">
                       {childNode.children.map(
                         (grandChildNode, grandChildIndex) => (
                           <li key={`grandChildNode-${grandChildIndex}`}>
