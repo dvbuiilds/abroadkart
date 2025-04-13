@@ -11,7 +11,12 @@ export const apiEndPoint =
     ? apiEndPoints.preview
     : apiEndPoints.development;
 
-console.log("@@ apiEndPoint: ", apiEndPoint);
+console.log(
+  "@@ apiEndPoint: ",
+  apiEndPoint,
+  "VERCEL_ENV",
+  process.env.VERCEL_ENV
+);
 
 export const apiPath = {
   signup: "/api/auth/signup",
