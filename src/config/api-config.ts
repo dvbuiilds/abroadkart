@@ -1,7 +1,7 @@
 const apiEndPoints = {
   development: "http://localhost:3000",
   preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
-  production: "",
+  production: "https://app.abroadkart.com",
 };
 
 export const apiEndPoint =
