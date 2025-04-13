@@ -8,6 +8,7 @@ import type { User, ResponseType } from "../../../types/api-types";
 
 // UTILS
 import mongoDBClient from "../../../server/db/mongodb"; // Import the MongoClient instance
+import { getNameAbbreviation } from "@app/utils/name-abbreviation";
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,8 +22,8 @@ export default async function handler(
     });
   }
 
-  // Extract data from the request body
-  const { name, email, password, phoneNumber } = req.body;
+  // Extract data from the request body by parsing the string. This is required because the body is a string. This is done because the headers are set to application/json and textual json is expected at the server side.
+  const { name, email, password, phoneNumber } = await JSON.parse(req.body);
 
   // Validate the request body
   if (!name || !email || !password || !phoneNumber) {
@@ -103,6 +104,8 @@ export default async function handler(
     // Hash the password before storing it
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const nameAbbreviation = getNameAbbreviation(name);
+
     // Create a new user
     const newUser = await db.collection("users").insertOne({
       name,
@@ -111,6 +114,9 @@ export default async function handler(
       phoneNumber,
       createdAt: new Date(),
       updatedAt: new Date(),
+      provider: "credentials",
+      haveFilledPreCounsellingForm: false,
+      nameAbbreviation,
     });
 
     // Return success response
@@ -121,6 +127,9 @@ export default async function handler(
         name,
         email,
         phoneNumber,
+        provider: "credentials",
+        haveFilledPreCounsellingForm: false,
+        nameAbbreviation,
       },
     });
   } catch (error) {

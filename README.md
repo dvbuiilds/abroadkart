@@ -21,20 +21,32 @@ To run this project, you will need to add the following environment variables to
 
 `MONGODB_URI` - the complete url of your mongo db cloud cluster url that should include username, password (with escape characters if any), db name.
 
-`ENVIRONMENT` - either 'development' or 'production'.
+`NEXT_PUBLIC_ENVIRONMENT` - either 'development' or 'production'.
 
 ## Getting Started
 
 To set up the development environment for AbroadKart, follow these steps:
 
-**1. Clone the Repository**
+**1. Checkout to any of the active branches**
+
+```bash
+git checkout release
+```
+
+or
+
+```bash
+git checkout integration
+```
+
+**2. Clone the Repository**
 
 ```bash
 git clone https://github.com/your-repo/abroadkart.git
 cd abroadkart
 ```
 
-**2. Install Dependencies**
+**3. Install Dependencies**
 
 Install the required packages using your preferred package manager:
 
@@ -46,7 +58,7 @@ yarn install
 pnpm install
 ```
 
-**3. Start the Development Server**
+**4. Start the Development Server**
 
 Run the development server locally:
 

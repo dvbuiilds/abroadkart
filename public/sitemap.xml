@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://app.abroadkart.com/</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>1</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/about</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.9</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/contact</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.7</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/privacy-policy</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/terms</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>0.3</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/blogs</loc>
+        <lastmod>2025-03-30</lastmod>
+        <changefreq>daily</changefreq>
+        <priority>0.8</priority>
+      </url>
+<url>
+        <loc>https://app.abroadkart.com/blogs/10-tips-to-improve-your-gmat-score</loc>
+        <lastmod>4/2/2025</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>1.0</priority>
+        </url>
+<url>
+        <loc>https://app.abroadkart.com/blogs/common-mistakes-on-gmat-sat</loc>
+        <lastmod>4/13/2025</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>1.0</priority>
+        </url>
+<url>
+        <loc>https://app.abroadkart.com/blogs/how-to-write-winning-sop-for-study-abroad</loc>
+        <lastmod>4/13/2025</lastmod>
+        <changefreq>yearly</changefreq>
+        <priority>1.0</priority>
+        </url>
+  </urlset>
