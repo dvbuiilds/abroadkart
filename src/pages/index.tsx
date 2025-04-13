@@ -117,12 +117,12 @@ const faqs = [
       "Your satisfaction is our priority. If you're not completely satisfied with your initial session, you can request a match with a different counsellor. We also offer a satisfaction guarantee for our premium packages, ensuring you receive the quality guidance you deserve.",
   },
 ];
+const url = `${apiEndPoint}${apiPath.getAllBlogs}?start=0?end=3`;
 
 export const getServerSideProps = async () => {
+  console.log("@@ URL: ", url);
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
-    await fetchWithTimeout(
-      `${apiEndPoint}${apiPath.getAllBlogs}?start=0?end=3`
-    );
+    await fetchWithTimeout(url);
   if (!response.success) {
     console.error("blogs API response not fetched. ", response.error);
     return {
