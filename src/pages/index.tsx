@@ -120,7 +120,6 @@ const faqs = [
 const url = `${apiEndPoint}${apiPath.getAllBlogs}?start=0?end=3`;
 
 export const getServerSideProps = async () => {
-  console.log("@@ URL: ", url);
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
     await fetchWithTimeout(url);
   if (!response.success) {
