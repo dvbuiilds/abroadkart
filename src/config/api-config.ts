@@ -11,6 +11,8 @@ export const apiEndPoint =
     ? apiEndPoints.preview
     : apiEndPoints.development;
 
+console.log("@@ apiEndPoint: ", apiEndPoint);
+
 export const apiPath = {
   signup: "/api/auth/signup",
   nextAuth: "/api/auth/[...nextauth]",
