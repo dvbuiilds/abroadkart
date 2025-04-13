@@ -22,7 +22,10 @@ const Dashboard = () => {
             Stay informed with helpful articles, tips, and insights on studying
             abroad.
           </p>
-          <Link href="/blogs" className="text-blue-600 hover:underline">
+          <Link
+            href="https://abroadkart.com"
+            className="text-blue-600 hover:underline"
+          >
             Explore Blogs &gt;
           </Link>
         </section>
@@ -56,7 +59,10 @@ const Dashboard = () => {
           Stay informed with helpful articles, tips, and insights on studying
           abroad.
         </p>
-        <Link href="/blogs" className="text-blue-600 hover:underline">
+        <Link
+          href="https://abroadkart.com"
+          className="text-blue-600 hover:underline"
+        >
           Explore Blogs &gt;
         </Link>
       </section>
