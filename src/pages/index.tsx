@@ -277,7 +277,10 @@ const Home = ({ blogs }: { blogs: BlogsAPIResponse["blogs"] | null }) => {
               ))}
             </div>
             <div className="text-center mt-6">
-              <Link href="/blogs" className="text-blue-600 hover:underline">
+              <Link
+                href="https://abroadkart.com"
+                className="text-blue-600 hover:underline"
+              >
                 Explore More Blogs &gt;
               </Link>
             </div>

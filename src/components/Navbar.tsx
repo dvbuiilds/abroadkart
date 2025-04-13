@@ -43,7 +43,7 @@ export function Navbar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-6">
             <NavLink href="/">Home</NavLink>
-            <NavLink href="/blogs">Blogs</NavLink>
+            <NavLink href="https://abroadkart.com">Blogs</NavLink>
             <NavLink href="/about">About Us</NavLink>
             <NavLink href="/contact">Contact Us</NavLink>
             {/* Auth Actions (Desktop) */}
@@ -88,7 +88,10 @@ export function Navbar() {
                   <MobileNavLink href="/" onClick={() => setIsOpen(false)}>
                     Home
                   </MobileNavLink>
-                  <MobileNavLink href="/blogs" onClick={() => setIsOpen(false)}>
+                  <MobileNavLink
+                    href="https://abroadkart.com"
+                    onClick={() => setIsOpen(false)}
+                  >
                     Blogs
                   </MobileNavLink>
                   <MobileNavLink href="/about" onClick={() => setIsOpen(false)}>
