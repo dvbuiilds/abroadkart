@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import parse from "html-react-parser";
 import { BlogCard } from "@app/components/BlogCard";
 import { FAQSection } from "./FAQSection";
 import { PageSectionKeysMap } from "./config";
@@ -25,7 +26,7 @@ const renderSection = (section: BlogSectionType) => {
       return <h4 id={section.id}>{section.content}</h4>;
     }
     case PageSectionKeysMap.p: {
-      return <p className="text-justify">{section.content}</p>;
+      return <div className="text-justify">{parse(section.content)}</div>;
     }
     case PageSectionKeysMap.img: {
       return (
