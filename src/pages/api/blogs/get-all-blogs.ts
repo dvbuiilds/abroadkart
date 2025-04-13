@@ -13,8 +13,9 @@ export default async function handler(
 ) {
   try {
     // Extract query params
-    const { start = "0", category } = req.query;
+    const { start = "0", end, category } = req.query;
     const startIndex = parseInt(start as string, 10) || 0;
+    const endIndex = parseInt(end as string, 10) || undefined;
 
     // Build query filter
     const filter: any = {};
@@ -29,7 +30,7 @@ export default async function handler(
       .find(filter)
       .sort({ publishedAt: -1 }) // Descending order
       .skip(startIndex)
-      .limit(PAGE_SIZE)
+      .limit(endIndex ? endIndex - startIndex : PAGE_SIZE)
       .toArray();
 
     if (!blogs || !blogs?.length) {
