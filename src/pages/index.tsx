@@ -25,6 +25,10 @@ import {
 import HeaderImg from "../../public/abroadkart-services.png";
 import { BlogCard } from "@app/components/BlogCard";
 import { Form } from "@app/components/BlogTemplates/Template1/Form";
+import { ResponseType } from "@app/types/api-types";
+import { BlogsAPIResponse } from "@app/components/BlogTemplates/Template1/types";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 
 const metrics = [
   {
@@ -75,26 +79,6 @@ const howItWorksSteps = [
     Icon: <BookOpenCheck className="text-blue-600 h-12 w-12" />,
   },
 ];
-const blogs = [
-  {
-    pageId: "top-10-universities",
-    title: "Top 10 Universities in the UK",
-    date: "March 15, 2025",
-    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
-  },
-  {
-    pageId: "top-10-universities",
-    title: "How to Get a Student Visa for the USA",
-    date: "March 10, 2025",
-    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
-  },
-  {
-    pageId: "top-10-universities",
-    title: "Best Countries for Studying AI & Data Science",
-    date: "March 5, 2025",
-    imgUrl: "https://images.pexels.com/photos/346529/pexels-photo-346529.jpeg",
-  },
-];
 const faqs = [
   {
     id: 1,
@@ -134,7 +118,43 @@ const faqs = [
   },
 ];
 
-const Home = () => {
+export const getServerSideProps = async () => {
+  const response: ResponseType<ResponseType<BlogsAPIResponse>> =
+    await fetchWithTimeout(
+      `${apiEndPoint}${apiPath.getAllBlogs}?start=0?end=3`
+    );
+  if (!response.success) {
+    console.error("blogs API response not fetched. ", response.error);
+    return {
+      props: {
+        blogs: null,
+      },
+    };
+  }
+  if (!response.data.success) {
+    console.error("blogs API response not fetched. ", response.data.error);
+    return {
+      props: {
+        blogs: null,
+      },
+    };
+  }
+  if (!response.data.data || !response.data.data.blogs) {
+    console.error("blogs not found. ");
+    return {
+      props: {
+        blogs: null,
+      },
+    };
+  }
+  return {
+    props: {
+      blogs: response.data.data.blogs,
+    },
+  };
+};
+
+const Home = ({ blogs }: { blogs: BlogsAPIResponse["blogs"] | null }) => {
   return (
     <div className="w-full mx-auto">
       {/* Header Section */}
@@ -237,23 +257,33 @@ const Home = () => {
       </section>
 
       {/* Blog Section */}
-      <section className="bg-gray-100 py-16 px-4">
-        <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-900 text-center">
-            Latest Blogs
-          </h2>
-          <div className="mt-10 grid md:grid-cols-3 gap-6">
-            {blogs.map((blog, index) => (
-              <BlogCard key={`blog_${index}_${blog.pageId}`} data={blog} />
-            ))}
+      {blogs ? (
+        <section className="bg-gray-100 py-16 px-4">
+          <div className="max-w-5xl mx-auto">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center">
+              Latest Blogs
+            </h2>
+            <div className="mt-10 grid md:grid-cols-3 gap-6">
+              {blogs.map((blog, index) => (
+                <BlogCard
+                  key={`blog_${index}_${blog.pageId}`}
+                  data={{
+                    date: blog.blogMetaData.publishedDate,
+                    imgUrl: blog.featuredImg.src,
+                    pageId: blog.pageId,
+                    title: blog.title,
+                  }}
+                />
+              ))}
+            </div>
+            <div className="text-center mt-6">
+              <Link href="/blogs" className="text-blue-600 hover:underline">
+                Explore More Blogs &gt;
+              </Link>
+            </div>
           </div>
-          <div className="text-center mt-6">
-            <Link href="/blogs" className="text-blue-600 hover:underline">
-              Explore More Blogs &gt;
-            </Link>
-          </div>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {/** FAQs */}
       <section className="section-padding bg-counselor-light py-16 px-4">
