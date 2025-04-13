@@ -1,18 +1,19 @@
 import { type ReactNode } from "react";
 
 // THIRD PARTY
-import type { AppProps } from "next/app";
 import { SessionProvider } from "next-auth/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { useRouter } from "next/router";
+import type { AppProps } from "next/app";
 
 // COMPONENTS
 import { DashboardLayout } from "@app/components/DashboardLayout";
 import { Navbar } from "@app/components/Navbar";
 import { UserSessionProvider } from "@app/context/UserSessionContext";
+import { Footer } from "@app/components/Footer";
 
 // STYLES
 import "@app/styles/globals.css";
-import { Footer } from "@app/components/Footer";
 
 const getLayoutFromPathName = (pathName: string, children: ReactNode) => {
   if (pathName.startsWith("/dashboard")) {
@@ -41,6 +42,7 @@ export default function App({ Component, pageProps }: AppProps) {
           {ComponentWithLayout}
         </div>
       </UserSessionProvider>
+      <SpeedInsights />
     </SessionProvider>
   );
 }
