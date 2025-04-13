@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /api/
+Disallow: /dashboard/
+Allow: /
+
+Sitemap: https://app.abroadkart.com/sitemap.xml
