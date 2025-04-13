@@ -1,3 +1,7 @@
+import { BlogsAPIResponse } from "@app/components/BlogTemplates/Template1/types";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
+import { ResponseType } from "@app/types/api-types";
+import { fetchWithTimeout } from "@app/utils/fetch-utils";
 import fs from "fs";
 import path from "path";
 
@@ -8,7 +12,14 @@ interface XMLURLBlock {
   priority: number;
 }
 
-const SITE_URL = "https://abroadkart.com";
+const SITE_URL = "https://app.abroadkart.com";
+
+const ChangeFreqValuesMap = {
+  DAILY: "daily",
+  WEEKLY: "weekly",
+  MONTHLY: "monthly",
+  YEARLY: "yearly",
+} as const;
 
 const staticPages: XMLURLBlock[] = [
   { id: "", lastMod: "2025-03-30", changeFreq: "weekly", priority: 1.0 },
@@ -40,26 +51,29 @@ const staticPages: XMLURLBlock[] = [
 
 // Function to fetch blog slugs from DB
 const fetchBlogSlugs = async (): Promise<XMLURLBlock[]> => {
-  return [
-    {
-      id: "first-blog",
-      lastMod: "2025-03-30",
-      changeFreq: "yearly",
-      priority: 1.0,
-    },
-    {
-      id: "second-blog",
-      lastMod: "2025-03-30",
-      changeFreq: "yearly",
-      priority: 1.0,
-    },
-    {
-      id: "third-blog",
-      lastMod: "2025-03-30",
-      changeFreq: "yearly",
-      priority: 1.0,
-    },
-  ]; // Replace with DB query
+  const response: ResponseType<ResponseType<BlogsAPIResponse>> =
+    await fetchWithTimeout(`${apiEndPoint}${apiPath.getAllBlogs}`);
+  if (!response.success) {
+    console.error("blogs API response not fetched. ", response.error);
+    return [];
+  }
+  const jsonResponse = response.data;
+  if (!jsonResponse.success) {
+    console.error("blogs API response not fetched. ", jsonResponse.error);
+    return [];
+  }
+  const blogs = jsonResponse.data.blogs;
+  if (!blogs || !blogs.length) {
+    console.error("blogs not found. ");
+    return [];
+  }
+  const blogSlugs = blogs.map((blog) => ({
+    id: blog.pageId,
+    lastMod: blog.blogMetaData.lastModifiedDate,
+    changeFreq: ChangeFreqValuesMap.YEARLY,
+    priority: 1.0,
+  }));
+  return blogSlugs;
 };
 
 // Generate Sitemap
