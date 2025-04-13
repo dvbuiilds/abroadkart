@@ -10,7 +10,7 @@ export const BlogsListingLayout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 pt-4 pb-8">
+    <div className="flex flex-col items-center justify-center gap-2 pt-4 pb-8 md:px-24">
       <h1 className="text-2xl font-semibold py-3 md:pt-3 md:pb-10 px-3 md:font-bold md:text-3xl">
         {title}
       </h1>
