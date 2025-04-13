@@ -1,5 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
+import { type GetServerSidePropsContext } from "next";
+
+// COMPONENTS
 import {
   Accordion,
   AccordionContent,
@@ -25,10 +28,14 @@ import {
 import HeaderImg from "../../public/abroadkart-services.png";
 import { BlogCard } from "@app/components/BlogCard";
 import { Form } from "@app/components/BlogTemplates/Template1/Form";
-import { ResponseType } from "@app/types/api-types";
-import { BlogsAPIResponse } from "@app/components/BlogTemplates/Template1/types";
-import { apiEndPoint, apiPath } from "@app/config/api-config";
+
+// TYPES
+import type { ResponseType } from "@app/types/api-types";
+import type { BlogsAPIResponse } from "@app/components/BlogTemplates/Template1/types";
+
+// UTILS
 import { fetchWithTimeout } from "@app/utils/fetch-utils";
+import { apiEndPoint, apiPath } from "@app/config/api-config";
 
 const metrics = [
   {
@@ -119,9 +126,17 @@ const faqs = [
 ];
 const url = `${apiEndPoint}${apiPath.getAllBlogs}?start=0?end=3`;
 
-export const getServerSideProps = async () => {
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
   const response: ResponseType<ResponseType<BlogsAPIResponse>> =
-    await fetchWithTimeout(url);
+    await fetchWithTimeout(url, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        cookie: context.req.headers.cookie ?? "",
+      },
+    });
   if (!response.success) {
     console.error("blogs API response not fetched. ", response.error);
     return {
