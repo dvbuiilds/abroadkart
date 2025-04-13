@@ -4,19 +4,19 @@ const apiEndPoints = {
   production: "https://app.abroadkart.com",
 };
 
+const ENV =
+  process.env.VERCEL_ENV ||
+  process.env.NEXT_PUBLIC_ENVIRONMENT ||
+  "development";
+
 export const apiEndPoint =
-  process.env.NEXT_PUBLIC_ENVIRONMENT === "production"
+  ENV === "production"
     ? apiEndPoints.production
-    : process.env.NEXT_PUBLIC_ENVIRONMENT === "preview"
+    : ENV === "preview"
     ? apiEndPoints.preview
     : apiEndPoints.development;
 
-console.log(
-  "@@ apiEndPoint: ",
-  apiEndPoint,
-  "VERCEL_ENV",
-  process.env.VERCEL_ENV
-);
+console.log("@@ VERCEL_ENV", ENV);
 
 export const apiPath = {
   signup: "/api/auth/signup",
