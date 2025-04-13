@@ -42,7 +42,16 @@ export default async function handler(
 
     // Data Transformation
     const transformedData = transformDataForDB(data);
-
+    if (!transformedData) {
+      return res.status(500).json({
+        success: false,
+        error: {
+          message:
+            "Internal Server Error. Blog could not be created at this time. please try again later.",
+          status: 500,
+        },
+      });
+    }
     const response = await blogsCollection.insertOne(transformedData);
     if (!response.acknowledged) {
       return res.status(500).json({
@@ -67,7 +76,7 @@ export default async function handler(
   }
 }
 
-const transformDataForDB = (data: BlogResponse): BlogResponse => {
+const transformDataForDB = (data: BlogResponse): BlogResponse | null => {
   // Setting publishedDate and lastModifiedDate to current date.
   data.blogMetaData.publishedDate = new Date().toLocaleDateString("en-US", {
     year: "numeric",
@@ -82,42 +91,51 @@ const transformDataForDB = (data: BlogResponse): BlogResponse => {
 
   // Logic to create table of contents from pageData at the time of blog creation to save computation at the time of page request by client.
   const tableOfContentsData: TableOfContentsNode[] = [];
-  for (let index = 0; index < data.pageData.length; ++index) {
-    const section = data.pageData[index];
-    if (
-      section.sectionType === PageSectionKeysMap.h1 ||
-      section.sectionType === PageSectionKeysMap.h2 ||
-      section.sectionType === PageSectionKeysMap.h3 ||
-      section.sectionType === PageSectionKeysMap.h4
-    ) {
-      const sectionId = `#${section.content
-        .split(" ")
-        .map((word) => word.toLowerCase())
-        .join("-")}`;
-      section.id = sectionId;
-      if (section.sectionType === PageSectionKeysMap.h2) {
-        tableOfContentsData.push({
-          label: section.content,
-          id: sectionId,
-          children: [],
-        });
-      } else if (section.sectionType === PageSectionKeysMap.h3) {
-        tableOfContentsData[tableOfContentsData.length - 1].children.push({
-          label: section.content,
-          id: sectionId,
-          children: [],
-        });
-      } else if (section.sectionType === PageSectionKeysMap.h4) {
-        tableOfContentsData[tableOfContentsData.length - 1].children[
-          tableOfContentsData[tableOfContentsData.length - 1].children.length -
-            1
-        ].children.push({
-          label: section.content,
-          id: sectionId,
-          children: [],
-        });
+  try {
+    for (let index = 0; index < data.pageData.length; ++index) {
+      const section = data.pageData[index];
+      if (
+        section.sectionType === PageSectionKeysMap.h1 ||
+        section.sectionType === PageSectionKeysMap.h2 ||
+        section.sectionType === PageSectionKeysMap.h3 ||
+        section.sectionType === PageSectionKeysMap.h4
+      ) {
+        const sectionId = `#${section.content
+          .split(" ")
+          .map((word) => word.toLowerCase())
+          .join("-")}`;
+        section.id = sectionId;
+        if (section.sectionType === PageSectionKeysMap.h2) {
+          tableOfContentsData.push({
+            label: section.content,
+            id: sectionId,
+            children: [],
+          });
+        } else if (section.sectionType === PageSectionKeysMap.h3) {
+          tableOfContentsData[tableOfContentsData.length - 1].children.push({
+            label: section.content,
+            id: sectionId,
+            children: [],
+          });
+        } else if (section.sectionType === PageSectionKeysMap.h4) {
+          tableOfContentsData[tableOfContentsData.length - 1].children[
+            tableOfContentsData[tableOfContentsData.length - 1].children
+              .length - 1
+          ].children.push({
+            label: section.content,
+            id: sectionId,
+            children: [],
+          });
+        }
       }
+      console.log(
+        "@@ tableOfContentsData",
+        JSON.stringify(tableOfContentsData, null, 2)
+      );
     }
+  } catch (error) {
+    console.error("Error creating table of contents: ", error);
+    return null;
   }
 
   return {
