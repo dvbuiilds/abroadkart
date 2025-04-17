@@ -93,6 +93,8 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
         activeSession.data?.user?.email || ""
       )}`
     );
+    console.log("@@ Response: ", response);
+    console.log("@@ JSON Response: ", JSON.stringify(response));
     if (!response.success) {
       console.log("@@ Error in fetching user details: ", response);
       updateUser(null);
