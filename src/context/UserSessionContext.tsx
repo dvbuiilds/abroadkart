@@ -97,6 +97,7 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
       console.log("@@ Error in fetching user details: ", response);
       updateUser(null);
       updateSessionProvider("no-provider");
+      triggerLogout();
       return;
     }
 
