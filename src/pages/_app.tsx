@@ -3,6 +3,7 @@ import { type ReactNode } from "react";
 // THIRD PARTY
 import { SessionProvider } from "next-auth/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { Analytics } from "@vercel/analytics/next";
 import { useRouter } from "next/router";
 import type { AppProps } from "next/app";
 
@@ -43,6 +44,7 @@ export default function App({ Component, pageProps }: AppProps) {
         </div>
       </UserSessionProvider>
       <SpeedInsights />
+      <Analytics />
     </SessionProvider>
   );
 }
