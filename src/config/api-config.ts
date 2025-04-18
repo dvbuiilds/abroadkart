@@ -5,9 +5,7 @@ const apiEndPoints = {
 };
 
 const ENV =
-  process.env.VERCEL_ENV ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT ||
-  "development";
+  process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_ENVIRONMENT || "production";
 
 export const apiEndPoint =
   ENV === "production"
