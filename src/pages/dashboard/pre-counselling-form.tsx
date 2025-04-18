@@ -304,6 +304,7 @@ const makeQuestionAnswersObject = (): QuestionsSets => {
 const formNames = transformedQuestionSet.sets.map((set) => set.name);
 
 const handleFormSubmitAPICall = async (data: QuestionsSets, email: string) => {
+  console.log(`${apiEndPoint}${apiPath.preCounsellingForm}`);
   const response = await fetchWithTimeout(
     `${apiEndPoint}${apiPath.preCounsellingForm}`,
     {
@@ -355,6 +356,7 @@ const handleFetchingFormDataFromLocalStorage = async (
 };
 
 const DEBUG_ENABLE_EVERY_QUESTION_ANSWERED = true;
+
 export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
   const { user, fetchUserDetails } = useUserSession();
   const [formData, updateFormData] = useState<QuestionsSets>(data);
