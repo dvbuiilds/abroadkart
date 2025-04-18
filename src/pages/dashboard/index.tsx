@@ -1,11 +1,33 @@
 import Link from "next/link";
 import { Alert } from "@app/components/Alert";
-import { useUserSession } from "@app/context/UserSessionContext";
+import { GetServerSidePropsContext } from "next";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../api/auth/[...nextauth]";
 
-const Dashboard = () => {
-  const { user } = useUserSession();
+export const getServerSideProps = async (
+  context: GetServerSidePropsContext
+) => {
+  const session = await getServerSession(context.req, context.res, authOptions);
+  if (session?.user?.haveFilledPreCounsellingForm) {
+    return {
+      props: {
+        haveFilledPreCounsellingForm: true,
+      },
+    };
+  }
+  return {
+    props: {
+      haveFilledPreCounsellingForm: false,
+    },
+  };
+};
 
-  if (!user?.haveFilledPreCounsellingForm) {
+const Dashboard = ({
+  haveFilledPreCounsellingForm,
+}: {
+  haveFilledPreCounsellingForm: boolean;
+}) => {
+  if (!haveFilledPreCounsellingForm) {
     return (
       <div className="flex flex-col items-center h-full gap-4 bg-white rounded-md p-1">
         <Link href="/dashboard/pre-counselling-form" className="w-full">
