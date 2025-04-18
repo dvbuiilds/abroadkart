@@ -78,8 +78,7 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const triggerLogout = () => {
-    signOut();
-    router.push("/login");
+    signOut({ callbackUrl: "/login" });
     updateSessionProvider("no-provider");
     updateUser(null);
   };
