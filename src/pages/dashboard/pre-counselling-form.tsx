@@ -318,7 +318,8 @@ const handleFormSubmitAPICall = async (data: QuestionsSets, email: string) => {
   if (!response.success) {
     console.log("@@ fetch response is unsuccessful.");
     return {
-      notFound: true,
+      success: false,
+      error: response.error,
     };
   }
   return response.data;
@@ -486,7 +487,7 @@ export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
         </p>
       )}
       {/* Form Navigation Buttons */}
-      {apiStatus === "success" || apiStatus === "error" ? (
+      {apiStatus === "success" ? (
         <></>
       ) : (
         <div className="flex space-x-4 justify-center my-2">
