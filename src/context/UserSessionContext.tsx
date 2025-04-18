@@ -87,8 +87,9 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserDetails = async () => {
     const sessionResponse = await getSession();
     if (sessionResponse?.user) {
-      updateUser(sessionResponse.user);
-      updateSessionProvider(sessionResponse.user?.provider ?? "credentials");
+      const sessionUser = sessionResponse.user as User;
+      updateUser(sessionUser);
+      updateSessionProvider(sessionUser?.provider ?? "credentials");
     }
   };
 
