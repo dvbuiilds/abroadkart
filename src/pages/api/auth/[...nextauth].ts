@@ -120,6 +120,8 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      if (!token?.email) return null;
+
       const email = token?.email;
       const dbUser = await db.collection("users").findOne({ email });
       const form = await db
