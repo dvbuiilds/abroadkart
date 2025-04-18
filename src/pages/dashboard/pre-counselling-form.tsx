@@ -353,6 +353,7 @@ const handleFetchingFormDataFromLocalStorage = async (
   }
 };
 
+const DEBUG_ENABLE_EVERY_QUESTION_ANSWERED = true;
 export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
   const { user, fetchUserDetails } = useUserSession();
   const [formData, updateFormData] = useState<QuestionsSets>(data);
@@ -362,15 +363,14 @@ export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
   >("idle");
   const navigation = useRouter();
 
-  const isEveryQuestionAnswered = true; // for testing
-  // const isEveryQuestionAnswered = formData[currentStep]?.questions.every(
-  //   (question) => {
-  //     if (question.type === QuestionTypeMap.MULTISELECT) {
-  //       return question.answer.length > 0;
-  //     }
-  //     return question.answer.length >= 2;
-  //   }
-  // );
+  const isEveryQuestionAnswered = DEBUG_ENABLE_EVERY_QUESTION_ANSWERED
+    ? true
+    : formData[currentStep]?.questions.every((question) => {
+        if (question.type === QuestionTypeMap.MULTISELECT) {
+          return question.answer.length > 0;
+        }
+        return question.answer.length >= 2;
+      });
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
