@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth";
 
 // THIRD PARTY
 import bcrypt from "bcryptjs"; // For password comparison
@@ -15,7 +15,7 @@ import { getNameAbbreviation } from "@app/utils/name-abbreviation";
 
 const db = mongoDBClient.db();
 
-export default NextAuth({
+export const authOptions: AuthOptions = {
   pages: {
     signIn: "/login",
     error: "/login",
@@ -69,6 +69,10 @@ export default NextAuth({
       },
     }),
   ],
+  session: {
+    strategy: "jwt",
+    // maxAge: 24 * 60 * 60,
+  },
   callbacks: {
     async signIn({ user, profile }) {
       try {
@@ -82,10 +86,8 @@ export default NextAuth({
             id: user.id,
             googleId: profile?.sub ?? "",
             email: profile?.email ?? "",
-            // @ts-expect-error - email_verified is being received in the response but is not present in Profile type.
             emailVerified: !!profile?.email_verified,
             name: profile?.name ?? "",
-            // @ts-expect-error - picture is being received in the response but is not present in Profile type.
             picture: profile?.picture ?? "",
             provider: "google",
             phoneNumber: "",
@@ -105,5 +107,39 @@ export default NextAuth({
       }
       return true;
     },
+    async jwt({ token, user, account, profile }) {
+      // When user logs in for the first time
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.picture = user.image;
+        token.provider = account?.provider || "google";
+        token.nameAbbreviation = getNameAbbreviation(user?.name || "X");
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      const email = token?.email;
+      const dbUser = await db.collection("users").findOne({ email });
+      const form = await db
+        .collection("pre-counselling-form")
+        .findOne({ email });
+
+      session.user = {
+        id: token.id,
+        name: token.name,
+        email: token.email,
+        provider: token.provider,
+        picture: token.picture,
+        nameAbbreviation: token.nameAbbreviation,
+        phoneNumber: dbUser?.phoneNumber || null,
+        haveFilledPreCounsellingForm: !!form,
+      };
+
+      return session;
+    },
   },
-});
+};
+
+export default NextAuth(authOptions);
