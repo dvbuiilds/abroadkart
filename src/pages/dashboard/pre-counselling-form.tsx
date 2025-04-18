@@ -355,7 +355,7 @@ const handleFetchingFormDataFromLocalStorage = async (
   }
 };
 
-const DEBUG_ENABLE_EVERY_QUESTION_ANSWERED = true;
+const DEBUG_ENABLE_EVERY_QUESTION_ANSWERED = false;
 
 export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
   const { user, fetchUserDetails } = useUserSession();

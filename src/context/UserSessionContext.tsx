@@ -47,7 +47,6 @@ const UserSessionContext = createContext<UserSessionContextType | undefined>(
 export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const activeSession = useSession();
-  console.log("@@ activeSession: ", activeSession);
 
   const [user, updateUser] = useState<User | null>(null);
   const [sessionProvider, updateSessionProvider] =
