@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 
 // COMPONENTS
+import Image from "next/image";
 import { ProfileMenu } from "./ProfilePic";
 
 // ICONS
@@ -12,6 +13,8 @@ import { BsLayoutTextSidebar } from "react-icons/bs";
 // CONTEXT
 import { useUserSession } from "@app/context/UserSessionContext";
 import { User } from "@app/types/api-types";
+
+import LogoWhite from "../../public/abroadkart-logo-white.png";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -24,11 +27,16 @@ export const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <div className="flex flex-col h-screen w-full">
       {/* Navbar */}
       <nav className="w-full bg-gray-800 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="px-4">
           <div className="flex justify-between h-16 items-center">
             {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <div className="text-white font-semibold">AbroadKart</div>
+            <Link href="/dashboard" className="flex items-center">
+              <Image
+                src={LogoWhite}
+                width={120}
+                alt="Abroadkart logo header"
+                priority
+              />
             </Link>
             <ProfileMenu user={user} onLogout={triggerLogout} />
           </div>

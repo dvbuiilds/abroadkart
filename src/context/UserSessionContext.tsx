@@ -6,18 +6,14 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/router";
-import { useSession, signIn, signOut } from "next-auth/react";
+import { useSession, signIn, signOut, getSession } from "next-auth/react";
 
 // TYPES
 import type { Session } from "next-auth";
-import type { ResponseType, SessionProvider, User } from "../types/api-types";
+import type { SessionProvider, User } from "../types/api-types";
 
 // UTILS
 import { checkIfRouteIsProtected } from "@app/utils/restricted-routes";
-import { fetchWithTimeout } from "@app/utils/fetch-utils";
-
-// CONFIGS
-import { apiEndPoint, apiPath } from "@app/config/api-config";
 
 interface UserSessionContextType {
   user: User | null;
@@ -51,6 +47,7 @@ const UserSessionContext = createContext<UserSessionContextType | undefined>(
 export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   const router = useRouter();
   const activeSession = useSession();
+  console.log("@@ activeSession: ", activeSession);
 
   const [user, updateUser] = useState<User | null>(null);
   const [sessionProvider, updateSessionProvider] =
@@ -81,32 +78,17 @@ export const UserSessionProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const triggerLogout = () => {
-    signOut();
-    router.push("/login");
+    signOut({ callbackUrl: "/login" });
     updateSessionProvider("no-provider");
     updateUser(null);
   };
 
   const fetchUserDetails = async () => {
-    const response = await fetchWithTimeout(
-      `${apiEndPoint}${apiPath.getUser}?email=${encodeURIComponent(
-        activeSession.data?.user?.email || ""
-      )}`
-    );
-    if (!response.success) {
-      console.log("@@ Error in fetching user details: ", response);
-      updateUser(null);
-      updateSessionProvider("no-provider");
-      return;
-    }
-
-    const jsonResponse: ResponseType<User> = response.data;
-    if (jsonResponse.success) {
-      updateUser(jsonResponse.data);
-      updateSessionProvider(jsonResponse.data.provider ?? "credentials");
-    } else {
-      updateUser(null);
-      updateSessionProvider("no-provider");
+    const sessionResponse = await getSession();
+    if (sessionResponse?.user) {
+      const sessionUser = sessionResponse.user as User;
+      updateUser(sessionUser);
+      updateSessionProvider(sessionUser?.provider ?? "credentials");
     }
   };
 
