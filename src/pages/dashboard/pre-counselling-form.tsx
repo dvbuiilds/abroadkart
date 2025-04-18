@@ -362,15 +362,15 @@ export default function PreCounsellingForm({ data }: { data: QuestionsSets }) {
   >("idle");
   const navigation = useRouter();
 
-  // const isEveryQuestionAnswered = true; // for testing
-  const isEveryQuestionAnswered = formData[currentStep]?.questions.every(
-    (question) => {
-      if (question.type === QuestionTypeMap.MULTISELECT) {
-        return question.answer.length > 0;
-      }
-      return question.answer.length >= 2;
-    }
-  );
+  const isEveryQuestionAnswered = true; // for testing
+  // const isEveryQuestionAnswered = formData[currentStep]?.questions.every(
+  //   (question) => {
+  //     if (question.type === QuestionTypeMap.MULTISELECT) {
+  //       return question.answer.length > 0;
+  //     }
+  //     return question.answer.length >= 2;
+  //   }
+  // );
 
   const handleFormSubmit = async () => {
     updateAPIStatus("loading");
