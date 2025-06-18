@@ -1,0 +1,21 @@
+name: Enforce Branch Naming Convention
+
+on:
+  create:
+    branches:
+      - "*"
+
+jobs:
+  check-branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check if branch name starts with fb_
+        run: |
+          BRANCH_NAME="${GITHUB_REF##*/}"
+          echo "Branch name: $BRANCH_NAME"
+          if [[ "$BRANCH_NAME" =~ ^fb_ ]]; then
+            echo "✅ Valid branch name."
+          else
+            echo "❌ Invalid branch name: Must start with 'fb_'"
+            exit 1
+          fi
