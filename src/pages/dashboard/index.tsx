@@ -8,6 +8,7 @@ export const getServerSideProps = async (
   context: GetServerSidePropsContext
 ) => {
   const session = await getServerSession(context.req, context.res, authOptions);
+  console.log("[SESSION]: ", session);
   if (session?.user?.haveFilledPreCounsellingForm) {
     return {
       props: {

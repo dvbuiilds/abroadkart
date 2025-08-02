@@ -6,14 +6,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
 // UTILS
-import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
+import { db } from "../../../server/db/mongodb";
 import {
   CredentialsProviderUser,
   GoogleProviderUser,
 } from "@app/types/api-types";
 import { getNameAbbreviation } from "@app/utils/name-abbreviation";
-
-const db = mongoDBClient.db();
+import { serverSideCache } from "../../../utils/server-side/ServerSideCache";
 
 export const authOptions: AuthOptions = {
   pages: {
@@ -39,10 +38,25 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        // Find the user by email
-        const user = (await db.collection("users").findOne({
-          email: credentials?.email,
-        })) as CredentialsProviderUser | null;
+        // Create cache key using email
+        const userCacheKey = [credentials.email];
+
+        // Check cache for user data
+        const cachedUser = serverSideCache.get(userCacheKey);
+
+        let user = null;
+
+        if (cachedUser !== undefined) {
+          user = cachedUser;
+        } else {
+          // Find the user by email
+          user = (await db.collection("users").findOne({
+            email: credentials?.email,
+          })) as CredentialsProviderUser | null;
+
+          // Cache the user data
+          serverSideCache.set(userCacheKey, user);
+        }
 
         if (!user) {
           return null;
@@ -76,19 +90,37 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, profile }) {
       try {
-        // Check if user already exists
-        const userExists = await db
-          .collection("users")
-          .findOne({ email: profile?.email });
+        if (!profile?.email) return false;
+
+        // Create cache key using email
+        const userExistsCacheKey = [profile.email];
+
+        // Check cache for existing user
+        const cachedUserExists = serverSideCache.get(userExistsCacheKey);
+
+        let userExists = null;
+
+        if (cachedUserExists !== undefined) {
+          userExists = cachedUserExists;
+        } else {
+          // Check if user already exists
+          userExists = await db
+            .collection("users")
+            .findOne({ email: profile?.email });
+
+          // Cache the result
+          serverSideCache.set(userExistsCacheKey, userExists);
+        }
+
         if (!userExists) {
           // Create a new user
           const userSignedInWithGoogleAuth: GoogleProviderUser = {
             id: user.id,
             googleId: profile?.sub ?? "",
             email: profile?.email ?? "",
-            emailVerified: !!profile?.email_verified,
+            emailVerified: !!(profile as any)?.email_verified,
             name: profile?.name ?? "",
-            picture: profile?.picture ?? "",
+            picture: (profile as any)?.picture ?? "",
             provider: "google",
             phoneNumber: "",
             nameAbbreviation: getNameAbbreviation(profile?.name ?? ""),
@@ -100,6 +132,9 @@ export const authOptions: AuthOptions = {
             console.error("Error while creating new user with Google Auth");
             return false;
           }
+
+          // Update cache with new user data
+          serverSideCache.set(userExistsCacheKey, userSignedInWithGoogleAuth);
         }
       } catch (error) {
         console.error("Error during login:", error);
@@ -120,13 +155,29 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      if (!token?.email) return null;
+      if (!token?.email) return session;
 
       const email = token?.email;
-      const dbUser = await db.collection("users").findOne({ email });
-      const form = await db
-        .collection("pre-counselling-form")
-        .findOne({ email });
+
+      // Create cache key using email
+      const sessionCacheKey = [email, "session"];
+
+      // Check cache for session data
+      const cachedSessionData = serverSideCache.get(sessionCacheKey);
+
+      let dbUser = null;
+      let form = null;
+
+      if (cachedSessionData !== undefined) {
+        dbUser = cachedSessionData.dbUser;
+        form = cachedSessionData.form;
+      } else {
+        dbUser = await db.collection("users").findOne({ email });
+        form = await db.collection("pre-counselling-form").findOne({ email });
+
+        // Cache the session data
+        serverSideCache.set(sessionCacheKey, { dbUser, form });
+      }
 
       session.user = {
         id: token.id,
