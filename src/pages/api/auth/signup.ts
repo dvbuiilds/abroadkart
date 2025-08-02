@@ -7,8 +7,9 @@ import bcrypt from "bcryptjs"; // For password hashing
 import type { User, ResponseType } from "../../../types/api-types";
 
 // UTILS
-import mongoDBClient from "../../../server/db/mongodb"; // Import the MongoClient instance
+import { db } from "../../../server/db/mongodb";
 import { getNameAbbreviation } from "@app/utils/name-abbreviation";
+import { serverSideCache } from "../../../utils/server-side/ServerSideCache";
 
 export default async function handler(
   req: NextApiRequest,
@@ -83,13 +84,26 @@ export default async function handler(
   }
 
   try {
-    // Get the database instance
-    const db = mongoDBClient.db(); // Use the default database specified in the URI
+    // Create a single cache key using name, email, and phone number
+    const userExistsCacheKey = [name, email, phoneNumber];
 
-    // Check if a user with the same email or phone number already exists
-    const existingUser = await db.collection("users").findOne({
-      $or: [{ email }, { phoneNumber }],
-    });
+    // Check cache for existing user query
+    const cachedUserExists = serverSideCache.get(userExistsCacheKey);
+
+    let existingUser = null;
+
+    // If we have cached results, use them
+    if (cachedUserExists !== undefined) {
+      existingUser = cachedUserExists;
+    } else {
+      // Check if a user with the same email or phone number already exists
+      existingUser = await db.collection("users").findOne({
+        $or: [{ email }, { phoneNumber }],
+      });
+
+      // Cache the database query result
+      serverSideCache.set(userExistsCacheKey, existingUser);
+    }
 
     if (existingUser) {
       return res.status(400).json({
@@ -119,18 +133,28 @@ export default async function handler(
       nameAbbreviation,
     });
 
+    // Create the user data object for caching
+    const userData: User = {
+      id: newUser.insertedId.toString(),
+      name,
+      email,
+      phoneNumber,
+      provider: "credentials" as const,
+      haveFilledPreCounsellingForm: false,
+      nameAbbreviation,
+    };
+
+    // Cache the newly created user data
+    const newUserCacheKey = ["user", "id", newUser.insertedId.toString()];
+    serverSideCache.set(newUserCacheKey, userData);
+
+    // Update the exists cache to reflect the new user
+    serverSideCache.set(userExistsCacheKey, userData);
+
     // Return success response
     return res.status(201).json({
       success: true,
-      data: {
-        id: newUser.insertedId.toString(),
-        name,
-        email,
-        phoneNumber,
-        provider: "credentials",
-        haveFilledPreCounsellingForm: false,
-        nameAbbreviation,
-      },
+      data: userData,
     });
   } catch (error) {
     console.error("Error during signup:", error);

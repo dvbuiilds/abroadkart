@@ -1,7 +1,8 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import mongoDBClient from "../../../server/db/mongodb"; // Import MongoDB client
+import { db } from "../../../server/db/mongodb";
 import { ResponseType, User } from "@app/types/api-types";
 import { getNameAbbreviation } from "@app/utils/name-abbreviation";
+import { serverSideCache } from "../../../utils/server-side/ServerSideCache";
 
 export default async function handler(
   req: NextApiRequest,
@@ -25,13 +26,38 @@ export default async function handler(
       error: { message: "Email is required.", status: 400 },
     });
   }
-  try {
-    // Get the database instance
-    const db = mongoDBClient.db();
 
-    // Find the user by email
-    const user = await db.collection("users").findOne({ email });
-    const form = await db.collection("pre-counselling-form").findOne({ email });
+  // Ensure email is a string
+  const emailString = Array.isArray(email) ? email[0] : email;
+
+  if (!emailString) {
+    return res.status(400).json({
+      success: false,
+      error: { message: "Email is required.", status: 400 },
+    });
+  }
+  try {
+    // Create cache key using email
+    const userCacheKey = [emailString];
+
+    // Check cache for user data
+    const cachedUserData = serverSideCache.get(userCacheKey);
+
+    let user = null;
+    let form = null;
+
+    if (cachedUserData !== undefined) {
+      // Use cached data
+      user = cachedUserData.user;
+      form = cachedUserData.form;
+    } else {
+      // Find the user by email
+      user = await db.collection("users").findOne({ email });
+      form = await db.collection("pre-counselling-form").findOne({ email });
+
+      // Cache the results
+      serverSideCache.set(userCacheKey, { user, form });
+    }
 
     if (!user) {
       return res.status(404).json({
