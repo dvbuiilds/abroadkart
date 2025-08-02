@@ -5,12 +5,14 @@ import bcrypt from "bcryptjs"; // For password comparison
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 
-// UTILS
-import { db } from "../../../server/db/mongodb";
+// TYPES
 import {
   CredentialsProviderUser,
   GoogleProviderUser,
 } from "@app/types/api-types";
+
+// UTILS
+import { db } from "../../../server/db/mongodb";
 import { getNameAbbreviation } from "@app/utils/name-abbreviation";
 import { serverSideCache } from "../../../utils/server-side/ServerSideCache";
 
