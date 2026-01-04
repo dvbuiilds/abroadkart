@@ -7,5 +7,9 @@ const client = new MongoClient(mongoClientUrl, {
   connectTimeoutMS: 4000,
 });
 
-// Export the client and ensure  it's connected
+// Get the database instance directly
+const db = client.db();
+
+// Export the client and database instance
 export default client;
+export { db };

@@ -21,11 +21,11 @@ const getLayoutFromPathName = (pathName: string, children: ReactNode) => {
     return <DashboardLayout>{children}</DashboardLayout>;
   }
   return (
-    <>
+    <div className="flex flex-col flex-1">
       <Navbar />
-      {children}
+      <main className="flex-grow">{children}</main>
       <Footer />
-    </>
+    </div>
   );
 };
 
@@ -39,9 +39,7 @@ export default function App({ Component, pageProps }: AppProps) {
   return (
     <SessionProvider session={pageProps.session}>
       <UserSessionProvider>
-        <div className="h-screen flex flex-col overflow-y-auto">
-          {ComponentWithLayout}
-        </div>
+        <div className="min-h-screen flex flex-col">{ComponentWithLayout}</div>
       </UserSessionProvider>
       <SpeedInsights />
       <Analytics />
