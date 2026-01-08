@@ -107,6 +107,39 @@ We welcome contributions to AbroadKart! If you’d like to contribute:
     4.	Push to the branch (`git push origin feature-name`).
     5.	Open a Pull Request.
 
+## 🔁 Branch Naming
+
+- All feature branches **must start with `fb_`**
+  - ✅ `fb_login-ui`
+  - ✅ `fb_search-fix`
+  - ❌ `feature-login` ❌ `bugfix-search`
+
+## 🔐 Protected Branches
+
+The following branches are protected:
+
+- `main`
+- `integration`
+
+You **cannot push or merge** directly to these branches. Only maintainers can do that.
+
+## ✅ Allowed Actions
+
+| From Branch       | To Branch          | Allowed? |
+| ----------------- | ------------------ | -------- |
+| `fb_*`            | `fb_*`             | ✅ Yes   |
+| `fb_*`            | `main`             | ❌ No    |
+| `fb_*`            | `integration`      | ❌ No    |
+| Maintainer Branch | `integration/main` | ✅ Yes   |
+
+## 📥 Pull Requests
+
+- Always create PRs from `fb_` branches.
+- Get at least one approval before merging.
+- Write clear commit messages and PR descriptions.
+
+For any questions, contact the repository maintainer.
+
 ## Contact Us
 
 For any queries or support related to AbroadKart, feel free to reach out at:
