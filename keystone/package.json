@@ -1,0 +1,28 @@
+{
+  "name": "abroadkart-keystone",
+  "version": "1.0.0",
+  "description": "AbroadKart CRM Backend - KeystoneJS GraphQL API",
+  "main": "keystone.ts",
+  "scripts": {
+    "dev": "dotenv -e .env -- keystone dev",
+    "start": "keystone start",
+    "build": "keystone build",
+    "postinstall": "keystone postinstall"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.450.0",
+    "@clerk/backend": "^1.34.0",
+    "@keystone-6/auth": "^8.1.0",
+    "@keystone-6/core": "^8.1.0",
+    "dotenv": "^17.2.4",
+    "ioredis": "^5.3.0",
+    "jose": "^5.0.0",
+    "pg": "^8.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.0",
+    "dotenv-cli": "^11.0.0",
+    "typescript": "^5.0.0"
+  }
+}

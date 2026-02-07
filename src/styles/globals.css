@@ -90,3 +90,149 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Scroll-driven navbar animations (homepage only) ────────────────── */
+
+@keyframes navbar-solidify {
+  from {
+    background-color: transparent;
+    -webkit-backdrop-filter: blur(0px);
+    backdrop-filter: blur(0px);
+    box-shadow: none;
+  }
+  to {
+    background-color: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes text-to-dark {
+  from {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  to {
+    color: rgb(55, 65, 81);
+  }
+}
+
+@keyframes underline-to-blue {
+  from {
+    background-color: white;
+  }
+  to {
+    background-color: rgb(37, 99, 235);
+  }
+}
+
+@keyframes button-solidify {
+  from {
+    background-color: transparent;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+  to {
+    background-color: rgb(37, 99, 235);
+    border-color: rgb(37, 99, 235);
+  }
+}
+
+@keyframes icon-to-dark {
+  from {
+    color: white;
+  }
+  to {
+    color: rgb(17, 24, 39);
+  }
+}
+
+/* Shared scroll-timeline shorthand */
+.navbar-scroll-animate {
+  animation: navbar-solidify linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.logo-white-animate {
+  animation: fade-out linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.logo-black-animate {
+  animation: fade-in linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.nav-link-animate {
+  animation: text-to-dark linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.nav-underline-animate {
+  animation: underline-to-blue linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.nav-button-animate {
+  animation: button-solidify linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+.nav-icon-animate {
+  animation: icon-to-dark linear both;
+  animation-timeline: scroll();
+  animation-range: 0px 50px;
+}
+
+/* Fallback for browsers that don't support scroll-driven animations —
+   show the solid (scrolled) state so the navbar is always usable. */
+@supports not (animation-timeline: scroll()) {
+  .navbar-scroll-animate {
+    background-color: rgba(255, 255, 255, 0.8);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  }
+  .logo-white-animate {
+    opacity: 0;
+  }
+  .logo-black-animate {
+    opacity: 1;
+  }
+  .nav-link-animate {
+    color: rgb(55, 65, 81);
+  }
+  .nav-underline-animate {
+    background-color: rgb(37, 99, 235);
+  }
+  .nav-button-animate {
+    background-color: rgb(37, 99, 235);
+    border-color: rgb(37, 99, 235);
+  }
+  .nav-icon-animate {
+    color: rgb(17, 24, 39);
+  }
+}

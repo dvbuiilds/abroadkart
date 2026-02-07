@@ -1,117 +1,216 @@
-# AbroadKart
+# AbroadKart CRM Platform
 
-Welcome to AbroadKart, your one-stop platform for fulfilling all your study abroad needs. Whether you’re exploring universities, seeking expert counseling, managing documentation, or navigating the application process, AbroadKart is here to guide you every step of the way.
+Multi-tenant CRM platform for study abroad consultants built with Next.js, KeystoneJS, PostgreSQL, and Clerk authentication.
 
-This project is built using Next.js, a powerful framework for building modern web applications.
+## Project Structure
 
-## Features Checklist
-
-Below is the checklist of services provided by AbroadKart. These features are currently under development and will be available soon:
-
-- [ ] **Counseling:** Personalized guidance from experts to help you choose the right path.
-- [ ] **Explore Universities & Countries:** Discover universities and programs tailored to your preferences.
-- [ ] **Compilation & Documentation:** Assistance with compiling necessary documents like SOPs, LORs, and transcripts.
-- [ ] **Application Process:** Step-by-step support in submitting applications to your chosen institutions.
-- [ ] **Fees & Finance:** Guidance on tuition fees, scholarships, and financial planning.
-- [ ] **Post Selection Support:** Help with visa applications, accommodation, and pre-departure preparations.
-
-## Environment Variables
-
-To run this project, you will need to add the following environment variables to your .env file in the root directory.
-
-`MONGODB_URI` - the complete url of your mongo db cloud cluster url that should include username, password (with escape characters if any), db name.
-
-`NEXT_PUBLIC_ENVIRONMENT` - either 'development' or 'production'.
-
-## Getting Started
-
-To set up the development environment for AbroadKart, follow these steps:
-
-**1. Checkout to any of the active branches**
-
-```bash
-git checkout release
+```
+abroadkart/
+├── keystone/              # KeystoneJS backend (GraphQL API)
+│   ├── schema/           # Data models
+│   ├── access/           # Access control rules
+│   ├── hooks/            # Database hooks
+│   └── lib/              # Utilities
+├── src/                  # Next.js frontend
+│   ├── app/              # App Router (new)
+│   ├── pages/            # Pages Router (existing)
+│   └── components/       # React components
+└── docker-compose.yml    # Local development services
 ```
 
-or
+## Tech Stack
+
+### Backend
+- **KeystoneJS 6** - Headless CMS and GraphQL API
+- **PostgreSQL 16** - Primary database
+- **Redis 7** - Caching layer
+- **Clerk** - Authentication and user management
+
+### Frontend
+- **Next.js 15** - React framework with App Router
+- **TypeScript** - Type safety
+- **TailwindCSS** - Styling
+- **ShadCN/UI** - UI components
+- **TanStack React Query** - Client-side caching
+- **GraphQL Request** - GraphQL client
+
+## Prerequisites
+
+- Node.js 20 LTS or higher
+- Docker and Docker Compose
+- Clerk account (for authentication)
+- Cloudflare account (for R2 storage)
+
+## Local Development Setup
+
+### 1. Clone and Install Dependencies
 
 ```bash
-git checkout integration
-```
-
-**2. Clone the Repository**
-
-```bash
-git clone https://github.com/your-repo/abroadkart.git
-cd abroadkart
-```
-
-**3. Install Dependencies**
-
-Install the required packages using your preferred package manager:
-
-```bash
+# Install root dependencies
 npm install
-# or
-yarn install
-# or
-pnpm install
+
+# Install Keystone dependencies
+cd keystone
+npm install
+cd ..
 ```
 
-**4. Start the Development Server**
+### 2. Start Docker Services
 
-Run the development server locally:
+```bash
+# Start PostgreSQL and Redis
+docker-compose up -d
+
+# Verify services are running
+docker-compose ps
+```
+
+PostgreSQL: `localhost:5432`
+- User: `postgres`
+- Password: `password`
+- Database: `abroadkart`
+
+Redis: `localhost:6379`
+
+### 3. Configure Environment Variables
+
+#### Backend (keystone/.env)
+
+Copy `keystone/.env.example` to `keystone/.env` and fill in:
+
+```env
+DATABASE_URL=postgresql://postgres:password@localhost:5432/abroadkart
+REDIS_URL=redis://localhost:6379
+SESSION_SECRET=generate-a-random-32-char-string
+CLERK_SECRET_KEY=sk_test_...
+CLERK_JWKS_URL=https://your-clerk-instance.clerk.accounts.dev/.well-known/jwks.json
+CLERK_JWT_ISSUER=https://your-clerk-instance.clerk.accounts.dev
+CLERK_JWT_AUDIENCE=abroadkart-api
+R2_ACCOUNT_ID=your_account_id
+R2_ACCESS_KEY_ID=your_access_key
+R2_SECRET_ACCESS_KEY=your_secret_key
+R2_BUCKET_NAME=abroadkart-docs
+R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
+FRONTEND_URL=http://localhost:3000
+```
+
+#### Frontend (.env.local)
+
+Copy `.env.local.example` to `.env.local` and fill in:
+
+```env
+NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
+CLERK_WEBHOOK_SECRET=whsec_...
+```
+
+### 4. Set Up Clerk
+
+1. Create a Clerk application at [clerk.com](https://clerk.com)
+2. Enable Email/Password and Google OAuth sign-in methods
+3. Configure redirect URLs:
+   - Local: `http://localhost:3000/*`
+   - Production: `https://your-domain.com/*`
+4. Create a JWT template named `abroadkart-keystone` with these claims:
+   ```json
+   {
+     "sub": "{{user.id}}",
+     "email": "{{user.primary_email_address}}",
+     "role": "{{user.public_metadata.role}}",
+     "tenant_id": "{{user.organization_memberships.organization.id}}",
+     "tenant_name": "{{user.organization_memberships.organization.name}}"
+   }
+   ```
+5. Set up webhook endpoint: `http://localhost:3000/api/webhooks/clerk` (use ngrok for local testing)
+
+### 5. Set Up Cloudflare R2
+
+1. Create an R2 bucket in Cloudflare dashboard
+2. Generate API tokens with read/write permissions
+3. Update R2 environment variables in `keystone/.env`
+
+### 6. Start Development Servers
+
+#### Terminal 1: Keystone Backend
+
+```bash
+cd keystone
+npm run dev
+```
+
+Keystone Admin UI: http://localhost:3001/api/admin
+GraphQL API: http://localhost:3001/api/graphql
+
+#### Terminal 2: Next.js Frontend
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Once started, open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
+Frontend: http://localhost:3000
 
-## Editing & Development
+## Phase 1 Features
 
-- The homepage can be edited in `pages/index.tsx`. Any changes made to this file will automatically reflect in the browser due to Next.js’s hot reloading feature.
-- API routes are located in the `pages/api` directory. For example:
-- The `/api/hello` route maps to `pages/api/hello.ts`.
-- These routes can be used to implement backend logic for features like user authentication, form submissions, etc.
+- ✅ KeystoneJS backend with PostgreSQL
+- ✅ Clerk authentication integration
+- ✅ Multi-tenant foundation (User and Consultant entities)
+- ✅ Docker Compose for local development
+- ✅ GraphQL API endpoint
+- ✅ React Query client setup
+- ✅ Next.js App Router structure
+- ✅ Clerk webhook handler
 
 ## Deployment
 
-The recommended platform for deploying AbroadKart is Vercel, which offers seamless integration with Next.js. To deploy:
+### Backend (Railway)
 
-    1.	Push your code to a GitHub/GitLab/Bitbucket repository.
-    2.	Connect your repository to Vercel.
-    3.	Vercel will automatically build and deploy your application.
+1. Push code to GitHub
+2. Create Railway project
+3. Add PostgreSQL service
+4. Deploy from GitHub:
+   - Root directory: `keystone`
+   - Build command: `npm install && npm run build`
+   - Start command: `npm run start`
+5. Set environment variables in Railway dashboard
 
-For detailed instructions, refer to the Next.js deployment documentation.
+### Frontend (Vercel)
 
-## Learn More
+1. Push code to GitHub
+2. Connect repository to Vercel
+3. Root directory: `.` (project root)
+4. Framework: Next.js
+5. Set environment variables in Vercel dashboard
 
-To learn more about Next.js and its features, check out these resources:
+## Testing Checklist
 
-- Next.js Documentation: Comprehensive guide on Next.js features and APIs.
-- Learn Next.js: Interactive tutorial for beginners.
-- Next.js GitHub Repository: Explore examples and contribute to the open-source project.
+- [ ] Docker Compose starts successfully
+- [ ] Keystone dev server runs on port 3001
+- [ ] Keystone admin UI accessible
+- [ ] GraphQL endpoint responds
+- [ ] Next.js dev server runs on port 3000
+- [ ] Clerk sign-up page loads
+- [ ] User can sign up via Clerk
+- [ ] Clerk webhook creates User in Keystone
+- [ ] Protected routes require authentication
 
-## Contributing
+## Documentation
 
-We welcome contributions to AbroadKart! If you’d like to contribute:
+See `crm_docs/` for detailed documentation:
+- `MASTER_REQUIREMENTS.md` - Overall architecture
+- `PHASE_1_FOUNDATION.md` - Phase 1 setup guide
+- `PHASE_2_SCHEMA.md` - Database schema (upcoming)
+- `APPENDIX_CLERK_SETUP.md` - Clerk integration details
 
-    1.	Fork this repository.
-    2.	Create a new branch (`git checkout -b feature-name`).
-    3.	Commit your changes (`git commit -m "Add feature"`).
-    4.	Push to the branch (`git push origin feature-name`).
-    5.	Open a Pull Request.
+## Next Steps
 
-## Contact Us
+After Phase 1 completion, proceed to **Phase 2: Core Schema & Data Model**:
+- Implement all 13 core entities
+- Complete multi-tenancy with tenant filtering
+- Comprehensive access control rules
+- GraphQL API with caching
+- Seed data for testing
 
-For any queries or support related to AbroadKart, feel free to reach out at:
+## Support
 
-- Email: [support@abroadkart.com](mailto:support@abroadkart.com)
-- Website: [www.abroadkart.com](www.abroadkart.com)
-
-This ReadMe serves as a starting point for understanding and contributing to AbroadKart. We’re excited to help candidates achieve their dreams of studying abroad!
+For questions or issues, please refer to the documentation in `crm_docs/` or create an issue in the repository.

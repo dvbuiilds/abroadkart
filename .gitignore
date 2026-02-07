@@ -39,3 +39,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keystone
+keystone/.keystone/
+keystone/node_modules/
+keystone/.env
+
+# docker
+.docker/
