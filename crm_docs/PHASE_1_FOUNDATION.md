@@ -669,15 +669,15 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/app/dashboard
 
 ### Local Development Checklist
 
-- [ ] Docker Compose running (Postgres + Redis)
-- [ ] Keystone starts: `cd keystone && npm run dev`
-- [ ] Keystone admin UI accessible at `http://localhost:3001/api/admin`
-- [ ] Next.js starts: `cd app && npm run dev`
-- [ ] Frontend accessible at `http://localhost:3000`
-- [ ] Clerk sign-in page loads
-- [ ] User can sign up via Clerk
-- [ ] User created in Keystone User table
-- [ ] R2 bucket accessible via SDK
+- [x] Docker Compose running (Postgres + Redis)
+- [x] Keystone starts: `cd keystone && npm run dev`
+- [x] Keystone admin UI accessible at `http://localhost:3001/api/admin`
+- [x] Next.js starts: `yarn dev` (from project root)
+- [x] Frontend accessible at `http://localhost:3000`
+- [x] Clerk sign-in page loads
+- [x] User can sign up via Clerk
+- [x] User created in Keystone User table
+- [x] R2 bucket accessible via SDK
 
 ### Test Commands
 
@@ -704,18 +704,18 @@ curl 'http://localhost:3001/api/graphql' \
 
 ## Deliverables Checklist
 
-- [ ] Monorepo structure created
-- [ ] Docker Compose file with Postgres + Redis
-- [ ] Keystone initialized and configured
-- [ ] Clerk project created and integrated
-- [ ] Next.js app initialized with ShadCN
-- [ ] Cloudflare R2 bucket created
-- [ ] Environment variables documented
-- [ ] Backend deployment to Railway configured
-- [ ] Frontend deployment to Vercel configured
-- [ ] Clerk webhook endpoint ready (optional)
-- [ ] README with local setup instructions
-- [ ] All tests passing
+- [x] Monorepo structure created
+- [x] Docker Compose file with Postgres + Redis
+- [x] Keystone initialized and configured
+- [x] Clerk project created and integrated
+- [x] Next.js app initialized with ShadCN
+- [x] Cloudflare R2 bucket created
+- [x] Environment variables documented
+- [x] Backend deployment to Railway configured
+- [x] Frontend deployment to Vercel configured
+- [x] Clerk webhook endpoint ready (optional)
+- [x] README with local setup instructions
+- [x] All tests passing
 
 ---
 
