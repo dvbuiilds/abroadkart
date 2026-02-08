@@ -280,16 +280,14 @@ export const LoanApplication = list({
 
 **hooks/autoSetTenant.ts**:
 ```typescript
-export const autoSetTenantHook = (operation: string, context: any) => {
-  return {
-    resolveInput: ({ resolvedData }: any) => {
-      if (operation === 'create' && !resolvedData.tenant && context.session?.data?.tenant) {
-        resolvedData.tenant = { connect: { id: context.session.data.tenant.id } };
-      }
-      return resolvedData;
-    },
+export function autoSetTenantHook(operation: 'create' | 'update') {
+  return ({ resolvedData, context }: any) => {
+    if (operation === 'create' && !resolvedData.tenant && context.session?.data?.tenant) {
+      resolvedData.tenant = { connect: { id: context.session.data.tenant.id } };
+    }
+    return resolvedData;
   };
-};
+}
 ```
 
 ### Activity Logging Hook
@@ -299,7 +297,8 @@ export const autoSetTenantHook = (operation: string, context: any) => {
 export const logActivityHook = {
   afterOperation: async ({ operation, item, context, listKey }: any) => {
     if (!['create', 'update'].includes(operation)) return;
-    
+    if (!context.session) return; // Skip for sudo/system operations
+
     await context.sudo().query.ActivityLog.createOne({
       data: {
         tenant: item.tenantId 

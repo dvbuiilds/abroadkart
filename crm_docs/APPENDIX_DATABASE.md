@@ -557,6 +557,11 @@ export const StudentDocument = list({
       many: false,
     }),
 
+    loanApplication: relationship({
+      ref: 'LoanApplication.documents',
+      many: false,
+    }),
+
     documentType: select({
       options: [
         { label: 'Passport', value: 'passport' },
@@ -730,7 +735,7 @@ export const LoanApplication = list({
       },
     }),
 
-    documents: relationship({ ref: 'StudentDocument.application', many: true }),
+    documents: relationship({ ref: 'StudentDocument.loanApplication', many: true }),
 
     isDeleted: checkbox({ defaultValue: false }),
 
