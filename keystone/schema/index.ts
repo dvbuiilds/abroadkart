@@ -3,9 +3,15 @@
  * Phase 1: Minimal schema with User and Consultant lists
  */
 
-import { list } from '@keystone-6/core';
-import { text, relationship, checkbox, timestamp, select } from '@keystone-6/core/fields';
-import { isAuthenticated, isSuperAdmin, hasTenantAccess } from '../access/rules';
+import { list } from "@keystone-6/core";
+import {
+  text,
+  relationship,
+  checkbox,
+  timestamp,
+  select,
+} from "@keystone-6/core/fields";
+import { isAuthenticated, isSuperAdmin } from "../access/rules";
 
 // User list (maps to Clerk)
 export const User = list({
@@ -19,7 +25,7 @@ export const User = list({
     filter: {
       query: ({ session }) => {
         // Super admin and fulfilment can see all users
-        if (isSuperAdmin(session) || session?.data?.role === 'fulfilment') {
+        if (isSuperAdmin(session) || session?.data?.role === "fulfilment") {
           return true;
         }
         // Consultants can only see users in their tenant
@@ -31,41 +37,41 @@ export const User = list({
     },
   },
   fields: {
-    clerkUserId: text({ 
-      validation: { isRequired: true }, 
-      isIndexed: 'unique',
+    clerkUserId: text({
+      validation: { isRequired: true },
+      isIndexed: "unique",
       isFilterable: true,
     }),
-    email: text({ 
-      validation: { isRequired: true }, 
-      isIndexed: 'unique',
+    email: text({
+      validation: { isRequired: true },
+      isIndexed: "unique",
       isFilterable: true,
     }),
     name: text({ validation: { isRequired: false } }),
     role: select({
-      type: 'string',
+      type: "string",
       options: [
-        { label: 'Super Admin', value: 'superAdmin' },
-        { label: 'Fulfilment', value: 'fulfilment' },
-        { label: 'Consultant Admin', value: 'consultantAdmin' },
-        { label: 'Consultant Agent', value: 'consultantAgent' },
+        { label: "Super Admin", value: "superAdmin" },
+        { label: "Fulfilment", value: "fulfilment" },
+        { label: "Consultant Admin", value: "consultantAdmin" },
+        { label: "Consultant Agent", value: "consultantAgent" },
       ],
-      defaultValue: 'consultantAgent',
+      defaultValue: "consultantAgent",
       validation: { isRequired: true },
       isIndexed: true,
     }),
     tenant: relationship({
-      ref: 'Consultant.users',
+      ref: "Consultant.users",
       many: false,
       isFilterable: true,
     }),
-    isActive: checkbox({ defaultValue: true, isIndexed: true }),
-    createdAt: timestamp({ 
-      defaultValue: { kind: 'now' },
+    isActive: checkbox({ defaultValue: true }),
+    createdAt: timestamp({
+      defaultValue: { kind: "now" },
       validation: { isRequired: false },
     }),
     updatedAt: timestamp({
-      defaultValue: { kind: 'now' },
+      defaultValue: { kind: "now" },
       db: { updatedAt: true },
       validation: { isRequired: false },
     }),
@@ -84,7 +90,7 @@ export const Consultant = list({
     filter: {
       query: ({ session }) => {
         // Super admin and fulfilment can see all consultants
-        if (isSuperAdmin(session) || session?.data?.role === 'fulfilment') {
+        if (isSuperAdmin(session) || session?.data?.role === "fulfilment") {
           return true;
         }
         // Consultants can only see their own tenant
@@ -97,36 +103,36 @@ export const Consultant = list({
   },
   fields: {
     name: text({ validation: { isRequired: true } }),
-    slug: text({ 
+    slug: text({
       validation: { isRequired: true },
-      isIndexed: 'unique',
+      isIndexed: "unique",
       isFilterable: true,
     }),
-    contactEmail: text({ 
+    contactEmail: text({
       validation: { isRequired: false },
       isFilterable: true,
     }),
     status: select({
-      type: 'string',
+      type: "string",
       options: [
-        { label: 'Active', value: 'active' },
-        { label: 'Inactive', value: 'inactive' },
-        { label: 'Suspended', value: 'suspended' },
+        { label: "Active", value: "active" },
+        { label: "Inactive", value: "inactive" },
+        { label: "Suspended", value: "suspended" },
       ],
-      defaultValue: 'active',
+      defaultValue: "active",
       validation: { isRequired: true },
       isIndexed: true,
     }),
     users: relationship({
-      ref: 'User.tenant',
+      ref: "User.tenant",
       many: true,
     }),
-    createdAt: timestamp({ 
-      defaultValue: { kind: 'now' },
+    createdAt: timestamp({
+      defaultValue: { kind: "now" },
       validation: { isRequired: false },
     }),
     updatedAt: timestamp({
-      defaultValue: { kind: 'now' },
+      defaultValue: { kind: "now" },
       db: { updatedAt: true },
       validation: { isRequired: false },
     }),
