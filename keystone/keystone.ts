@@ -36,15 +36,19 @@ const lists = {
 
 export default config({
   db: {
-    provider: 'postgresql',
+    provider: "postgresql",
     url: process.env.DATABASE_URL!,
-    enableLogging: process.env.NODE_ENV === 'development',
-    idField: { kind: 'uuid' },
+    enableLogging: process.env.NODE_ENV === "development",
+    idField: { kind: "uuid" },
   },
   lists,
   session: clerkSession,
   ui: {
-    isAccessAllowed: ({ session }) => !!session,
+    isAccessAllowed: ({ session }) => {
+      // In development, allow access to Admin UI without auth
+      if (process.env.NODE_ENV !== "production") return true;
+      return !!session;
+    },
   },
   storage: {
     r2_storage: {
@@ -90,15 +94,17 @@ export default config({
   },
   server: {
     cors: {
-      origin: process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : ['http://localhost:3000'],
+      origin: process.env.FRONTEND_URL
+        ? [process.env.FRONTEND_URL]
+        : ["http://localhost:3000"],
       credentials: true,
     },
     port: process.env.PORT ? parseInt(process.env.PORT) : 3001,
   },
   graphql: {
-    path: '/api/graphql',
+    path: "/api/graphql",
     apolloConfig: {
-      introspection: process.env.NODE_ENV !== 'production',
+      introspection: process.env.NODE_ENV !== "production",
     },
   },
 });
