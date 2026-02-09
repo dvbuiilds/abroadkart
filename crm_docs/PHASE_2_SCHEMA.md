@@ -281,10 +281,14 @@ export const LoanApplication = list({
 
 **hooks/autoSetTenant.ts**:
 ```typescript
-export function autoSetTenantHook(operation: 'create' | 'update') {
-  return ({ resolvedData, context }: any) => {
-    if (operation === 'create' && !resolvedData.tenant && context.session?.data?.tenant) {
-      resolvedData.tenant = { connect: { id: context.session.data.tenant.id } };
+// IMPORTANT: The inner function must destructure `operation` from Keystone's
+// runtime args and compare it to `targetOp`. Do NOT compare the factory
+// parameter directly — that would always be true and run on every operation.
+export function autoSetTenantHook(targetOp: 'create' | 'update') {
+  return ({ resolvedData, context, operation }: ResolveInputArgs) => {
+    const tenantId = context.session?.tenantId;
+    if (operation === targetOp && !resolvedData.tenant && tenantId) {
+      resolvedData.tenant = { connect: { id: tenantId } };
     }
     return resolvedData;
   };

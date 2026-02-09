@@ -16,6 +16,7 @@ import {
   isFulfilment,
   filterByTenant,
   type FilterByTenantResult,
+  type SessionData,
 } from "../access/rules";
 
 function isTenantFilter(
@@ -23,6 +24,18 @@ function isTenantFilter(
 ): f is { tenant: { id: { equals: string } } } {
   return typeof f === "object" && f !== null && "tenant" in f;
 }
+
+/** Shared tenant filter that scopes via student.tenant */
+function filterDocByTenant({ session }: { session?: SessionData | null }) {
+  const f = filterByTenant({ session });
+  if (f === true) return true;
+  if (f === false) return false;
+  if (isTenantFilter(f)) {
+    return { student: { tenant: { id: { equals: f.tenant.id.equals } } } };
+  }
+  return false;
+}
+
 import { afterOperationWithCache } from "../hooks/cacheInvalidation";
 
 export const StudentDocument = list({
@@ -34,24 +47,9 @@ export const StudentDocument = list({
       delete: ({ session }) => isAuthenticated(session),
     },
     filter: {
-      query: ({ session }) => {
-        const f = filterByTenant({ session });
-        if (f === true) return true;
-        if (f === false) return false;
-        if (isTenantFilter(f)) {
-          return { student: { tenant: { id: { equals: f.tenant.id.equals } } } };
-        }
-        return false;
-      },
-      update: ({ session }) => {
-        const f = filterByTenant({ session });
-        if (f === true) return true;
-        if (f === false) return false;
-        if (isTenantFilter(f)) {
-          return { student: { tenant: { id: { equals: f.tenant.id.equals } } } };
-        }
-        return false;
-      },
+      query: filterDocByTenant,
+      update: filterDocByTenant,
+      delete: filterDocByTenant,
     },
   },
   fields: {

@@ -43,7 +43,19 @@ Why specific algorithms, logic, libraries, and patterns were chosen; benefits an
 
 **Benefits**: One implementation reused everywhere; changes in one place.
 
-**Risks**: None significant.
+**Risks / Gotcha (fixed Feb 2026)**:
+The factory takes a `targetOp` parameter, but the inner function **must** destructure Keystone's runtime `operation` from the hook args and compare against `targetOp`. An earlier version compared the static factory parameter against the string `"create"`, which was always true and caused the hook to run on both create and update. The fix:
+
+```typescript
+export function autoSetTenantHook(targetOp: "create" | "update") {
+  return ({ resolvedData, context, operation }: ResolveInputArgs) => {
+    //                                ^^^^^^^^^ runtime value from Keystone
+    if (operation === targetOp && !resolvedData.tenant && tenantId) { ... }
+  };
+}
+```
+
+**Rule**: Always use the runtime `operation` from Keystone's hook args, never rely solely on a closure parameter for operation filtering.
 
 ---
 
@@ -75,6 +87,15 @@ Why specific algorithms, logic, libraries, and patterns were chosen; benefits an
 
 **Risks**: If the hook throws, the parent mutation still commits (afterOperation). Consider try/catch and logging.
 
+**Gotcha (fixed Feb 2026) — `afterOperationWithCache` vs `cacheInvalidationAfterOperation`**:
+The hooks module exports two functions:
+- `cacheInvalidationAfterOperation(key)` — **only** invalidates Redis cache.
+- `afterOperationWithCache(key)` — logs to `ActivityLog` **and** invalidates cache.
+
+All tenant-scoped entities must use `afterOperationWithCache` to maintain a consistent audit trail. An earlier bug had `PrepaidCard` using `cacheInvalidationAfterOperation`, which silently omitted prepaid card operations from the activity log.
+
+**Rule**: Every tenant-scoped entity (Student, Application, LoanApplication, AccommodationBooking, Reimbursement, Task, StudentDocument, PrepaidCard) must use `afterOperationWithCache` in its `hooks.afterOperation`. Only use `cacheInvalidationAfterOperation` when activity logging is explicitly not wanted (e.g. for internal/system-only lists).
+
 ---
 
 ## 8. UUID primary keys
@@ -104,3 +125,19 @@ Why specific algorithms, logic, libraries, and patterns were chosen; benefits an
 **Benefits**: No denormalised tenant on documents; single source of truth (student → tenant).
 
 **Risks**: Filter is `{ student: { tenant: { id: { equals } } } }`; slightly more complex than a direct tenant filter.
+
+**Gotcha (fixed Feb 2026) — missing `filter.delete`**:
+An earlier version defined `filter.query` and `filter.update` but omitted `filter.delete`. Because `operation.delete` was set to `isAuthenticated`, any authenticated user could delete documents belonging to other tenants — a multi-tenant isolation breach.
+
+**Rule**: When a list allows delete (`operation.delete` is not `() => false`), it **must** also define `filter.delete` with the same tenant-scoping filter as `filter.query` and `filter.update`. This applies to any entity, but is especially easy to miss on entities like StudentDocument that use an indirect tenant path (`student.tenant`). The fix extracts a shared `filterDocByTenant` helper used by all three filter hooks.
+
+---
+
+## 11. Conventions & Checklist for New Entities
+
+When adding a new tenant-scoped Keystone list, verify all of the following:
+
+1. **`afterOperation` uses `afterOperationWithCache`** (not `cacheInvalidationAfterOperation`) so that mutations are logged to `ActivityLog`.
+2. **`resolveInput` uses `autoSetTenantHook("create")`** and the hook destructures `operation` from Keystone's runtime args (not just the factory closure).
+3. **Every allowed operation has a matching `filter`**: if `operation.delete` is not `() => false`, then `filter.delete` must be defined with the same tenant-scoping as `filter.query` and `filter.update`.
+4. **Indirect tenant paths** (e.g. `student.tenant` instead of `tenant`) must be mirrored in all three filter hooks — extract a shared helper function to avoid drift.

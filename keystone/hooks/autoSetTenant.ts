@@ -12,13 +12,14 @@ type ResolveInputContext = {
 type ResolveInputArgs = {
   resolvedData: Record<string, unknown> & { tenant?: unknown };
   context: ResolveInputContext;
+  operation: "create" | "update";
 };
 
-export function autoSetTenantHook(operation: "create" | "update") {
-  return ({ resolvedData, context }: ResolveInputArgs) => {
+export function autoSetTenantHook(targetOp: "create" | "update") {
+  return ({ resolvedData, context, operation }: ResolveInputArgs) => {
     const tenantId = context.session?.tenantId;
     if (
-      operation === "create" &&
+      operation === targetOp &&
       !resolvedData.tenant &&
       tenantId
     ) {

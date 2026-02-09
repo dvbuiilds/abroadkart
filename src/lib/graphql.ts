@@ -2,8 +2,6 @@
  * GraphQL client setup with Clerk authentication
  */
 
-'use client';
-
 import { GraphQLClient } from 'graphql-request';
 import { useAuth } from '@clerk/nextjs';
 import { useMemo } from 'react';
@@ -18,11 +16,15 @@ export function useGraphQLClient() {
 
   const client = useMemo(() => {
     return new GraphQLClient(`${KEYSTONE_URL}/api/graphql`, {
-      headers: async () => {
+      requestMiddleware: async (request) => {
         const token = await getToken();
         return {
-          Authorization: token ? `Bearer ${token}` : '',
-          'Content-Type': 'application/json',
+          ...request,
+          headers: {
+            ...request.headers,
+            Authorization: token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+          },
         };
       },
     });
