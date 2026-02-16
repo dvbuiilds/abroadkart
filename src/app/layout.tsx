@@ -3,6 +3,7 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { ReactQueryProvider } from '@app/lib/react-query';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/next';
+import { Toaster } from '@app/components/ui/sonner';
 import '@app/styles/globals.css';
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
         <body className="antialiased min-h-screen flex flex-col">
           <ReactQueryProvider>
             {children}
+            <Toaster />
             <SpeedInsights />
             <Analytics />
           </ReactQueryProvider>

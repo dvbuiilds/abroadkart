@@ -2,11 +2,12 @@
  * GraphQL client setup with Clerk authentication
  */
 
-import { GraphQLClient } from 'graphql-request';
-import { useAuth } from '@clerk/nextjs';
-import { useMemo } from 'react';
+import { GraphQLClient } from "graphql-request";
+import { useAuth } from "@clerk/nextjs";
+import { useMemo } from "react";
 
-const KEYSTONE_URL = process.env.NEXT_PUBLIC_KEYSTONE_URL || 'http://localhost:3001';
+const KEYSTONE_URL =
+  process.env.NEXT_PUBLIC_KEYSTONE_URL || "http://localhost:3001";
 
 /**
  * Hook to get authenticated GraphQL client
@@ -22,13 +23,13 @@ export function useGraphQLClient() {
           ...request,
           headers: {
             ...request.headers,
-            Authorization: token ? `Bearer ${token}` : '',
-            'Content-Type': 'application/json',
+            Authorization: token ? `Bearer ${token}` : "",
+            "Content-Type": "application/json",
           },
         };
       },
     });
-  }, [getToken]);
+  }, []);
 
   return client;
 }
@@ -39,8 +40,8 @@ export function useGraphQLClient() {
 export function createGraphQLClient(token?: string) {
   return new GraphQLClient(`${KEYSTONE_URL}/api/graphql`, {
     headers: {
-      Authorization: token ? `Bearer ${token}` : '',
-      'Content-Type': 'application/json',
+      Authorization: token ? `Bearer ${token}` : "",
+      "Content-Type": "application/json",
     },
   });
 }

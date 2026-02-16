@@ -17,6 +17,10 @@ export const GET_STUDENTS = `
       currentStage
       countryOfResidence
       createdAt
+      tenant {
+        id
+        name
+      }
     }
     studentsCount(where: $where)
   }
