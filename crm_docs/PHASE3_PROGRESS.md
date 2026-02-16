@@ -2,7 +2,7 @@
 
 Implementation summary, patterns, and known limits for the Consultant Portal (Next.js App Router, React Query, Keystone GraphQL).
 
-**Status**: Complete  
+**Status**: Complete (Verified)  
 **Last Updated**: February 2026
 
 ---
@@ -38,6 +38,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 ### 2.4 Auth and role guard
 
 - **RequireRole**: Client component that uses `useCurrentUser` (Clerk `userId` → `GET_CURRENT_USER`). Renders children only for consultantAdmin/consultantAgent; otherwise redirect or message.
+- **Note**: `superAdmin` role is not included in the default allowed roles. To grant superAdmin access to the Consultant Portal, add `'superAdmin'` to the `CONSULTANT_ROLES` array in `RequireRole.tsx`.
 - **Middleware**: Protects `/consultant/*` with Clerk (signed-in check); role check is client-side in the layout.
 
 ---
@@ -72,7 +73,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 ### 5.1 Document file upload
 
 - **Backend**: `createStudentDocument` requires a `file` (FileFieldInput / upload). Keystone file field is tied to R2 (or S3).
-- **Portal**: Document list and upload dialog exist; the dialog does **not** send a file. Submit is disabled with “Upload (coming soon)” and a note to use Keystone Admin for file uploads.
+- **Portal**: Document list and upload dialog exist; the dialog does **not** send a file. Submit is disabled with "Upload (coming soon)" and a note to use Keystone Admin for file uploads.
 - **To implement later**: Either multipart GraphQL (e.g. `apollo-upload-client` or equivalent) and pass `file` into `createStudentDocument`, or a Next.js API route that accepts `multipart/form-data`, uploads to R2, then creates the StudentDocument with the file reference.
 
 ### 5.2 Task assignedTo
@@ -81,23 +82,25 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 ### 5.3 Soft deletes
 
-- Backend uses `isDeleted`; list UIs do not yet expose a “show deleted” filter. Default behaviour is to exclude deleted where applicable in backend filters.
+- Backend uses `isDeleted`; list UIs do not yet expose a "show deleted" filter. Default behaviour is to exclude deleted where applicable in backend filters.
 
 ---
 
 ## 6. Testing Checklist
 
-- [ ] **Auth**: Sign in as consultant; confirm redirect to dashboard; sign out; confirm /consultant requires sign-in.
-- [ ] **Role**: Access with non-consultant role; confirm access denied or redirect.
-- [ ] **Dashboard**: KPIs, recent activity, task summary, pipeline chart load without error.
-- [ ] **Students**: List with search/stage/page; create student; open detail; edit in sheet; tabs (Overview, Applications, Loans, Documents, Tasks).
-- [ ] **Applications**: List with status filter; create (student + program); open detail; status badges/steps.
-- [ ] **Loans**: List; create (student, optional application); detail with progress bar and read-only fulfilment fields.
-- [ ] **Documents**: List loads; upload dialog opens and shows “coming soon” (no file upload).
-- [ ] **Tasks**: List with status/priority filters; create task; inline status change (todo / inProgress / done / blocked).
-- [ ] **Multi-tenant**: With two tenants, confirm each consultant sees only their tenant’s data (backend filterByTenant).
-- [ ] **Loading / error / empty**: Each list and detail shows loading state; error boundary catches errors; empty states show where applicable.
-- [ ] **Lint/build**: `npm run build` and `npm run lint` pass.
+- [x] **Auth**: Sign in as consultant; confirm redirect to dashboard; sign out; confirm /consultant requires sign-in.
+- [x] **Role**: Access with non-consultant role; confirm access denied or redirect. Note: `superAdmin` was initially blocked — needs to be added to `CONSULTANT_ROLES` in `RequireRole.tsx` for admin access.
+- [x] **Dashboard**: KPIs, recent activity, task summary, pipeline chart load without error.
+- [x] **Students**: List with search/stage/page; create student; open detail; edit in sheet; tabs (Overview, Applications, Loans, Documents, Tasks).
+- [x] **Applications**: List with status filter; create (student + program); open detail; status badges/steps.
+- [x] **Loans**: List; create (student, optional application); detail with progress bar and read-only fulfilment fields.
+- [x] **Documents**: List loads; upload dialog opens and shows "coming soon" (no file upload).
+- [x] **Tasks**: List with status/priority filters; create task; inline status change (todo / inProgress / done / blocked).
+- [ ] **Multi-tenant**: With two tenants, confirm each consultant sees only their tenant's data (backend filterByTenant). _(Deferred — requires two tenant setup.)_
+- [x] **Loading / error / empty**: Each list and detail shows loading state; error boundary catches errors; empty states show where applicable.
+- [x] **Lint/build**: `yarn build` and `yarn lint` pass.
+
+**Verified by**: User (Feb 2026)
 
 ---
 
