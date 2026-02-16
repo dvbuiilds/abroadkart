@@ -9,6 +9,7 @@ type User {
   role: String
   tenant: Consultant
   isActive: Boolean
+  lastLoginAt: DateTime
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -32,6 +33,7 @@ input UserWhereInput {
   role: StringFilter
   tenant: ConsultantWhereInput
   isActive: BooleanFilter
+  lastLoginAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
 }
@@ -104,6 +106,7 @@ input UserOrderByInput {
   name: OrderDirection
   role: OrderDirection
   isActive: OrderDirection
+  lastLoginAt: OrderDirection
   createdAt: OrderDirection
   updatedAt: OrderDirection
 }
@@ -120,6 +123,7 @@ input UserUpdateInput {
   role: String
   tenant: ConsultantRelateToOneForUpdateInput
   isActive: Boolean
+  lastLoginAt: DateTime
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -142,6 +146,7 @@ input UserCreateInput {
   role: String
   tenant: ConsultantRelateToOneForCreateInput
   isActive: Boolean
+  lastLoginAt: DateTime
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -156,9 +161,29 @@ type Consultant {
   name: String
   slug: String
   contactEmail: String
+  contactPhone: String
+  country: String
+  city: String
   status: String
+  tier: String
   users(where: UserWhereInput! = {}, orderBy: [UserOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UserWhereUniqueInput): [User!]
   usersCount(where: UserWhereInput! = {}): Int
+  students(where: StudentWhereInput! = {}, orderBy: [StudentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentWhereUniqueInput): [Student!]
+  studentsCount(where: StudentWhereInput! = {}): Int
+  applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
+  applicationsCount(where: ApplicationWhereInput! = {}): Int
+  loanApplications(where: LoanApplicationWhereInput! = {}, orderBy: [LoanApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: LoanApplicationWhereUniqueInput): [LoanApplication!]
+  loanApplicationsCount(where: LoanApplicationWhereInput! = {}): Int
+  accommodations(where: AccommodationBookingWhereInput! = {}, orderBy: [AccommodationBookingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AccommodationBookingWhereUniqueInput): [AccommodationBooking!]
+  accommodationsCount(where: AccommodationBookingWhereInput! = {}): Int
+  reimbursements(where: ReimbursementWhereInput! = {}, orderBy: [ReimbursementOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ReimbursementWhereUniqueInput): [Reimbursement!]
+  reimbursementsCount(where: ReimbursementWhereInput! = {}): Int
+  prepaidCards(where: PrepaidCardWhereInput! = {}, orderBy: [PrepaidCardOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PrepaidCardWhereUniqueInput): [PrepaidCard!]
+  prepaidCardsCount(where: PrepaidCardWhereInput! = {}): Int
+  tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
+  tasksCount(where: TaskWhereInput! = {}): Int
+  activityLogs(where: ActivityLogWhereInput! = {}, orderBy: [ActivityLogOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ActivityLogWhereUniqueInput): [ActivityLog!]
+  activityLogsCount(where: ActivityLogWhereInput! = {}): Int
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -176,10 +201,37 @@ input ConsultantWhereInput {
   name: StringFilter
   slug: StringFilter
   contactEmail: StringFilter
-  status: StringFilter
+  contactPhone: StringFilter
+  country: StringFilter
+  city: StringFilter
+  status: StringNullableFilter
+  tier: StringNullableFilter
   users: UserManyRelationFilter
+  students: StudentManyRelationFilter
+  applications: ApplicationManyRelationFilter
+  loanApplications: LoanApplicationManyRelationFilter
+  accommodations: AccommodationBookingManyRelationFilter
+  reimbursements: ReimbursementManyRelationFilter
+  prepaidCards: PrepaidCardManyRelationFilter
+  tasks: TaskManyRelationFilter
+  activityLogs: ActivityLogManyRelationFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
+}
+
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  mode: QueryMode
+  not: StringNullableFilter
 }
 
 input UserManyRelationFilter {
@@ -188,12 +240,64 @@ input UserManyRelationFilter {
   none: UserWhereInput
 }
 
+input StudentManyRelationFilter {
+  every: StudentWhereInput
+  some: StudentWhereInput
+  none: StudentWhereInput
+}
+
+input ApplicationManyRelationFilter {
+  every: ApplicationWhereInput
+  some: ApplicationWhereInput
+  none: ApplicationWhereInput
+}
+
+input LoanApplicationManyRelationFilter {
+  every: LoanApplicationWhereInput
+  some: LoanApplicationWhereInput
+  none: LoanApplicationWhereInput
+}
+
+input AccommodationBookingManyRelationFilter {
+  every: AccommodationBookingWhereInput
+  some: AccommodationBookingWhereInput
+  none: AccommodationBookingWhereInput
+}
+
+input ReimbursementManyRelationFilter {
+  every: ReimbursementWhereInput
+  some: ReimbursementWhereInput
+  none: ReimbursementWhereInput
+}
+
+input PrepaidCardManyRelationFilter {
+  every: PrepaidCardWhereInput
+  some: PrepaidCardWhereInput
+  none: PrepaidCardWhereInput
+}
+
+input TaskManyRelationFilter {
+  every: TaskWhereInput
+  some: TaskWhereInput
+  none: TaskWhereInput
+}
+
+input ActivityLogManyRelationFilter {
+  every: ActivityLogWhereInput
+  some: ActivityLogWhereInput
+  none: ActivityLogWhereInput
+}
+
 input ConsultantOrderByInput {
   id: OrderDirection
   name: OrderDirection
   slug: OrderDirection
   contactEmail: OrderDirection
+  contactPhone: OrderDirection
+  country: OrderDirection
+  city: OrderDirection
   status: OrderDirection
+  tier: OrderDirection
   createdAt: OrderDirection
   updatedAt: OrderDirection
 }
@@ -202,8 +306,20 @@ input ConsultantUpdateInput {
   name: String
   slug: String
   contactEmail: String
+  contactPhone: String
+  country: String
+  city: String
   status: String
+  tier: String
   users: UserRelateToManyForUpdateInput
+  students: StudentRelateToManyForUpdateInput
+  applications: ApplicationRelateToManyForUpdateInput
+  loanApplications: LoanApplicationRelateToManyForUpdateInput
+  accommodations: AccommodationBookingRelateToManyForUpdateInput
+  reimbursements: ReimbursementRelateToManyForUpdateInput
+  prepaidCards: PrepaidCardRelateToManyForUpdateInput
+  tasks: TaskRelateToManyForUpdateInput
+  activityLogs: ActivityLogRelateToManyForUpdateInput
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -215,6 +331,62 @@ input UserRelateToManyForUpdateInput {
   connect: [UserWhereUniqueInput!]
 }
 
+input StudentRelateToManyForUpdateInput {
+  disconnect: [StudentWhereUniqueInput!]
+  set: [StudentWhereUniqueInput!]
+  create: [StudentCreateInput!]
+  connect: [StudentWhereUniqueInput!]
+}
+
+input ApplicationRelateToManyForUpdateInput {
+  disconnect: [ApplicationWhereUniqueInput!]
+  set: [ApplicationWhereUniqueInput!]
+  create: [ApplicationCreateInput!]
+  connect: [ApplicationWhereUniqueInput!]
+}
+
+input LoanApplicationRelateToManyForUpdateInput {
+  disconnect: [LoanApplicationWhereUniqueInput!]
+  set: [LoanApplicationWhereUniqueInput!]
+  create: [LoanApplicationCreateInput!]
+  connect: [LoanApplicationWhereUniqueInput!]
+}
+
+input AccommodationBookingRelateToManyForUpdateInput {
+  disconnect: [AccommodationBookingWhereUniqueInput!]
+  set: [AccommodationBookingWhereUniqueInput!]
+  create: [AccommodationBookingCreateInput!]
+  connect: [AccommodationBookingWhereUniqueInput!]
+}
+
+input ReimbursementRelateToManyForUpdateInput {
+  disconnect: [ReimbursementWhereUniqueInput!]
+  set: [ReimbursementWhereUniqueInput!]
+  create: [ReimbursementCreateInput!]
+  connect: [ReimbursementWhereUniqueInput!]
+}
+
+input PrepaidCardRelateToManyForUpdateInput {
+  disconnect: [PrepaidCardWhereUniqueInput!]
+  set: [PrepaidCardWhereUniqueInput!]
+  create: [PrepaidCardCreateInput!]
+  connect: [PrepaidCardWhereUniqueInput!]
+}
+
+input TaskRelateToManyForUpdateInput {
+  disconnect: [TaskWhereUniqueInput!]
+  set: [TaskWhereUniqueInput!]
+  create: [TaskCreateInput!]
+  connect: [TaskWhereUniqueInput!]
+}
+
+input ActivityLogRelateToManyForUpdateInput {
+  disconnect: [ActivityLogWhereUniqueInput!]
+  set: [ActivityLogWhereUniqueInput!]
+  create: [ActivityLogCreateInput!]
+  connect: [ActivityLogWhereUniqueInput!]
+}
+
 input ConsultantUpdateArgs {
   where: ConsultantWhereUniqueInput!
   data: ConsultantUpdateInput!
@@ -224,8 +396,20 @@ input ConsultantCreateInput {
   name: String
   slug: String
   contactEmail: String
+  contactPhone: String
+  country: String
+  city: String
   status: String
+  tier: String
   users: UserRelateToManyForCreateInput
+  students: StudentRelateToManyForCreateInput
+  applications: ApplicationRelateToManyForCreateInput
+  loanApplications: LoanApplicationRelateToManyForCreateInput
+  accommodations: AccommodationBookingRelateToManyForCreateInput
+  reimbursements: ReimbursementRelateToManyForCreateInput
+  prepaidCards: PrepaidCardRelateToManyForCreateInput
+  tasks: TaskRelateToManyForCreateInput
+  activityLogs: ActivityLogRelateToManyForCreateInput
   createdAt: DateTime
   updatedAt: DateTime
 }
@@ -233,6 +417,1232 @@ input ConsultantCreateInput {
 input UserRelateToManyForCreateInput {
   create: [UserCreateInput!]
   connect: [UserWhereUniqueInput!]
+}
+
+input StudentRelateToManyForCreateInput {
+  create: [StudentCreateInput!]
+  connect: [StudentWhereUniqueInput!]
+}
+
+input ApplicationRelateToManyForCreateInput {
+  create: [ApplicationCreateInput!]
+  connect: [ApplicationWhereUniqueInput!]
+}
+
+input LoanApplicationRelateToManyForCreateInput {
+  create: [LoanApplicationCreateInput!]
+  connect: [LoanApplicationWhereUniqueInput!]
+}
+
+input AccommodationBookingRelateToManyForCreateInput {
+  create: [AccommodationBookingCreateInput!]
+  connect: [AccommodationBookingWhereUniqueInput!]
+}
+
+input ReimbursementRelateToManyForCreateInput {
+  create: [ReimbursementCreateInput!]
+  connect: [ReimbursementWhereUniqueInput!]
+}
+
+input PrepaidCardRelateToManyForCreateInput {
+  create: [PrepaidCardCreateInput!]
+  connect: [PrepaidCardWhereUniqueInput!]
+}
+
+input TaskRelateToManyForCreateInput {
+  create: [TaskCreateInput!]
+  connect: [TaskWhereUniqueInput!]
+}
+
+input ActivityLogRelateToManyForCreateInput {
+  create: [ActivityLogCreateInput!]
+  connect: [ActivityLogWhereUniqueInput!]
+}
+
+type ActivityLog {
+  id: ID!
+  tenant: Consultant
+  actor: User
+  entityType: String
+  entityId: String
+  action: String
+  metadata: JSON
+  createdAt: DateTime
+}
+
+input ActivityLogWhereUniqueInput {
+  id: ID
+}
+
+input ActivityLogWhereInput {
+  AND: [ActivityLogWhereInput!]
+  OR: [ActivityLogWhereInput!]
+  NOT: [ActivityLogWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  actor: UserWhereInput
+  entityType: StringFilter
+  entityId: StringFilter
+  action: StringFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input ActivityLogOrderByInput {
+  id: OrderDirection
+  entityType: OrderDirection
+  entityId: OrderDirection
+  action: OrderDirection
+  createdAt: OrderDirection
+}
+
+input ActivityLogUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  actor: UserRelateToOneForUpdateInput
+  entityType: String
+  entityId: String
+  action: String
+  metadata: JSON
+  createdAt: DateTime
+}
+
+input UserRelateToOneForUpdateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ActivityLogUpdateArgs {
+  where: ActivityLogWhereUniqueInput!
+  data: ActivityLogUpdateInput!
+}
+
+input ActivityLogCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  actor: UserRelateToOneForCreateInput
+  entityType: String
+  entityId: String
+  action: String
+  metadata: JSON
+  createdAt: DateTime
+}
+
+input UserRelateToOneForCreateInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+}
+
+type University {
+  id: ID!
+  name: String
+  slug: String
+  country: String
+  city: String
+  website: String
+  acceptanceRate: Decimal
+  ranking: Int
+  programs(where: ProgramWhereInput! = {}, orderBy: [ProgramOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProgramWhereUniqueInput): [Program!]
+  programsCount(where: ProgramWhereInput! = {}): Int
+  logo: FileFieldOutput
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+scalar Decimal
+
+type FileFieldOutput {
+  filename: String!
+  filesize: Int!
+  url: String!
+}
+
+input UniversityWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input UniversityWhereInput {
+  AND: [UniversityWhereInput!]
+  OR: [UniversityWhereInput!]
+  NOT: [UniversityWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  country: StringFilter
+  city: StringFilter
+  website: StringFilter
+  acceptanceRate: DecimalNullableFilter
+  ranking: IntNullableFilter
+  programs: ProgramManyRelationFilter
+  isActive: BooleanFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input DecimalNullableFilter {
+  equals: Decimal
+  in: [Decimal!]
+  notIn: [Decimal!]
+  lt: Decimal
+  lte: Decimal
+  gt: Decimal
+  gte: Decimal
+  not: DecimalNullableFilter
+}
+
+input IntNullableFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntNullableFilter
+}
+
+input ProgramManyRelationFilter {
+  every: ProgramWhereInput
+  some: ProgramWhereInput
+  none: ProgramWhereInput
+}
+
+input UniversityOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+  country: OrderDirection
+  city: OrderDirection
+  website: OrderDirection
+  acceptanceRate: OrderDirection
+  ranking: OrderDirection
+  isActive: OrderDirection
+  createdAt: OrderDirection
+}
+
+input UniversityUpdateInput {
+  name: String
+  slug: String
+  country: String
+  city: String
+  website: String
+  acceptanceRate: Decimal
+  ranking: Int
+  programs: ProgramRelateToManyForUpdateInput
+  logo: FileFieldInput
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+input ProgramRelateToManyForUpdateInput {
+  disconnect: [ProgramWhereUniqueInput!]
+  set: [ProgramWhereUniqueInput!]
+  create: [ProgramCreateInput!]
+  connect: [ProgramWhereUniqueInput!]
+}
+
+input FileFieldInput {
+  upload: Upload!
+}
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
+
+input UniversityUpdateArgs {
+  where: UniversityWhereUniqueInput!
+  data: UniversityUpdateInput!
+}
+
+input UniversityCreateInput {
+  name: String
+  slug: String
+  country: String
+  city: String
+  website: String
+  acceptanceRate: Decimal
+  ranking: Int
+  programs: ProgramRelateToManyForCreateInput
+  logo: FileFieldInput
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+input ProgramRelateToManyForCreateInput {
+  create: [ProgramCreateInput!]
+  connect: [ProgramWhereUniqueInput!]
+}
+
+type Program {
+  id: ID!
+  name: String
+  university: University
+  level: String
+  field: String
+  tuitionFeePerYear: Int
+  currency: String
+  duration: Int
+  startDate: DateTime
+  applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
+  applicationsCount(where: ApplicationWhereInput! = {}): Int
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+input ProgramWhereUniqueInput {
+  id: ID
+}
+
+input ProgramWhereInput {
+  AND: [ProgramWhereInput!]
+  OR: [ProgramWhereInput!]
+  NOT: [ProgramWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  university: UniversityWhereInput
+  level: StringFilter
+  field: StringFilter
+  tuitionFeePerYear: IntNullableFilter
+  currency: StringFilter
+  duration: IntNullableFilter
+  startDate: DateTimeNullableFilter
+  applications: ApplicationManyRelationFilter
+  isActive: BooleanFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input ProgramOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  level: OrderDirection
+  field: OrderDirection
+  tuitionFeePerYear: OrderDirection
+  currency: OrderDirection
+  duration: OrderDirection
+  startDate: OrderDirection
+  isActive: OrderDirection
+  createdAt: OrderDirection
+}
+
+input ProgramUpdateInput {
+  name: String
+  university: UniversityRelateToOneForUpdateInput
+  level: String
+  field: String
+  tuitionFeePerYear: Int
+  currency: String
+  duration: Int
+  startDate: DateTime
+  applications: ApplicationRelateToManyForUpdateInput
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+input UniversityRelateToOneForUpdateInput {
+  create: UniversityCreateInput
+  connect: UniversityWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ProgramUpdateArgs {
+  where: ProgramWhereUniqueInput!
+  data: ProgramUpdateInput!
+}
+
+input ProgramCreateInput {
+  name: String
+  university: UniversityRelateToOneForCreateInput
+  level: String
+  field: String
+  tuitionFeePerYear: Int
+  currency: String
+  duration: Int
+  startDate: DateTime
+  applications: ApplicationRelateToManyForCreateInput
+  isActive: Boolean
+  createdAt: DateTime
+}
+
+input UniversityRelateToOneForCreateInput {
+  create: UniversityCreateInput
+  connect: UniversityWhereUniqueInput
+}
+
+type Student {
+  id: ID!
+  tenant: Consultant
+  fullName: String
+  email: String
+  phone: String
+  dateOfBirth: DateTime
+  countryOfResidence: String
+  targetCountry: String
+  currentStage: String
+  educationLevel: String
+  workExperience: Int
+  englishTestScore: Decimal
+  englishTestType: String
+  parentMonthlyIncome: Int
+  applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
+  applicationsCount(where: ApplicationWhereInput! = {}): Int
+  documents(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
+  documentsCount(where: StudentDocumentWhereInput! = {}): Int
+  loanApplications(where: LoanApplicationWhereInput! = {}, orderBy: [LoanApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: LoanApplicationWhereUniqueInput): [LoanApplication!]
+  loanApplicationsCount(where: LoanApplicationWhereInput! = {}): Int
+  accommodations(where: AccommodationBookingWhereInput! = {}, orderBy: [AccommodationBookingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AccommodationBookingWhereUniqueInput): [AccommodationBooking!]
+  accommodationsCount(where: AccommodationBookingWhereInput! = {}): Int
+  reimbursements(where: ReimbursementWhereInput! = {}, orderBy: [ReimbursementOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ReimbursementWhereUniqueInput): [Reimbursement!]
+  reimbursementsCount(where: ReimbursementWhereInput! = {}): Int
+  prepaidCard: PrepaidCard
+  tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
+  tasksCount(where: TaskWhereInput! = {}): Int
+  notes: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input StudentWhereUniqueInput {
+  id: ID
+  prepaidCard: PrepaidCardWhereUniqueInput
+}
+
+input StudentWhereInput {
+  AND: [StudentWhereInput!]
+  OR: [StudentWhereInput!]
+  NOT: [StudentWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  fullName: StringFilter
+  email: StringFilter
+  phone: StringFilter
+  dateOfBirth: DateTimeNullableFilter
+  countryOfResidence: StringFilter
+  targetCountry: StringFilter
+  currentStage: StringNullableFilter
+  educationLevel: StringNullableFilter
+  workExperience: IntNullableFilter
+  englishTestScore: DecimalNullableFilter
+  englishTestType: StringNullableFilter
+  parentMonthlyIncome: IntNullableFilter
+  applications: ApplicationManyRelationFilter
+  documents: StudentDocumentManyRelationFilter
+  loanApplications: LoanApplicationManyRelationFilter
+  accommodations: AccommodationBookingManyRelationFilter
+  reimbursements: ReimbursementManyRelationFilter
+  prepaidCard: PrepaidCardWhereInput
+  tasks: TaskManyRelationFilter
+  notes: StringFilter
+  isDeleted: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input StudentDocumentManyRelationFilter {
+  every: StudentDocumentWhereInput
+  some: StudentDocumentWhereInput
+  none: StudentDocumentWhereInput
+}
+
+input StudentOrderByInput {
+  id: OrderDirection
+  fullName: OrderDirection
+  email: OrderDirection
+  phone: OrderDirection
+  dateOfBirth: OrderDirection
+  countryOfResidence: OrderDirection
+  targetCountry: OrderDirection
+  currentStage: OrderDirection
+  educationLevel: OrderDirection
+  workExperience: OrderDirection
+  englishTestScore: OrderDirection
+  englishTestType: OrderDirection
+  parentMonthlyIncome: OrderDirection
+  notes: OrderDirection
+  isDeleted: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input StudentUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  fullName: String
+  email: String
+  phone: String
+  dateOfBirth: DateTime
+  countryOfResidence: String
+  targetCountry: String
+  currentStage: String
+  educationLevel: String
+  workExperience: Int
+  englishTestScore: Decimal
+  englishTestType: String
+  parentMonthlyIncome: Int
+  applications: ApplicationRelateToManyForUpdateInput
+  documents: StudentDocumentRelateToManyForUpdateInput
+  loanApplications: LoanApplicationRelateToManyForUpdateInput
+  accommodations: AccommodationBookingRelateToManyForUpdateInput
+  reimbursements: ReimbursementRelateToManyForUpdateInput
+  prepaidCard: PrepaidCardRelateToOneForUpdateInput
+  tasks: TaskRelateToManyForUpdateInput
+  notes: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input StudentDocumentRelateToManyForUpdateInput {
+  disconnect: [StudentDocumentWhereUniqueInput!]
+  set: [StudentDocumentWhereUniqueInput!]
+  create: [StudentDocumentCreateInput!]
+  connect: [StudentDocumentWhereUniqueInput!]
+}
+
+input PrepaidCardRelateToOneForUpdateInput {
+  create: PrepaidCardCreateInput
+  connect: PrepaidCardWhereUniqueInput
+  disconnect: Boolean
+}
+
+input StudentUpdateArgs {
+  where: StudentWhereUniqueInput!
+  data: StudentUpdateInput!
+}
+
+input StudentCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  fullName: String
+  email: String
+  phone: String
+  dateOfBirth: DateTime
+  countryOfResidence: String
+  targetCountry: String
+  currentStage: String
+  educationLevel: String
+  workExperience: Int
+  englishTestScore: Decimal
+  englishTestType: String
+  parentMonthlyIncome: Int
+  applications: ApplicationRelateToManyForCreateInput
+  documents: StudentDocumentRelateToManyForCreateInput
+  loanApplications: LoanApplicationRelateToManyForCreateInput
+  accommodations: AccommodationBookingRelateToManyForCreateInput
+  reimbursements: ReimbursementRelateToManyForCreateInput
+  prepaidCard: PrepaidCardRelateToOneForCreateInput
+  tasks: TaskRelateToManyForCreateInput
+  notes: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input StudentDocumentRelateToManyForCreateInput {
+  create: [StudentDocumentCreateInput!]
+  connect: [StudentDocumentWhereUniqueInput!]
+}
+
+input PrepaidCardRelateToOneForCreateInput {
+  create: PrepaidCardCreateInput
+  connect: PrepaidCardWhereUniqueInput
+}
+
+type StudentDocument {
+  id: ID!
+  student: Student
+  application: Application
+  loanApplication: LoanApplication
+  documentType: String
+  file: FileFieldOutput
+  verificationStatus: String
+  verificationRemarks: String
+  uploadedAt: DateTime
+  createdAt: DateTime
+}
+
+input StudentDocumentWhereUniqueInput {
+  id: ID
+}
+
+input StudentDocumentWhereInput {
+  AND: [StudentDocumentWhereInput!]
+  OR: [StudentDocumentWhereInput!]
+  NOT: [StudentDocumentWhereInput!]
+  id: IDFilter
+  student: StudentWhereInput
+  application: ApplicationWhereInput
+  loanApplication: LoanApplicationWhereInput
+  documentType: StringFilter
+  verificationStatus: StringNullableFilter
+  verificationRemarks: StringFilter
+  uploadedAt: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input StudentDocumentOrderByInput {
+  id: OrderDirection
+  documentType: OrderDirection
+  verificationStatus: OrderDirection
+  verificationRemarks: OrderDirection
+  uploadedAt: OrderDirection
+  createdAt: OrderDirection
+}
+
+input StudentDocumentUpdateInput {
+  student: StudentRelateToOneForUpdateInput
+  application: ApplicationRelateToOneForUpdateInput
+  loanApplication: LoanApplicationRelateToOneForUpdateInput
+  documentType: String
+  file: FileFieldInput
+  verificationStatus: String
+  verificationRemarks: String
+  uploadedAt: DateTime
+  createdAt: DateTime
+}
+
+input StudentRelateToOneForUpdateInput {
+  create: StudentCreateInput
+  connect: StudentWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ApplicationRelateToOneForUpdateInput {
+  create: ApplicationCreateInput
+  connect: ApplicationWhereUniqueInput
+  disconnect: Boolean
+}
+
+input LoanApplicationRelateToOneForUpdateInput {
+  create: LoanApplicationCreateInput
+  connect: LoanApplicationWhereUniqueInput
+  disconnect: Boolean
+}
+
+input StudentDocumentUpdateArgs {
+  where: StudentDocumentWhereUniqueInput!
+  data: StudentDocumentUpdateInput!
+}
+
+input StudentDocumentCreateInput {
+  student: StudentRelateToOneForCreateInput
+  application: ApplicationRelateToOneForCreateInput
+  loanApplication: LoanApplicationRelateToOneForCreateInput
+  documentType: String
+  file: FileFieldInput
+  verificationStatus: String
+  verificationRemarks: String
+  uploadedAt: DateTime
+  createdAt: DateTime
+}
+
+input StudentRelateToOneForCreateInput {
+  create: StudentCreateInput
+  connect: StudentWhereUniqueInput
+}
+
+input ApplicationRelateToOneForCreateInput {
+  create: ApplicationCreateInput
+  connect: ApplicationWhereUniqueInput
+}
+
+input LoanApplicationRelateToOneForCreateInput {
+  create: LoanApplicationCreateInput
+  connect: LoanApplicationWhereUniqueInput
+}
+
+type Application {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  program: Program
+  status: String
+  applicationDate: DateTime
+  responseDate: DateTime
+  gre: Int
+  gmat: Int
+  gpa: Decimal
+  documents(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
+  documentsCount(where: StudentDocumentWhereInput! = {}): Int
+  remarks: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ApplicationWhereUniqueInput {
+  id: ID
+}
+
+input ApplicationWhereInput {
+  AND: [ApplicationWhereInput!]
+  OR: [ApplicationWhereInput!]
+  NOT: [ApplicationWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  program: ProgramWhereInput
+  status: StringNullableFilter
+  applicationDate: DateTimeNullableFilter
+  responseDate: DateTimeNullableFilter
+  gre: IntNullableFilter
+  gmat: IntNullableFilter
+  gpa: DecimalNullableFilter
+  documents: StudentDocumentManyRelationFilter
+  remarks: StringFilter
+  isDeleted: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input ApplicationOrderByInput {
+  id: OrderDirection
+  status: OrderDirection
+  applicationDate: OrderDirection
+  responseDate: OrderDirection
+  gre: OrderDirection
+  gmat: OrderDirection
+  gpa: OrderDirection
+  remarks: OrderDirection
+  isDeleted: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input ApplicationUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  program: ProgramRelateToOneForUpdateInput
+  status: String
+  applicationDate: DateTime
+  responseDate: DateTime
+  gre: Int
+  gmat: Int
+  gpa: Decimal
+  documents: StudentDocumentRelateToManyForUpdateInput
+  remarks: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ProgramRelateToOneForUpdateInput {
+  create: ProgramCreateInput
+  connect: ProgramWhereUniqueInput
+  disconnect: Boolean
+}
+
+input ApplicationUpdateArgs {
+  where: ApplicationWhereUniqueInput!
+  data: ApplicationUpdateInput!
+}
+
+input ApplicationCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  program: ProgramRelateToOneForCreateInput
+  status: String
+  applicationDate: DateTime
+  responseDate: DateTime
+  gre: Int
+  gmat: Int
+  gpa: Decimal
+  documents: StudentDocumentRelateToManyForCreateInput
+  remarks: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input ProgramRelateToOneForCreateInput {
+  create: ProgramCreateInput
+  connect: ProgramWhereUniqueInput
+}
+
+type LoanApplication {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  application: Application
+  status: String
+  loanAmountRequested: Int
+  loanAmountApproved: Int
+  currency: String
+  loanTenure: Int
+  interestRate: Decimal
+  emi: Int
+  consultantRemarks: String
+  fulfilmentRemarks: String
+  approvedAt: DateTime
+  disburseDate: DateTime
+  assignedFulfilmentExec: User
+  documents(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
+  documentsCount(where: StudentDocumentWhereInput! = {}): Int
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input LoanApplicationWhereUniqueInput {
+  id: ID
+}
+
+input LoanApplicationWhereInput {
+  AND: [LoanApplicationWhereInput!]
+  OR: [LoanApplicationWhereInput!]
+  NOT: [LoanApplicationWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  application: ApplicationWhereInput
+  status: StringNullableFilter
+  loanAmountRequested: IntNullableFilter
+  loanAmountApproved: IntNullableFilter
+  currency: StringFilter
+  loanTenure: IntNullableFilter
+  interestRate: DecimalNullableFilter
+  emi: IntNullableFilter
+  consultantRemarks: StringFilter
+  fulfilmentRemarks: StringFilter
+  approvedAt: DateTimeNullableFilter
+  disburseDate: DateTimeNullableFilter
+  assignedFulfilmentExec: UserWhereInput
+  documents: StudentDocumentManyRelationFilter
+  isDeleted: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input LoanApplicationOrderByInput {
+  id: OrderDirection
+  status: OrderDirection
+  loanAmountRequested: OrderDirection
+  loanAmountApproved: OrderDirection
+  currency: OrderDirection
+  loanTenure: OrderDirection
+  interestRate: OrderDirection
+  emi: OrderDirection
+  consultantRemarks: OrderDirection
+  fulfilmentRemarks: OrderDirection
+  approvedAt: OrderDirection
+  disburseDate: OrderDirection
+  isDeleted: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input LoanApplicationUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  application: ApplicationRelateToOneForUpdateInput
+  status: String
+  loanAmountRequested: Int
+  loanAmountApproved: Int
+  currency: String
+  loanTenure: Int
+  interestRate: Decimal
+  emi: Int
+  consultantRemarks: String
+  fulfilmentRemarks: String
+  approvedAt: DateTime
+  disburseDate: DateTime
+  assignedFulfilmentExec: UserRelateToOneForUpdateInput
+  documents: StudentDocumentRelateToManyForUpdateInput
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input LoanApplicationUpdateArgs {
+  where: LoanApplicationWhereUniqueInput!
+  data: LoanApplicationUpdateInput!
+}
+
+input LoanApplicationCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  application: ApplicationRelateToOneForCreateInput
+  status: String
+  loanAmountRequested: Int
+  loanAmountApproved: Int
+  currency: String
+  loanTenure: Int
+  interestRate: Decimal
+  emi: Int
+  consultantRemarks: String
+  fulfilmentRemarks: String
+  approvedAt: DateTime
+  disburseDate: DateTime
+  assignedFulfilmentExec: UserRelateToOneForCreateInput
+  documents: StudentDocumentRelateToManyForCreateInput
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type AccommodationBooking {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  city: String
+  accommodationType: String
+  address: String
+  monthlyRent: Int
+  currency: String
+  checkInDate: DateTime
+  checkOutDate: DateTime
+  status: String
+  landlordName: String
+  landlordContact: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input AccommodationBookingWhereUniqueInput {
+  id: ID
+}
+
+input AccommodationBookingWhereInput {
+  AND: [AccommodationBookingWhereInput!]
+  OR: [AccommodationBookingWhereInput!]
+  NOT: [AccommodationBookingWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  city: StringFilter
+  accommodationType: StringFilter
+  address: StringFilter
+  monthlyRent: IntNullableFilter
+  currency: StringFilter
+  checkInDate: DateTimeNullableFilter
+  checkOutDate: DateTimeNullableFilter
+  status: StringNullableFilter
+  landlordName: StringFilter
+  landlordContact: StringFilter
+  isDeleted: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input AccommodationBookingOrderByInput {
+  id: OrderDirection
+  city: OrderDirection
+  accommodationType: OrderDirection
+  address: OrderDirection
+  monthlyRent: OrderDirection
+  currency: OrderDirection
+  checkInDate: OrderDirection
+  checkOutDate: OrderDirection
+  status: OrderDirection
+  landlordName: OrderDirection
+  landlordContact: OrderDirection
+  isDeleted: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input AccommodationBookingUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  city: String
+  accommodationType: String
+  address: String
+  monthlyRent: Int
+  currency: String
+  checkInDate: DateTime
+  checkOutDate: DateTime
+  status: String
+  landlordName: String
+  landlordContact: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input AccommodationBookingUpdateArgs {
+  where: AccommodationBookingWhereUniqueInput!
+  data: AccommodationBookingUpdateInput!
+}
+
+input AccommodationBookingCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  city: String
+  accommodationType: String
+  address: String
+  monthlyRent: Int
+  currency: String
+  checkInDate: DateTime
+  checkOutDate: DateTime
+  status: String
+  landlordName: String
+  landlordContact: String
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+type Reimbursement {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  category: String
+  amount: Int
+  currency: String
+  status: String
+  receipt: FileFieldOutput
+  requestedAt: DateTime
+  approvedAt: DateTime
+  reimbursedAt: DateTime
+  remarks: String
+  createdAt: DateTime
+}
+
+input ReimbursementWhereUniqueInput {
+  id: ID
+}
+
+input ReimbursementWhereInput {
+  AND: [ReimbursementWhereInput!]
+  OR: [ReimbursementWhereInput!]
+  NOT: [ReimbursementWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  category: StringFilter
+  amount: IntFilter
+  currency: StringFilter
+  status: StringNullableFilter
+  requestedAt: DateTimeNullableFilter
+  approvedAt: DateTimeNullableFilter
+  reimbursedAt: DateTimeNullableFilter
+  remarks: StringFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input IntFilter {
+  equals: Int
+  in: [Int!]
+  notIn: [Int!]
+  lt: Int
+  lte: Int
+  gt: Int
+  gte: Int
+  not: IntFilter
+}
+
+input ReimbursementOrderByInput {
+  id: OrderDirection
+  category: OrderDirection
+  amount: OrderDirection
+  currency: OrderDirection
+  status: OrderDirection
+  requestedAt: OrderDirection
+  approvedAt: OrderDirection
+  reimbursedAt: OrderDirection
+  remarks: OrderDirection
+  createdAt: OrderDirection
+}
+
+input ReimbursementUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  category: String
+  amount: Int
+  currency: String
+  status: String
+  receipt: FileFieldInput
+  requestedAt: DateTime
+  approvedAt: DateTime
+  reimbursedAt: DateTime
+  remarks: String
+  createdAt: DateTime
+}
+
+input ReimbursementUpdateArgs {
+  where: ReimbursementWhereUniqueInput!
+  data: ReimbursementUpdateInput!
+}
+
+input ReimbursementCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  category: String
+  amount: Int
+  currency: String
+  status: String
+  receipt: FileFieldInput
+  requestedAt: DateTime
+  approvedAt: DateTime
+  reimbursedAt: DateTime
+  remarks: String
+  createdAt: DateTime
+}
+
+type PrepaidCard {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  cardNumber: String
+  balance: Int
+  currency: String
+  cardProvider: String
+  status: String
+  issuedAt: DateTime
+  expiryDate: DateTime
+  createdAt: DateTime
+}
+
+input PrepaidCardWhereUniqueInput {
+  id: ID
+  student: StudentWhereUniqueInput
+}
+
+input PrepaidCardWhereInput {
+  AND: [PrepaidCardWhereInput!]
+  OR: [PrepaidCardWhereInput!]
+  NOT: [PrepaidCardWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  cardNumber: StringFilter
+  balance: IntNullableFilter
+  currency: StringFilter
+  cardProvider: StringFilter
+  status: StringNullableFilter
+  issuedAt: DateTimeNullableFilter
+  expiryDate: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input PrepaidCardOrderByInput {
+  id: OrderDirection
+  cardNumber: OrderDirection
+  balance: OrderDirection
+  currency: OrderDirection
+  cardProvider: OrderDirection
+  status: OrderDirection
+  issuedAt: OrderDirection
+  expiryDate: OrderDirection
+  createdAt: OrderDirection
+}
+
+input PrepaidCardUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  cardNumber: String
+  balance: Int
+  currency: String
+  cardProvider: String
+  status: String
+  issuedAt: DateTime
+  expiryDate: DateTime
+  createdAt: DateTime
+}
+
+input PrepaidCardUpdateArgs {
+  where: PrepaidCardWhereUniqueInput!
+  data: PrepaidCardUpdateInput!
+}
+
+input PrepaidCardCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  cardNumber: String
+  balance: Int
+  currency: String
+  cardProvider: String
+  status: String
+  issuedAt: DateTime
+  expiryDate: DateTime
+  createdAt: DateTime
+}
+
+type Task {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  title: String
+  description: String
+  taskType: String
+  status: String
+  priority: String
+  dueDate: DateTime
+  assignedTo: User
+  createdBy: User
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input TaskWhereUniqueInput {
+  id: ID
+}
+
+input TaskWhereInput {
+  AND: [TaskWhereInput!]
+  OR: [TaskWhereInput!]
+  NOT: [TaskWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  title: StringFilter
+  description: StringFilter
+  taskType: StringFilter
+  status: StringNullableFilter
+  priority: StringNullableFilter
+  dueDate: DateTimeNullableFilter
+  assignedTo: UserWhereInput
+  createdBy: UserWhereInput
+  isDeleted: BooleanFilter
+  createdAt: DateTimeNullableFilter
+  updatedAt: DateTimeNullableFilter
+}
+
+input TaskOrderByInput {
+  id: OrderDirection
+  title: OrderDirection
+  description: OrderDirection
+  taskType: OrderDirection
+  status: OrderDirection
+  priority: OrderDirection
+  dueDate: OrderDirection
+  isDeleted: OrderDirection
+  createdAt: OrderDirection
+  updatedAt: OrderDirection
+}
+
+input TaskUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  title: String
+  description: String
+  taskType: String
+  status: String
+  priority: String
+  dueDate: DateTime
+  assignedTo: UserRelateToOneForUpdateInput
+  createdBy: UserRelateToOneForUpdateInput
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
+}
+
+input TaskUpdateArgs {
+  where: TaskWhereUniqueInput!
+  data: TaskUpdateInput!
+}
+
+input TaskCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  title: String
+  description: String
+  taskType: String
+  status: String
+  priority: String
+  dueDate: DateTime
+  assignedTo: UserRelateToOneForCreateInput
+  createdBy: UserRelateToOneForCreateInput
+  isDeleted: Boolean
+  createdAt: DateTime
+  updatedAt: DateTime
 }
 
 """
@@ -253,6 +1663,72 @@ type Mutation {
   updateConsultants(data: [ConsultantUpdateArgs!]!): [Consultant]
   deleteConsultant(where: ConsultantWhereUniqueInput!): Consultant
   deleteConsultants(where: [ConsultantWhereUniqueInput!]!): [Consultant]
+  createActivityLog(data: ActivityLogCreateInput!): ActivityLog
+  createActivityLogs(data: [ActivityLogCreateInput!]!): [ActivityLog]
+  updateActivityLog(where: ActivityLogWhereUniqueInput!, data: ActivityLogUpdateInput!): ActivityLog
+  updateActivityLogs(data: [ActivityLogUpdateArgs!]!): [ActivityLog]
+  deleteActivityLog(where: ActivityLogWhereUniqueInput!): ActivityLog
+  deleteActivityLogs(where: [ActivityLogWhereUniqueInput!]!): [ActivityLog]
+  createUniversity(data: UniversityCreateInput!): University
+  createUniversities(data: [UniversityCreateInput!]!): [University]
+  updateUniversity(where: UniversityWhereUniqueInput!, data: UniversityUpdateInput!): University
+  updateUniversities(data: [UniversityUpdateArgs!]!): [University]
+  deleteUniversity(where: UniversityWhereUniqueInput!): University
+  deleteUniversities(where: [UniversityWhereUniqueInput!]!): [University]
+  createProgram(data: ProgramCreateInput!): Program
+  createPrograms(data: [ProgramCreateInput!]!): [Program]
+  updateProgram(where: ProgramWhereUniqueInput!, data: ProgramUpdateInput!): Program
+  updatePrograms(data: [ProgramUpdateArgs!]!): [Program]
+  deleteProgram(where: ProgramWhereUniqueInput!): Program
+  deletePrograms(where: [ProgramWhereUniqueInput!]!): [Program]
+  createStudent(data: StudentCreateInput!): Student
+  createStudents(data: [StudentCreateInput!]!): [Student]
+  updateStudent(where: StudentWhereUniqueInput!, data: StudentUpdateInput!): Student
+  updateStudents(data: [StudentUpdateArgs!]!): [Student]
+  deleteStudent(where: StudentWhereUniqueInput!): Student
+  deleteStudents(where: [StudentWhereUniqueInput!]!): [Student]
+  createStudentDocument(data: StudentDocumentCreateInput!): StudentDocument
+  createStudentDocuments(data: [StudentDocumentCreateInput!]!): [StudentDocument]
+  updateStudentDocument(where: StudentDocumentWhereUniqueInput!, data: StudentDocumentUpdateInput!): StudentDocument
+  updateStudentDocuments(data: [StudentDocumentUpdateArgs!]!): [StudentDocument]
+  deleteStudentDocument(where: StudentDocumentWhereUniqueInput!): StudentDocument
+  deleteStudentDocuments(where: [StudentDocumentWhereUniqueInput!]!): [StudentDocument]
+  createApplication(data: ApplicationCreateInput!): Application
+  createApplications(data: [ApplicationCreateInput!]!): [Application]
+  updateApplication(where: ApplicationWhereUniqueInput!, data: ApplicationUpdateInput!): Application
+  updateApplications(data: [ApplicationUpdateArgs!]!): [Application]
+  deleteApplication(where: ApplicationWhereUniqueInput!): Application
+  deleteApplications(where: [ApplicationWhereUniqueInput!]!): [Application]
+  createLoanApplication(data: LoanApplicationCreateInput!): LoanApplication
+  createLoanApplications(data: [LoanApplicationCreateInput!]!): [LoanApplication]
+  updateLoanApplication(where: LoanApplicationWhereUniqueInput!, data: LoanApplicationUpdateInput!): LoanApplication
+  updateLoanApplications(data: [LoanApplicationUpdateArgs!]!): [LoanApplication]
+  deleteLoanApplication(where: LoanApplicationWhereUniqueInput!): LoanApplication
+  deleteLoanApplications(where: [LoanApplicationWhereUniqueInput!]!): [LoanApplication]
+  createAccommodationBooking(data: AccommodationBookingCreateInput!): AccommodationBooking
+  createAccommodationBookings(data: [AccommodationBookingCreateInput!]!): [AccommodationBooking]
+  updateAccommodationBooking(where: AccommodationBookingWhereUniqueInput!, data: AccommodationBookingUpdateInput!): AccommodationBooking
+  updateAccommodationBookings(data: [AccommodationBookingUpdateArgs!]!): [AccommodationBooking]
+  deleteAccommodationBooking(where: AccommodationBookingWhereUniqueInput!): AccommodationBooking
+  deleteAccommodationBookings(where: [AccommodationBookingWhereUniqueInput!]!): [AccommodationBooking]
+  createReimbursement(data: ReimbursementCreateInput!): Reimbursement
+  createReimbursements(data: [ReimbursementCreateInput!]!): [Reimbursement]
+  updateReimbursement(where: ReimbursementWhereUniqueInput!, data: ReimbursementUpdateInput!): Reimbursement
+  updateReimbursements(data: [ReimbursementUpdateArgs!]!): [Reimbursement]
+  deleteReimbursement(where: ReimbursementWhereUniqueInput!): Reimbursement
+  deleteReimbursements(where: [ReimbursementWhereUniqueInput!]!): [Reimbursement]
+  createPrepaidCard(data: PrepaidCardCreateInput!): PrepaidCard
+  createPrepaidCards(data: [PrepaidCardCreateInput!]!): [PrepaidCard]
+  updatePrepaidCard(where: PrepaidCardWhereUniqueInput!, data: PrepaidCardUpdateInput!): PrepaidCard
+  updatePrepaidCards(data: [PrepaidCardUpdateArgs!]!): [PrepaidCard]
+  deletePrepaidCard(where: PrepaidCardWhereUniqueInput!): PrepaidCard
+  deletePrepaidCards(where: [PrepaidCardWhereUniqueInput!]!): [PrepaidCard]
+  createTask(data: TaskCreateInput!): Task
+  createTasks(data: [TaskCreateInput!]!): [Task]
+  updateTask(where: TaskWhereUniqueInput!, data: TaskUpdateInput!): Task
+  updateTasks(data: [TaskUpdateArgs!]!): [Task]
+  deleteTask(where: TaskWhereUniqueInput!): Task
+  deleteTasks(where: [TaskWhereUniqueInput!]!): [Task]
   endSession: Boolean!
 }
 
@@ -263,6 +1739,39 @@ type Query {
   consultant(where: ConsultantWhereUniqueInput!): Consultant
   consultants(where: ConsultantWhereInput! = {}, orderBy: [ConsultantOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ConsultantWhereUniqueInput): [Consultant!]
   consultantsCount(where: ConsultantWhereInput! = {}): Int
+  activityLog(where: ActivityLogWhereUniqueInput!): ActivityLog
+  activityLogs(where: ActivityLogWhereInput! = {}, orderBy: [ActivityLogOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ActivityLogWhereUniqueInput): [ActivityLog!]
+  activityLogsCount(where: ActivityLogWhereInput! = {}): Int
+  university(where: UniversityWhereUniqueInput!): University
+  universities(where: UniversityWhereInput! = {}, orderBy: [UniversityOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: UniversityWhereUniqueInput): [University!]
+  universitiesCount(where: UniversityWhereInput! = {}): Int
+  program(where: ProgramWhereUniqueInput!): Program
+  programs(where: ProgramWhereInput! = {}, orderBy: [ProgramOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ProgramWhereUniqueInput): [Program!]
+  programsCount(where: ProgramWhereInput! = {}): Int
+  student(where: StudentWhereUniqueInput!): Student
+  students(where: StudentWhereInput! = {}, orderBy: [StudentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentWhereUniqueInput): [Student!]
+  studentsCount(where: StudentWhereInput! = {}): Int
+  studentDocument(where: StudentDocumentWhereUniqueInput!): StudentDocument
+  studentDocuments(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
+  studentDocumentsCount(where: StudentDocumentWhereInput! = {}): Int
+  application(where: ApplicationWhereUniqueInput!): Application
+  applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
+  applicationsCount(where: ApplicationWhereInput! = {}): Int
+  loanApplication(where: LoanApplicationWhereUniqueInput!): LoanApplication
+  loanApplications(where: LoanApplicationWhereInput! = {}, orderBy: [LoanApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: LoanApplicationWhereUniqueInput): [LoanApplication!]
+  loanApplicationsCount(where: LoanApplicationWhereInput! = {}): Int
+  accommodationBooking(where: AccommodationBookingWhereUniqueInput!): AccommodationBooking
+  accommodationBookings(where: AccommodationBookingWhereInput! = {}, orderBy: [AccommodationBookingOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: AccommodationBookingWhereUniqueInput): [AccommodationBooking!]
+  accommodationBookingsCount(where: AccommodationBookingWhereInput! = {}): Int
+  reimbursement(where: ReimbursementWhereUniqueInput!): Reimbursement
+  reimbursements(where: ReimbursementWhereInput! = {}, orderBy: [ReimbursementOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ReimbursementWhereUniqueInput): [Reimbursement!]
+  reimbursementsCount(where: ReimbursementWhereInput! = {}): Int
+  prepaidCard(where: PrepaidCardWhereUniqueInput!): PrepaidCard
+  prepaidCards(where: PrepaidCardWhereInput! = {}, orderBy: [PrepaidCardOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PrepaidCardWhereUniqueInput): [PrepaidCard!]
+  prepaidCardsCount(where: PrepaidCardWhereInput! = {}): Int
+  task(where: TaskWhereUniqueInput!): Task
+  tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
+  tasksCount(where: TaskWhereInput! = {}): Int
   keystone: KeystoneMeta!
 }
 
