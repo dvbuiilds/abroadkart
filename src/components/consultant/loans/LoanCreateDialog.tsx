@@ -142,8 +142,10 @@ export function LoanCreateDialog({
                 <FormItem>
                   <FormLabel>Application (optional)</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
+                    onValueChange={(val) =>
+                      field.onChange(val === "__none__" ? "" : val)
+                    }
+                    value={field.value || "__none__"}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -151,7 +153,7 @@ export function LoanCreateDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {applications.map((a) => (
                         <SelectItem key={a.id} value={a.id}>
                           {a.program?.name} – {a.program?.university?.name}

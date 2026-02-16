@@ -135,8 +135,10 @@ export function TaskCreateDialog({
                 <FormItem>
                   <FormLabel>Student (optional)</FormLabel>
                   <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
+                    onValueChange={(val) =>
+                      field.onChange(val === "__none__" ? "" : val)
+                    }
+                    value={field.value || "__none__"}
                   >
                     <FormControl>
                       <SelectTrigger>
@@ -144,7 +146,7 @@ export function TaskCreateDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">None</SelectItem>
+                      <SelectItem value="__none__">None</SelectItem>
                       {students.map((s) => (
                         <SelectItem key={s.id} value={s.id}>
                           {s.fullName ?? s.email}

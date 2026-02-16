@@ -588,7 +588,7 @@ const Dashboard = ({
       </section>
       <section className="flex flex-col gap-2 items-center">
         Feel free to reach out to us if you have any questions.
-        [+]91[-]9911720868 | tech.abroadkart@gmail.com
+        {/* Contact information should be loaded from environment variables or configuration */}
       </section>
     </div>
   );
