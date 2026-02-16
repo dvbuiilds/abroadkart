@@ -4,7 +4,7 @@
 
 import { list } from "@keystone-6/core";
 import { text, relationship, timestamp, select } from "@keystone-6/core/fields";
-import { isAuthenticated, isSuperAdmin } from "../access/rules";
+import { isSuperAdmin, isFulfilment } from "../access/rules";
 import { logActivityHook } from "../hooks/logActivity";
 
 export const Consultant = list({
@@ -13,6 +13,7 @@ export const Consultant = list({
       query: ({ session }) => {
         if (!session) return false;
         if (isSuperAdmin(session)) return true;
+        if (isFulfilment({ session })) return true;
         return Boolean(session.tenantId);
       },
       create: ({ session }) => isSuperAdmin(session),
@@ -23,6 +24,7 @@ export const Consultant = list({
       query: ({ session }) => {
         if (!session) return false;
         if (isSuperAdmin(session)) return true;
+        if (isFulfilment({ session })) return true;
         if (session.tenantId) return { id: { equals: session.tenantId } };
         return false;
       },

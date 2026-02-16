@@ -34,7 +34,7 @@ export default function ApplicationsPage() {
       take: PAGE_SIZE,
       skip: page * PAGE_SIZE,
     };
-  }, [status, studentId]);
+  }, [status, studentId, page]);
 
   const { data, isLoading, isError } = useApplications(variables);
 

@@ -50,48 +50,23 @@ export default config({
       return !!session;
     },
   },
-  storage: {
-    r2_storage: {
-      kind: "s3",
-      type: "file",
+  storage: (() => {
+    const r2Base = {
+      kind: "s3" as const,
+      type: "file" as const,
       bucketName: process.env.R2_BUCKET_NAME!,
       region: "auto",
       endpoint: process.env.R2_ENDPOINT,
       accessKeyId: process.env.R2_ACCESS_KEY_ID!,
       secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
       signed: { expiry: 3600 },
-    },
-    student_documents: {
-      kind: "s3",
-      type: "file",
-      bucketName: process.env.R2_BUCKET_NAME!,
-      region: "auto",
-      endpoint: process.env.R2_ENDPOINT,
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-      signed: { expiry: 3600 },
-    },
-    receipts: {
-      kind: "s3",
-      type: "file",
-      bucketName: process.env.R2_BUCKET_NAME!,
-      region: "auto",
-      endpoint: process.env.R2_ENDPOINT,
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-      signed: { expiry: 3600 },
-    },
-    university_logos: {
-      kind: "s3",
-      type: "file",
-      bucketName: process.env.R2_BUCKET_NAME!,
-      region: "auto",
-      endpoint: process.env.R2_ENDPOINT,
-      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
-      signed: { expiry: 3600 },
-    },
-  },
+    };
+    return {
+      student_documents: { ...r2Base, pathPrefix: "student-documents/" },
+      receipts: { ...r2Base, pathPrefix: "receipts/" },
+      university_logos: { ...r2Base, pathPrefix: "university-logos/" },
+    };
+  })(),
   server: {
     cors: {
       origin: process.env.FRONTEND_URL

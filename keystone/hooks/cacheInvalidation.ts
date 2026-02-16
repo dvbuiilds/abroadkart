@@ -4,26 +4,17 @@
 
 import { invalidatePattern } from "../lib/redis";
 import { logActivityHook } from "./logActivity";
-
-function getTenantIdFromItem(item: unknown): string | null {
-  if (item == null || typeof item !== "object") return null;
-  const o = item as Record<string, unknown>;
-  const tenantId = o.tenantId;
-  if (tenantId != null && typeof tenantId === "string") return tenantId;
-  const tenant = o.tenant as { id?: string } | null | undefined;
-  if (tenant?.id != null) return String(tenant.id);
-  return null;
-}
+import { resolveTenantId } from "./tenantResolution";
 
 /**
  * Runs afterOperation that invalidates GraphQL cache for the given key (e.g. 'students').
- * Accepts unknown args for Keystone hook assignability.
+ * Uses resolveTenantId to support items without direct tenant (e.g. StudentDocument → student.tenant).
  */
 export function cacheInvalidationAfterOperation(graphqlKey: string) {
   return async (args: unknown) => {
-    const a = args as { operation?: string; item?: unknown };
+    const a = args as { operation?: string; item?: unknown; context?: unknown };
     if (!a?.operation || !["create", "update", "delete"].includes(a.operation)) return;
-    const tenantId = getTenantIdFromItem(a.item);
+    const tenantId = await resolveTenantId(a.item, a.context);
     if (tenantId) {
       await invalidatePattern(`gql:${tenantId}:*:*${graphqlKey}*`);
     }

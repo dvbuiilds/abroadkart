@@ -5,18 +5,12 @@
  * context.session is now a flat SessionData object (no .data wrapper).
  */
 
+import { resolveTenantId } from "./tenantResolution";
+
 function getItemId(item: Record<string, unknown> | null | undefined): string {
   const id = item?.id;
   if (id == null) return "";
   return typeof id === "string" ? id : String((id as { toString?: () => string }).toString?.() ?? id);
-}
-
-function getItemTenantId(item: Record<string, unknown> | null | undefined): string | null {
-  const tenantId = item?.tenantId;
-  if (tenantId != null && typeof tenantId === "string") return tenantId;
-  const tenant = item?.tenant as { id?: string } | undefined;
-  if (tenant?.id != null) return String(tenant.id);
-  return null;
 }
 
 type SessionShape = {
@@ -46,7 +40,7 @@ export const logActivityHook = {
 
     try {
       const entityId = getItemId(item ?? null);
-      const tenantId = getItemTenantId(item ?? null);
+      const tenantId = await resolveTenantId(item ?? null, context);
       const entityType = listKey ?? context?.listKey ?? "Unknown";
       const sudo = context?.sudo?.();
       if (!sudo || typeof (sudo as Record<string, unknown>).query !== "object") return;
