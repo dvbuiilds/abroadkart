@@ -23,7 +23,7 @@ export const Student = list({
       query: ({ session }) => isAuthenticated(session),
       create: ({ session }) => isConsultant({ session }) || isSuperAdmin({ session }) || isFulfilment({ session }),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,

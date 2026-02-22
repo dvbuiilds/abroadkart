@@ -10,7 +10,7 @@ import {
   timestamp,
   json,
 } from "@keystone-6/core/fields";
-import { isAuthenticated, filterByTenant } from "../access/rules";
+import { isAuthenticated, isSuperAdmin, filterByTenant } from "../access/rules";
 
 export const ActivityLog = list({
   access: {
@@ -18,7 +18,7 @@ export const ActivityLog = list({
       query: ({ session }) => isAuthenticated(session),
       create: () => false,
       update: () => false,
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: (args) => filterByTenant({ session: args.session }),

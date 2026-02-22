@@ -10,7 +10,7 @@ import {
   select,
   integer,
 } from "@keystone-6/core/fields";
-import { isAuthenticated, isFulfilment, filterByTenant } from "../access/rules";
+import { isAuthenticated, isFulfilment, isSuperAdmin, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
 import { afterOperationWithCache } from "../hooks/cacheInvalidation";
 
@@ -18,9 +18,9 @@ export const PrepaidCard = list({
   access: {
     operation: {
       query: ({ session }) => isAuthenticated(session),
-      create: ({ session }) => isFulfilment({ session }),
+      create: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,

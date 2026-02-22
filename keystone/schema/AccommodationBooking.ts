@@ -11,7 +11,7 @@ import {
   select,
   integer,
 } from "@keystone-6/core/fields";
-import { isAuthenticated, isConsultant, filterByTenant } from "../access/rules";
+import { isAuthenticated, isConsultant, isSuperAdmin, isFulfilment, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
 import { afterOperationWithCache } from "../hooks/cacheInvalidation";
 
@@ -19,9 +19,10 @@ export const AccommodationBooking = list({
   access: {
     operation: {
       query: ({ session }) => isAuthenticated(session),
-      create: ({ session }) => isConsultant({ session }),
+      create: ({ session }) =>
+        isConsultant({ session }) || isSuperAdmin({ session }) || isFulfilment({ session }),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,

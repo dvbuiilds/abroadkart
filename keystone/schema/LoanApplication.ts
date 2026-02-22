@@ -16,6 +16,7 @@ import {
   isAuthenticated,
   isConsultant,
   isFulfilment,
+  isSuperAdmin,
   filterByTenant,
 } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
@@ -25,9 +26,10 @@ export const LoanApplication = list({
   access: {
     operation: {
       query: ({ session }) => isAuthenticated(session),
-      create: ({ session }) => isConsultant({ session }),
+      create: ({ session }) =>
+        isConsultant({ session }) || isSuperAdmin({ session }) || isFulfilment({ session }),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,
@@ -60,51 +62,51 @@ export const LoanApplication = list({
       defaultValue: "initiated",
       isIndexed: true,
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     loanAmountRequested: integer(),
     loanAmountApproved: integer({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     currency: text({ defaultValue: "INR" }),
     loanTenure: integer(),
     interestRate: decimal({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     emi: integer(),
     consultantRemarks: text({
       ui: { displayMode: "textarea" },
       access: {
-        update: ({ session }) => isConsultant({ session }),
+        update: ({ session }) => isConsultant({ session }) || isSuperAdmin({ session }),
       },
     }),
     fulfilmentRemarks: text({
       ui: { displayMode: "textarea" },
       access: {
         read: ({ session }) => isAuthenticated(session),
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     approvedAt: timestamp({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     disburseDate: timestamp({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     assignedFulfilmentExec: relationship({
       ref: "User",
       many: false,
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     documents: relationship({

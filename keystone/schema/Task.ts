@@ -10,7 +10,7 @@ import {
   timestamp,
   select,
 } from "@keystone-6/core/fields";
-import { isAuthenticated, filterByTenant } from "../access/rules";
+import { isAuthenticated, isSuperAdmin, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
 import { afterOperationWithCache } from "../hooks/cacheInvalidation";
 
@@ -20,7 +20,7 @@ export const Task = list({
       query: ({ session }) => isAuthenticated(session),
       create: ({ session }) => isAuthenticated(session),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,

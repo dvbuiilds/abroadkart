@@ -15,6 +15,7 @@ import {
   isAuthenticated,
   isConsultant,
   isFulfilment,
+  isSuperAdmin,
   filterByTenant,
 } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
@@ -24,9 +25,10 @@ export const Reimbursement = list({
   access: {
     operation: {
       query: ({ session }) => isAuthenticated(session),
-      create: ({ session }) => isConsultant({ session }),
+      create: ({ session }) =>
+        isConsultant({ session }) || isSuperAdmin({ session }) || isFulfilment({ session }),
       update: ({ session }) => isAuthenticated(session),
-      delete: () => false,
+      delete: ({ session }) => isSuperAdmin(session),
     },
     filter: {
       query: filterByTenant,
@@ -63,19 +65,19 @@ export const Reimbursement = list({
       ],
       defaultValue: "pending",
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     receipt: file({ storage: "receipts" }),
     requestedAt: timestamp(),
     approvedAt: timestamp({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     reimbursedAt: timestamp({
       access: {
-        update: ({ session }) => isFulfilment({ session }),
+        update: ({ session }) => isFulfilment({ session }) || isSuperAdmin({ session }),
       },
     }),
     remarks: text(),

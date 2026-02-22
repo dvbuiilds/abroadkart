@@ -17,7 +17,7 @@ export const User = list({
   access: {
     operation: {
       query: ({ session }) => isAuthenticated(session),
-      create: () => false,
+      create: ({ session }) => isSuperAdmin(session),
       update: ({ session }) => isAuthenticated(session),
       delete: ({ session }) => isSuperAdmin(session),
     },
