@@ -27,6 +27,32 @@ import {
 import { useCreateApplication } from '@app/hooks/useApplications';
 import { useStudents } from '@app/hooks/useStudents';
 import { usePrograms } from '@app/hooks/useReference';
+import { Sparkles } from 'lucide-react';
+
+const STATUS_OPTIONS = ['draft', 'submitted', 'underReview', 'waitlisted', 'accepted', 'rejected'] as const;
+
+/** Generates valid test data for the application create form (for testing) */
+function generateTestData(
+  students: { id: string }[],
+  programs: { id: string }[],
+  preselectedStudentId?: string
+): ApplicationCreateInput {
+  const studentId =
+    preselectedStudentId ??
+    students[Math.floor(Math.random() * students.length)]?.id ??
+    '';
+  const programId = programs[Math.floor(Math.random() * programs.length)]?.id ?? '';
+
+  return {
+    studentId,
+    programId,
+    status: STATUS_OPTIONS[Math.floor(Math.random() * STATUS_OPTIONS.length)],
+    gpa: Math.round((3 + Math.random() * 1.5) * 100) / 100,
+    gre: Math.floor(300 + Math.random() * 40),
+    gmat: Math.floor(650 + Math.random() * 100),
+    remarks: 'Test application - generated for QA',
+  };
+}
 
 export function ApplicationCreateDialog({
   open,
@@ -73,7 +99,7 @@ export function ApplicationCreateDialog({
         student: { connect: { id: data.studentId } },
         program: { connect: { id: data.programId } },
         status: data.status,
-        gpa: data.gpa != null ? (typeof data.gpa === 'string' ? parseFloat(data.gpa) : data.gpa) : undefined,
+        gpa: data.gpa != null ? String(data.gpa) : undefined,
         gre: data.gre,
         gmat: data.gmat,
         remarks: data.remarks,
@@ -213,11 +239,30 @@ export function ApplicationCreateDialog({
             {form.formState.errors.root && (
               <p className="text-sm text-destructive">{form.formState.errors.root.message}</p>
             )}
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-              <Button type="submit" disabled={createApplication.isPending}>
-                {createApplication.isPending ? 'Creating...' : 'Create Application'}
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground"
+                onClick={() =>
+                  form.reset(generateTestData(students, programs, preselectedStudentId))
+                }
+                disabled={
+                  programs.length === 0 || (!preselectedStudentId && students.length === 0)
+                }
+              >
+                <Sparkles className="mr-1.5 h-4 w-4" />
+                Generate test data
               </Button>
+              <div className="flex gap-2">
+                <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={createApplication.isPending}>
+                  {createApplication.isPending ? 'Creating...' : 'Create Application'}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>
