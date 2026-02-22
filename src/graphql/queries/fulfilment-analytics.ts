@@ -28,7 +28,7 @@ export const GET_LOANS_FOR_ANALYTICS = `
     $where: LoanApplicationWhereInput!
     $take: Int!
   ) {
-    loanApplications(where: $where, orderBy: [{ createdAt: "desc" }], take: $take) {
+    loanApplications(where: $where, orderBy: [{ createdAt: desc }], take: $take) {
       id
       status
       createdAt
@@ -47,7 +47,7 @@ export const GET_DOCUMENTS_FOR_ANALYTICS = `
     $where: StudentDocumentWhereInput!
     $take: Int!
   ) {
-    studentDocuments(where: $where, orderBy: [{ uploadedAt: "desc" }], take: $take) {
+    studentDocuments(where: $where, orderBy: [{ uploadedAt: desc }], take: $take) {
       id
       documentType
       verificationStatus

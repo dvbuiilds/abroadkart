@@ -24,7 +24,7 @@ export const GET_FULFILMENT_RECENT_LOANS = `
     $where: LoanApplicationWhereInput!
     $take: Int!
   ) {
-    loanApplications(where: $where, orderBy: [{ createdAt: "desc" }], take: $take) {
+    loanApplications(where: $where, orderBy: [{ createdAt: desc }], take: $take) {
       id
       status
       loanAmountRequested
@@ -49,14 +49,14 @@ export const GET_FULFILMENT_OVERDUE_ITEMS = `
     $whereDocs: StudentDocumentWhereInput!
     $take: Int!
   ) {
-    overdueLoans: loanApplications(where: $whereLoans, orderBy: [{ createdAt: "asc" }], take: $take) {
+    overdueLoans: loanApplications(where: $whereLoans, orderBy: [{ createdAt: asc }], take: $take) {
       id
       status
       createdAt
       student { fullName }
       tenant { name }
     }
-    overdueDocuments: studentDocuments(where: $whereDocs, orderBy: [{ uploadedAt: "asc" }], take: $take) {
+    overdueDocuments: studentDocuments(where: $whereDocs, orderBy: [{ uploadedAt: asc }], take: $take) {
       id
       documentType
       uploadedAt

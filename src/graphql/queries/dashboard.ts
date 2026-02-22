@@ -23,20 +23,20 @@ export const GET_RECENT_ACTIVITY = `
     $whereLoans: LoanApplicationWhereInput!
     $take: Int!
   ) {
-    recentStudents: students(where: $whereStudents, orderBy: [{ createdAt: "desc" }], take: $take) {
+    recentStudents: students(where: $whereStudents, orderBy: [{ createdAt: desc }], take: $take) {
       id
       fullName
       email
       createdAt
     }
-    recentApplications: applications(where: $whereApplications, orderBy: [{ applicationDate: "desc" }], take: $take) {
+    recentApplications: applications(where: $whereApplications, orderBy: [{ applicationDate: desc }], take: $take) {
       id
       status
       applicationDate
       student { fullName }
       program { name university { name } }
     }
-    recentLoans: loanApplications(where: $whereLoans, orderBy: [{ createdAt: "desc" }], take: $take) {
+    recentLoans: loanApplications(where: $whereLoans, orderBy: [{ createdAt: desc }], take: $take) {
       id
       status
       loanAmountRequested

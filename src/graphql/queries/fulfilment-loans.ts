@@ -40,7 +40,7 @@ export const GET_FULFILMENT_LOANS = `
 
 export const GET_ACTIVITY_LOGS_FOR_LOAN = `
   query GetActivityLogsForLoan($where: ActivityLogWhereInput!, $take: Int!) {
-    activityLogs(where: $where, orderBy: [{ createdAt: "desc" }], take: $take) {
+    activityLogs(where: $where, orderBy: [{ createdAt: desc }], take: $take) {
       id
       entityType
       entityId
