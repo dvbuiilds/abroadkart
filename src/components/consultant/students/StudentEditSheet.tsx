@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from '@app/components/ui/form';
 import { Input } from '@app/components/ui/input';
+import { Checkbox } from '@app/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -26,28 +27,16 @@ import {
 } from '@app/components/ui/select';
 import { useUpdateStudent } from '@app/hooks/useStudents';
 import type { StudentListItem } from '@app/graphql/types';
-
-const STAGE_OPTIONS = [
-  { value: 'lead', label: 'Lead' },
-  { value: 'prospect', label: 'Prospect' },
-  { value: 'applied', label: 'Applied' },
-  { value: 'inLoanProcess', label: 'In Loan Process' },
-  { value: 'enrolled', label: 'Enrolled' },
-  { value: 'graduated', label: 'Graduated' },
-];
-
-const EDUCATION_OPTIONS = [
-  { value: 'highSchool', label: 'High School' },
-  { value: 'bachelor', label: 'Bachelor' },
-  { value: 'master', label: 'Master' },
-  { value: 'phd', label: 'PhD' },
-];
-
-const ENGLISH_TEST_OPTIONS = [
-  { value: 'IELTS', label: 'IELTS' },
-  { value: 'TOEFL', label: 'TOEFL' },
-  { value: 'PTE', label: 'PTE' },
-];
+import {
+  BUDGET_PER_YEAR_OPTIONS,
+  PROGRAM_DISCIPLINE_OPTIONS,
+  QUALIFICATION_OPTIONS,
+  STAGE_OPTIONS,
+  TARGET_COUNTRY_OPTIONS,
+  TARGET_YEAR_OPTIONS,
+  TEST_SCORE_FIELDS,
+  WORK_EXPERIENCE_OPTIONS,
+} from '@app/lib/students/options';
 
 export function StudentEditSheet({
   student,
@@ -67,11 +56,24 @@ export function StudentEditSheet({
       email: student.email ?? '',
       phone: student.phone ?? '',
       countryOfResidence: student.countryOfResidence ?? '',
-      targetCountry: '',
+      targetCountry: (student.targetCountry as StudentUpdateInput['targetCountry']) || undefined,
       currentStage: (student.currentStage as StudentUpdateInput['currentStage']) ?? 'lead',
-      educationLevel: undefined,
-      englishTestType: undefined,
-      englishTestScore: undefined,
+      qualification: student.qualification as StudentUpdateInput['qualification'],
+      targetYear: student.targetYear as StudentUpdateInput['targetYear'],
+      budgetPerYear: student.budgetPerYear as StudentUpdateInput['budgetPerYear'],
+      programDisciplines: (student.programDisciplines ?? []) as StudentUpdateInput['programDisciplines'],
+      openForScholarshipsLoans: student.openForScholarshipsLoans ?? false,
+      workExperience: student.workExperience as StudentUpdateInput['workExperience'],
+      ieltsScore: student.ieltsScore != null ? Number(student.ieltsScore) : undefined,
+      toeflScore: student.toeflScore != null ? Number(student.toeflScore) : undefined,
+      pteScore: student.pteScore != null ? Number(student.pteScore) : undefined,
+      gmatScore: student.gmatScore != null ? Number(student.gmatScore) : undefined,
+      greScore: student.greScore != null ? Number(student.greScore) : undefined,
+      satScore: student.satScore != null ? Number(student.satScore) : undefined,
+      actScore: student.actScore != null ? Number(student.actScore) : undefined,
+      finalScore: student.finalScore != null ? Number(student.finalScore) : undefined,
+      parentMonthlyIncome: student.parentMonthlyIncome ?? undefined,
+      notes: student.notes ?? '',
     },
   });
 
@@ -86,10 +88,20 @@ export function StudentEditSheet({
           countryOfResidence: data.countryOfResidence,
           targetCountry: data.targetCountry,
           currentStage: data.currentStage,
-          educationLevel: data.educationLevel,
+          qualification: data.qualification,
           workExperience: data.workExperience,
-          englishTestScore: data.englishTestScore != null ? String(data.englishTestScore) : undefined,
-          englishTestType: data.englishTestType,
+          targetYear: data.targetYear,
+          budgetPerYear: data.budgetPerYear,
+          programDisciplines: data.programDisciplines,
+          openForScholarshipsLoans: data.openForScholarshipsLoans,
+          ieltsScore: data.ieltsScore != null ? String(data.ieltsScore) : undefined,
+          toeflScore: data.toeflScore != null ? String(data.toeflScore) : undefined,
+          pteScore: data.pteScore != null ? String(data.pteScore) : undefined,
+          gmatScore: data.gmatScore != null ? String(data.gmatScore) : undefined,
+          greScore: data.greScore != null ? String(data.greScore) : undefined,
+          satScore: data.satScore != null ? String(data.satScore) : undefined,
+          actScore: data.actScore != null ? String(data.actScore) : undefined,
+          finalScore: data.finalScore != null ? String(data.finalScore) : undefined,
           parentMonthlyIncome: data.parentMonthlyIncome,
           notes: data.notes,
         },
@@ -109,6 +121,9 @@ export function StudentEditSheet({
         </SheetHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="mt-6 space-y-4">
+            <p className="text-sm font-semibold text-muted-foreground">
+              Personal Information
+            </p>
             <FormField
               control={form.control}
               name="fullName"
@@ -161,15 +176,187 @@ export function StudentEditSheet({
                 </FormItem>
               )}
             />
+            <p className="pt-2 text-sm font-semibold text-muted-foreground">
+              Academic Preferences
+            </p>
+            <FormField
+              control={form.control}
+              name="qualification"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Qualification</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {QUALIFICATION_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="finalScore"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Final Score (Last Course)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <FormField
               control={form.control}
               name="targetCountry"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Target Country</FormLabel>
-                  <FormControl>
-                    <Input {...field} value={field.value ?? ''} />
-                  </FormControl>
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {TARGET_COUNTRY_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="targetYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Target Year</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {TARGET_YEAR_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="budgetPerYear"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Budget Per Year</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {BUDGET_PER_YEAR_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="programDisciplines"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Program Disciplines</FormLabel>
+                  <div className="grid grid-cols-2 gap-2 rounded-md border p-3">
+                    {PROGRAM_DISCIPLINE_OPTIONS.map((option) => {
+                      const isChecked = (field.value ?? []).includes(option.value);
+                      return (
+                        <label key={option.value} className="flex items-center gap-2 text-sm">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const next = new Set(field.value ?? []);
+                              if (checked) next.add(option.value);
+                              else next.delete(option.value);
+                              field.onChange(Array.from(next));
+                            }}
+                          />
+                          {option.label}
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <p className="pt-2 text-sm font-semibold text-muted-foreground">Test Scores</p>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {TEST_SCORE_FIELDS.map((scoreField) => (
+                <FormField
+                  key={scoreField.key}
+                  control={form.control}
+                  name={scoreField.key}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{scoreField.label}</FormLabel>
+                      <FormControl>
+                        <Input type="number" step="0.01" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
+            </div>
+            <p className="pt-2 text-sm font-semibold text-muted-foreground">Other Details</p>
+            <FormField
+              control={form.control}
+              name="workExperience"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Work Experience</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {WORK_EXPERIENCE_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value}>
+                          {o.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -200,60 +387,28 @@ export function StudentEditSheet({
             />
             <FormField
               control={form.control}
-              name="educationLevel"
+              name="openForScholarshipsLoans"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Education Level</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {EDUCATION_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <label className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={!!field.value}
+                      onCheckedChange={(checked) => field.onChange(!!checked)}
+                    />
+                    Open for Scholarships & Loans
+                  </label>
                   <FormMessage />
                 </FormItem>
               )}
             />
             <FormField
               control={form.control}
-              name="englishTestType"
+              name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>English Test</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value ?? ''}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {ENGLISH_TEST_OPTIONS.map((o) => (
-                        <SelectItem key={o.value} value={o.value}>
-                          {o.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="englishTestScore"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Test Score</FormLabel>
+                  <FormLabel>Notes (optional)</FormLabel>
                   <FormControl>
-                    <Input type="text" {...field} value={field.value ?? ''} />
+                    <Input {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

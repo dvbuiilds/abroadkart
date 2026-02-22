@@ -775,10 +775,20 @@ type Student {
   countryOfResidence: String
   targetCountry: String
   currentStage: String
-  educationLevel: String
-  workExperience: Int
-  englishTestScore: Decimal
-  englishTestType: String
+  qualification: String
+  workExperience: String
+  ieltsScore: Decimal
+  toeflScore: Decimal
+  pteScore: Decimal
+  gmatScore: Decimal
+  greScore: Decimal
+  satScore: Decimal
+  actScore: Decimal
+  finalScore: Decimal
+  targetYear: String
+  programDisciplines: JSON
+  budgetPerYear: String
+  openForScholarshipsLoans: Boolean
   parentMonthlyIncome: Int
   applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
   applicationsCount(where: ApplicationWhereInput! = {}): Int
@@ -817,10 +827,19 @@ input StudentWhereInput {
   countryOfResidence: StringFilter
   targetCountry: StringFilter
   currentStage: StringNullableFilter
-  educationLevel: StringNullableFilter
-  workExperience: IntNullableFilter
-  englishTestScore: DecimalNullableFilter
-  englishTestType: StringNullableFilter
+  qualification: StringNullableFilter
+  workExperience: StringNullableFilter
+  ieltsScore: DecimalNullableFilter
+  toeflScore: DecimalNullableFilter
+  pteScore: DecimalNullableFilter
+  gmatScore: DecimalNullableFilter
+  greScore: DecimalNullableFilter
+  satScore: DecimalNullableFilter
+  actScore: DecimalNullableFilter
+  finalScore: DecimalNullableFilter
+  targetYear: StringNullableFilter
+  budgetPerYear: StringNullableFilter
+  openForScholarshipsLoans: BooleanFilter
   parentMonthlyIncome: IntNullableFilter
   applications: ApplicationManyRelationFilter
   documents: StudentDocumentManyRelationFilter
@@ -850,10 +869,19 @@ input StudentOrderByInput {
   countryOfResidence: OrderDirection
   targetCountry: OrderDirection
   currentStage: OrderDirection
-  educationLevel: OrderDirection
+  qualification: OrderDirection
   workExperience: OrderDirection
-  englishTestScore: OrderDirection
-  englishTestType: OrderDirection
+  ieltsScore: OrderDirection
+  toeflScore: OrderDirection
+  pteScore: OrderDirection
+  gmatScore: OrderDirection
+  greScore: OrderDirection
+  satScore: OrderDirection
+  actScore: OrderDirection
+  finalScore: OrderDirection
+  targetYear: OrderDirection
+  budgetPerYear: OrderDirection
+  openForScholarshipsLoans: OrderDirection
   parentMonthlyIncome: OrderDirection
   notes: OrderDirection
   isDeleted: OrderDirection
@@ -870,10 +898,20 @@ input StudentUpdateInput {
   countryOfResidence: String
   targetCountry: String
   currentStage: String
-  educationLevel: String
-  workExperience: Int
-  englishTestScore: Decimal
-  englishTestType: String
+  qualification: String
+  workExperience: String
+  ieltsScore: Decimal
+  toeflScore: Decimal
+  pteScore: Decimal
+  gmatScore: Decimal
+  greScore: Decimal
+  satScore: Decimal
+  actScore: Decimal
+  finalScore: Decimal
+  targetYear: String
+  programDisciplines: JSON
+  budgetPerYear: String
+  openForScholarshipsLoans: Boolean
   parentMonthlyIncome: Int
   applications: ApplicationRelateToManyForUpdateInput
   documents: StudentDocumentRelateToManyForUpdateInput
@@ -915,10 +953,20 @@ input StudentCreateInput {
   countryOfResidence: String
   targetCountry: String
   currentStage: String
-  educationLevel: String
-  workExperience: Int
-  englishTestScore: Decimal
-  englishTestType: String
+  qualification: String
+  workExperience: String
+  ieltsScore: Decimal
+  toeflScore: Decimal
+  pteScore: Decimal
+  gmatScore: Decimal
+  greScore: Decimal
+  satScore: Decimal
+  actScore: Decimal
+  finalScore: Decimal
+  targetYear: String
+  programDisciplines: JSON
+  budgetPerYear: String
+  openForScholarshipsLoans: Boolean
   parentMonthlyIncome: Int
   applications: ApplicationRelateToManyForCreateInput
   documents: StudentDocumentRelateToManyForCreateInput

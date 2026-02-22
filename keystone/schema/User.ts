@@ -27,7 +27,8 @@ export const User = list({
         if (isSuperAdmin(session) || session.role === "fulfilment") return true;
         if (session.tenantId)
           return { tenant: { id: { equals: session.tenantId } } };
-        return false;
+        // Consultant without tenant: allow seeing own record (for GET_CURRENT_USER)
+        return { id: { equals: session.id } };
       },
     },
     item: {

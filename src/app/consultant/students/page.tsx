@@ -11,9 +11,14 @@ import { StudentCreateDialog } from '@app/components/consultant/students/Student
 import { StudentEditSheet } from '@app/components/consultant/students/StudentEditSheet';
 import { EmptyState } from '@app/components/shared/EmptyState';
 import { LoadingSpinner } from '@app/components/shared/LoadingSpinner';
-import { useStudents } from '@app/hooks/useStudents';
+import { DownloadCsvButton } from '@app/components/shared/DownloadCsvButton';
+import { useAllStudents, useStudents } from '@app/hooks/useStudents';
 import type { StudentListItem } from '@app/graphql/types';
 import { Plus } from 'lucide-react';
+import { downloadCSV } from '@app/lib/csv-export';
+import { STUDENT_CSV_COLUMNS } from '@app/lib/csv-columns/students';
+import { CSV_EXPORT_LIMIT } from '@app/graphql/queries/students';
+import { toast } from 'sonner';
 
 const PAGE_SIZE = 10;
 
@@ -42,6 +47,9 @@ export default function StudentsPage() {
   }, [search, stage, page]);
 
   const { data, isLoading, isError } = useStudents(variables);
+  const { refetch: refetchAllStudents, isFetching: isExporting } = useAllStudents(
+    variables.where as Record<string, unknown>
+  );
 
   const updateParams = (updates: Record<string, string>) => {
     const next = new URLSearchParams(searchParams.toString());
@@ -54,9 +62,32 @@ export default function StudentsPage() {
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editStudent, setEditStudent] = useState<StudentListItem | null>(null);
+  const [isExportingLocal, setIsExportingLocal] = useState(false);
 
   const students = data?.students ?? [];
   const total = data?.studentsCount ?? 0;
+
+  const handleDownloadCsv = () => {
+    setIsExportingLocal(true);
+    refetchAllStudents()
+      .then((response) => {
+        const allRows = response.data?.students ?? [];
+        const exportRows = allRows.slice(0, CSV_EXPORT_LIMIT);
+        downloadCSV(exportRows, STUDENT_CSV_COLUMNS, 'students.csv');
+        if (total > CSV_EXPORT_LIMIT) {
+          toast.info(
+            `Export limited to ${CSV_EXPORT_LIMIT} most recent students (${total} total)`
+          );
+        } else {
+          toast.success(`Exported ${exportRows.length} students`);
+        }
+      })
+      .catch((e) => {
+        console.error(e);
+        toast.error('Failed to export students. Please try again.');
+      })
+      .finally(() => setIsExportingLocal(false));
+  };
 
   if (isError) {
     return (
@@ -73,10 +104,16 @@ export default function StudentsPage() {
         title="Students"
         breadcrumbs={[{ label: 'Students' }]}
         actions={
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Add Student
-          </Button>
+          <div className="flex items-center gap-2">
+            <DownloadCsvButton
+              onClick={handleDownloadCsv}
+              isLoading={isExporting || isExportingLocal}
+            />
+            <Button onClick={() => setCreateOpen(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Add Student
+            </Button>
+          </div>
         }
       />
 

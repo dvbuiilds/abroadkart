@@ -20,7 +20,7 @@ import { StudentDocumentsTab } from "@app/components/consultant/students/Student
 import { StudentTasksTab } from "@app/components/consultant/students/StudentTasksTab";
 import { StudentEditSheet } from "@app/components/consultant/students/StudentEditSheet";
 import { Pencil } from "lucide-react";
-import type { StudentListItem } from "@app/graphql/types";
+import type { Student } from "@app/graphql/types";
 
 const STAGE_VARIANTS: Record<
   string,
@@ -40,7 +40,7 @@ export default function StudentDetailPage() {
   const id = params.id as string;
   const { data: student, isLoading, isError } = useStudent(id);
   const [editOpen, setEditOpen] = useState(false);
-  const [editStudent, setEditStudent] = useState<StudentListItem | null>(null);
+  const [editStudent, setEditStudent] = useState<Student | null>(null);
 
   if (isLoading) {
     return (
@@ -88,15 +88,7 @@ export default function StudentDetailPage() {
               variant="outline"
               size="sm"
               onClick={() => {
-                setEditStudent({
-                  id: student.id,
-                  fullName: student.fullName,
-                  email: student.email,
-                  phone: student.phone,
-                  currentStage: student.currentStage,
-                  countryOfResidence: student.countryOfResidence,
-                  createdAt: student.createdAt,
-                });
+                setEditStudent(student);
                 setEditOpen(true);
               }}
             >

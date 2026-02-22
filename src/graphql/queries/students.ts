@@ -14,9 +14,28 @@ export const GET_STUDENTS = `
       fullName
       email
       phone
-      currentStage
+      dateOfBirth
       countryOfResidence
+      targetCountry
+      currentStage
+      qualification
+      workExperience
+      targetYear
+      budgetPerYear
+      openForScholarshipsLoans
+      programDisciplines
+      ieltsScore
+      toeflScore
+      pteScore
+      gmatScore
+      greScore
+      satScore
+      actScore
+      finalScore
+      parentMonthlyIncome
+      notes
       createdAt
+      updatedAt
       tenant {
         id
         name
@@ -37,10 +56,20 @@ export const GET_STUDENT = `
       countryOfResidence
       targetCountry
       currentStage
-      educationLevel
+      qualification
       workExperience
-      englishTestScore
-      englishTestType
+      targetYear
+      budgetPerYear
+      openForScholarshipsLoans
+      programDisciplines
+      ieltsScore
+      toeflScore
+      pteScore
+      gmatScore
+      greScore
+      satScore
+      actScore
+      finalScore
       parentMonthlyIncome
       notes
       createdAt
@@ -98,3 +127,43 @@ export const GET_STUDENT = `
     }
   }
 `;
+
+const CSV_EXPORT_LIMIT = 1000;
+
+export const GET_ALL_STUDENTS = `
+  query GetAllStudents(
+    $where: StudentWhereInput!
+    $orderBy: [StudentOrderByInput!]!
+    $take: Int
+  ) {
+    students(where: $where, orderBy: $orderBy, take: $take) {
+      id
+      fullName
+      email
+      phone
+      countryOfResidence
+      targetCountry
+      currentStage
+      qualification
+      workExperience
+      targetYear
+      budgetPerYear
+      openForScholarshipsLoans
+      programDisciplines
+      ieltsScore
+      toeflScore
+      pteScore
+      gmatScore
+      greScore
+      satScore
+      actScore
+      finalScore
+      parentMonthlyIncome
+      notes
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export { CSV_EXPORT_LIMIT };

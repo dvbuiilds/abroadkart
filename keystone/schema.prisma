@@ -105,32 +105,42 @@ model Program {
 }
 
 model Student {
-  id                  String                 @id @default(uuid()) @postgresql.Uuid
-  tenant              Consultant?            @relation("Student_tenant", fields: [tenantId], references: [id])
-  tenantId            String?                @map("tenant") @postgresql.Uuid
-  fullName            String                 @default("")
-  email               String                 @default("")
-  phone               String                 @default("")
-  dateOfBirth         DateTime?
-  countryOfResidence  String                 @default("")
-  targetCountry       String                 @default("")
-  currentStage        String?                @default("lead")
-  educationLevel      String?
-  workExperience      Int?
-  englishTestScore    Decimal?               @postgresql.Decimal(18, 4)
-  englishTestType     String?
-  parentMonthlyIncome Int?
-  applications        Application[]          @relation("Application_student")
-  documents           StudentDocument[]      @relation("StudentDocument_student")
-  loanApplications    LoanApplication[]      @relation("LoanApplication_student")
-  accommodations      AccommodationBooking[] @relation("AccommodationBooking_student")
-  reimbursements      Reimbursement[]        @relation("Reimbursement_student")
-  prepaidCard         PrepaidCard?           @relation("PrepaidCard_student")
-  tasks               Task[]                 @relation("Task_student")
-  notes               String                 @default("")
-  isDeleted           Boolean                @default(false)
-  createdAt           DateTime?              @default(now())
-  updatedAt           DateTime?              @updatedAt
+  id                       String                 @id @default(uuid()) @postgresql.Uuid
+  tenant                   Consultant?            @relation("Student_tenant", fields: [tenantId], references: [id])
+  tenantId                 String?                @map("tenant") @postgresql.Uuid
+  fullName                 String                 @default("")
+  email                    String                 @default("")
+  phone                    String                 @default("")
+  dateOfBirth              DateTime?
+  countryOfResidence       String                 @default("")
+  targetCountry            String
+  currentStage             String?                @default("lead")
+  qualification            String?
+  workExperience           String?
+  ieltsScore               Decimal?               @postgresql.Decimal(18, 4)
+  toeflScore               Decimal?               @postgresql.Decimal(18, 4)
+  pteScore                 Decimal?               @postgresql.Decimal(18, 4)
+  gmatScore                Decimal?               @postgresql.Decimal(18, 4)
+  greScore                 Decimal?               @postgresql.Decimal(18, 4)
+  satScore                 Decimal?               @postgresql.Decimal(18, 4)
+  actScore                 Decimal?               @postgresql.Decimal(18, 4)
+  finalScore               Decimal?               @postgresql.Decimal(18, 4)
+  targetYear               String?
+  programDisciplines       Json?
+  budgetPerYear            String?
+  openForScholarshipsLoans Boolean                @default(false)
+  parentMonthlyIncome      Int?
+  applications             Application[]          @relation("Application_student")
+  documents                StudentDocument[]      @relation("StudentDocument_student")
+  loanApplications         LoanApplication[]      @relation("LoanApplication_student")
+  accommodations           AccommodationBooking[] @relation("AccommodationBooking_student")
+  reimbursements           Reimbursement[]        @relation("Reimbursement_student")
+  prepaidCard              PrepaidCard?           @relation("PrepaidCard_student")
+  tasks                    Task[]                 @relation("Task_student")
+  notes                    String                 @default("")
+  isDeleted                Boolean                @default(false)
+  createdAt                DateTime?              @default(now())
+  updatedAt                DateTime?              @updatedAt
 
   @@index([tenantId])
   @@index([email])

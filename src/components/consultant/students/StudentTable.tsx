@@ -19,6 +19,10 @@ import {
 import { MoreHorizontal, Eye, Pencil } from "lucide-react";
 import type { StudentListItem } from "@app/graphql/types";
 import { format } from "date-fns";
+import {
+  qualificationLabelMap,
+  targetCountryLabelMap,
+} from "@app/lib/students/options";
 
 const STAGE_VARIANTS: Record<
   string,
@@ -48,6 +52,8 @@ export function StudentTable({
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Country</TableHead>
+          <TableHead>Target Country</TableHead>
+          <TableHead>Qualification</TableHead>
           <TableHead>Stage</TableHead>
           <TableHead>Created</TableHead>
           <TableHead className="w-[70px]">Actions</TableHead>
@@ -65,6 +71,18 @@ export function StudentTable({
             </TableCell>
             <TableCell>{student.email ?? "—"}</TableCell>
             <TableCell>{student.countryOfResidence ?? "—"}</TableCell>
+            <TableCell>
+              {student.targetCountry
+                ? targetCountryLabelMap[student.targetCountry] ??
+                  student.targetCountry
+                : "—"}
+            </TableCell>
+            <TableCell>
+              {student.qualification
+                ? qualificationLabelMap[student.qualification] ??
+                  student.qualification
+                : "—"}
+            </TableCell>
             <TableCell>
               <Badge
                 variant={

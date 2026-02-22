@@ -23,7 +23,7 @@ export function RequireRole({
   children: ReactNode;
 }) {
   const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
-  const { user, isLoading } = useCurrentUser();
+  const { user, isLoading, isError, refetch } = useCurrentUser();
 
   if (!clerkLoaded || !isSignedIn) {
     return (
@@ -56,6 +56,31 @@ export function RequireRole({
     );
   }
 
+  if (isError) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Could not load your profile</CardTitle>
+            <CardDescription>
+              We couldn&apos;t verify your account. This may happen if your
+              profile hasn&apos;t been set up in the system yet. Try again or
+              contact your administrator.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex gap-2">
+            <Button variant="outline" onClick={() => refetch()}>
+              Try again
+            </Button>
+            <Button asChild variant="outline">
+              <Link href="/">Back to home</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!user || !roles.includes(user.role ?? "")) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center p-4">
@@ -64,10 +89,21 @@ export function RequireRole({
             <CardTitle>Access denied</CardTitle>
             <CardDescription>
               You don&apos;t have permission to access the Consultant Portal.
-              Your role: {user?.role ?? "unknown"}.
+              {user ? (
+                <> Your role: {user.role ?? "unknown"}.</>
+              ) : (
+                <>
+                  {" "}
+                  Your account may not be set up in the system yet. Contact your
+                  administrator to get access.
+                </>
+              )}
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex gap-2">
+            <Button variant="outline" onClick={() => refetch()}>
+              Retry
+            </Button>
             <Button asChild variant="outline">
               <Link href="/">Back to home</Link>
             </Button>

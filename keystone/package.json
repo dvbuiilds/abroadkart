@@ -9,6 +9,7 @@
     "build": "rm -rf .keystone && dotenv -e .env -- keystone build",
     "postinstall": "keystone postinstall",
     "seed": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed.ts",
+    "seed:students": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed-students.ts",
     "test": "node -r ts-node/register/transpile-only --test __tests__/access.test.ts",
     "generate": "rm -rf .keystone && keystone build && prisma db push",
     "db:push": "prisma db push",

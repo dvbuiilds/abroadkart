@@ -1,6 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useGraphQLClient } from '@app/lib/graphql';
-import { GET_STUDENTS, GET_STUDENT } from '@app/graphql/queries/students';
+import {
+  GET_STUDENTS,
+  GET_STUDENT,
+  GET_ALL_STUDENTS,
+  CSV_EXPORT_LIMIT,
+} from '@app/graphql/queries/students';
 import { CREATE_STUDENT, UPDATE_STUDENT } from '@app/graphql/mutations/students';
 import type { Student, StudentListItem } from '@app/graphql/types';
 
@@ -15,6 +20,10 @@ export interface StudentsQueryVariables {
 export interface GetStudentsResult {
   students: StudentListItem[];
   studentsCount: number;
+}
+
+export interface GetAllStudentsResult {
+  students: Student[];
 }
 
 export function useStudents(variables: StudentsQueryVariables) {
@@ -36,6 +45,21 @@ export function useStudent(id: string | null | undefined) {
     },
     enabled: !!id,
     staleTime: 60 * 1000,
+  });
+}
+
+export function useAllStudents(where: Record<string, unknown>) {
+  const client = useGraphQLClient();
+  return useQuery({
+    queryKey: ['students-export', where],
+    queryFn: async () =>
+      client.request<GetAllStudentsResult>(GET_ALL_STUDENTS, {
+        where,
+        orderBy: [{ createdAt: 'desc' }],
+        take: CSV_EXPORT_LIMIT,
+      }),
+    staleTime: 60 * 1000,
+    enabled: false,
   });
 }
 
