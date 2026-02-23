@@ -15,7 +15,7 @@ const isPublicRoute = createRouteMatcher([
 ]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // All non-public routes require auth (including /consultant/*)
+  // All non-public routes require auth (including /consultant/* and /admin/*)
   // Role-based access (consultantAdmin, consultantAgent) is enforced client-side via RequireRole
   if (!isPublicRoute(req)) {
     await auth.protect();

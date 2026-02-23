@@ -44,10 +44,9 @@ export default config({
   lists,
   session: clerkSession,
   ui: {
+    basePath: "/admin",
     isAccessAllowed: ({ session }) => {
-      // In development, allow access to Admin UI without auth
-      if (process.env.NODE_ENV !== "production") return true;
-      return !!session;
+      return session?.role === "superAdmin";
     },
   },
   storage: (() => {

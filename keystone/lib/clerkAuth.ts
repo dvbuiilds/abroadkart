@@ -20,6 +20,14 @@ export type SessionData = {
   isActive: boolean;
 };
 
+const authorizedParties = Array.from(
+  new Set(
+    [process.env.FRONTEND_URL, "http://localhost:3000"]
+      .filter((origin): origin is string => Boolean(origin))
+      .map((origin) => origin.replace(/\/+$/, "")),
+  ),
+);
+
 export const clerkSession: SessionStrategy<SessionData> = {
   async get({ context }) {
     // context.req is the Express request object
@@ -35,9 +43,7 @@ export const clerkSession: SessionStrategy<SessionData> = {
       // Verify Clerk JWT using @clerk/backend (returns payload directly on success)
       const clerkPayload = await verifyToken(token, {
         secretKey: process.env.CLERK_SECRET_KEY!,
-        authorizedParties: [
-          process.env.FRONTEND_URL || "http://localhost:3000",
-        ],
+        authorizedParties,
       });
 
       if (!clerkPayload?.sub) return;
