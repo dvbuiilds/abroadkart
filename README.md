@@ -139,7 +139,7 @@ cd keystone
 npm run dev
 ```
 
-Keystone Admin UI: http://localhost:3001/api/admin
+Keystone Admin UI: http://localhost:3000/admin (via Next.js proxy; superAdmin only; see crm_docs/ADMIN_PROXY.md)
 GraphQL API: http://localhost:3001/api/graphql
 
 #### Terminal 2: Next.js Frontend

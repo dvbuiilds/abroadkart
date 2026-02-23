@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { getAdminAuth } from "@app/lib/admin-auth";
 
 const KEYSTONE_URL =
@@ -12,24 +13,41 @@ function buildTargetUrl(req: NextRequest, path: string[] | undefined): URL {
   return target;
 }
 
+function isStaticAsset(pathStr: string): boolean {
+  return (
+    pathStr.includes("_next") ||
+    pathStr.includes("__next") ||
+    /\.(js|css|woff2?|ico|png|svg|map)$/i.test(pathStr)
+  );
+}
+
 async function proxyToKeystone(
   req: NextRequest,
   ctx: RouteContext,
 ) {
-  const authResult = await getAdminAuth();
-
-  if (authResult.status === "unauthenticated") {
-    return new Response("Unauthorized", { status: 401 });
-  }
-
-  if (authResult.status === "forbidden") {
-    return new Response("Forbidden", { status: 403 });
-  }
-
   const { path } = await ctx.params;
+  const pathStr = path?.join("/") ?? "";
+
+  let token: string | null = null;
+
+  if (isStaticAsset(pathStr)) {
+    const { userId, getToken } = await auth();
+    if (userId) token = await getToken();
+    if (!token) return new Response("Unauthorized", { status: 401 });
+  } else {
+    const authResult = await getAdminAuth();
+    if (authResult.status === "unauthenticated") {
+      return new Response("Unauthorized", { status: 401 });
+    }
+    if (authResult.status === "forbidden") {
+      return new Response("Forbidden", { status: 403 });
+    }
+    token = authResult.token;
+  }
+
   const target = buildTargetUrl(req, path);
   const headers = new Headers(req.headers);
-  headers.set("authorization", `Bearer ${authResult.token}`);
+  headers.set("authorization", `Bearer ${token}`);
   headers.delete("host");
 
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
@@ -40,10 +58,14 @@ async function proxyToKeystone(
     redirect: "manual",
   });
 
+  const responseHeaders = new Headers(upstreamResponse.headers);
+  responseHeaders.delete("Content-Encoding");
+  responseHeaders.delete("Transfer-Encoding");
+
   return new Response(upstreamResponse.body, {
     status: upstreamResponse.status,
     statusText: upstreamResponse.statusText,
-    headers: upstreamResponse.headers,
+    headers: responseHeaders,
   });
 }
 

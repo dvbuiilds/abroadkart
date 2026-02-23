@@ -150,7 +150,20 @@ Step-by-step Clerk setup:
 
 ---
 
-### Appendix E: Deployment & DevOps (Next)
+### Appendix E: Keystone Admin Proxy
+
+**File**: `ADMIN_PROXY.md`
+
+Clerk-authenticated proxy for Keystone Admin UI (superAdmin only):
+
+- Architecture and request flow
+- Files involved (admin page, proxy routes, admin-auth)
+- Access control (middleware, document vs static asset checks)
+- Troubleshooting: Content-Encoding, static assets, auth() usage, GraphQL proxy, middleware matcher
+
+---
+
+### Appendix F: Deployment & DevOps (Next)
 
 **File**: `APPENDIX_DEPLOYMENT.md` _(To be created)_
 
@@ -186,6 +199,7 @@ REQUIREMENTS_MASTER.md
         │   └─→ APPENDIX_SHADCN.md
         │
         ├─→ APPENDIX_CLERK_SETUP.md (For Auth)
+        ├─→ ADMIN_PROXY.md (Keystone Admin + Clerk)
         ├─→ APPENDIX_DEPLOYMENT.md (For DevOps)
         └─→ APPENDIX_SHADCN.md (UI Components)
 ```
@@ -205,6 +219,7 @@ REQUIREMENTS_MASTER.md
 | PHASE_3_CONSULTANT_PORTAL | Consultant UI               | ✅ Complete | 5-7   |
 | PHASE3_PROGRESS           | Phase 3 patterns & progress | ✅ Complete | -     |
 | PHASE_4_FULFILMENT_PORTAL | Fulfilment UI               | ⏳ Next     | 8-10  |
+| ADMIN_PROXY               | Keystone Admin proxy + Clerk| ✅ Complete| -     |
 | APPENDIX_CLERK_SETUP      | Clerk integration           | ⏳ Next     | -     |
 | APPENDIX_DEPLOYMENT       | DevOps & deployment         | ⏳ Next     | -     |
 
@@ -250,6 +265,7 @@ REQUIREMENTS_MASTER.md
 
 - [APPENDIX_DATABASE.md](./APPENDIX_DATABASE.md) (All entities)
 - [APPENDIX_GRAPHQL_API.md](./APPENDIX_GRAPHQL_API.md) (API generation)
+- [ADMIN_PROXY.md](./ADMIN_PROXY.md) (Keystone Admin + Clerk proxy)
 
 ---
 
@@ -302,6 +318,7 @@ REQUIREMENTS_MASTER.md
 | Loan processing flow | REQUIREMENTS_MASTER  | Workflow 2: Loan Processing |
 | Access control       | PHASE_2_SCHEMA       | Access Control Rules        |
 | Authentication setup | PHASE_1_FOUNDATION   | Clerk Integration           |
+| Keystone Admin proxy | ADMIN_PROXY          | Architecture, Troubleshooting|
 | UI component example | APPENDIX_SHADCN      | Component sections          |
 
 ---
@@ -446,6 +463,9 @@ A: PHASE_2_SCHEMA.md - Access Control Rules section
 **Q: How do I setup Clerk authentication?**  
 A: PHASE_1_FOUNDATION.md - Clerk Integration section
 
+**Q: How does the Keystone Admin proxy work with Clerk?**  
+A: ADMIN_PROXY.md - Architecture, Access Control, Troubleshooting
+
 **Q: What's the complete system architecture?**  
 A: REQUIREMENTS_MASTER.md - Architecture section
 
@@ -472,7 +492,8 @@ A: REQUIREMENTS_MASTER.md - Support & Documentation → Common Questions
 | ------- | ------------ | --------------------------------------------------------------------------- |
 | 1.0     | Jan 18, 2026 | Initial complete documentation for Phases 1-2 + Appendices A-C              |
 | 1.1     | Feb 2026     | Phase 3 Consultant Portal complete; PHASE3_PROGRESS.md added; INDEX updated |
-| 1.2     | TBD          | Add Phase 4 documentation, Appendix D & E                                   |
+| 1.2     | Feb 2026     | Add ADMIN_PROXY.md (Keystone Admin + Clerk proxy)                            |
+| 1.3     | TBD          | Add Phase 4 documentation, Appendix D & E                                    |
 | 2.0     | TBD          | Post-launch updates & improvements                                          |
 
 ---
