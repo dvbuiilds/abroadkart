@@ -119,6 +119,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
+        "apollo-require-preflight": "1",
       },
       body: multipart,
     });
