@@ -10,10 +10,11 @@ import { createGraphQLClient } from '@app/lib/graphql';
 const KEYSTONE_URL = process.env.NEXT_PUBLIC_KEYSTONE_URL || 'http://localhost:3001';
 
 export async function POST(req: Request) {
+  console.log('[clerk webhook] POST /api/webhooks/clerk received');
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
 
   if (!WEBHOOK_SECRET) {
-    console.error('CLERK_WEBHOOK_SECRET is not set');
+    console.error('[clerk webhook] CLERK_WEBHOOK_SECRET is not set');
     return NextResponse.json(
       { error: 'Webhook secret not configured' },
       { status: 500 }
@@ -28,6 +29,7 @@ export async function POST(req: Request) {
 
   // If there are no headers, error out
   if (!svix_id || !svix_timestamp || !svix_signature) {
+    console.warn('[clerk webhook] Missing Svix headers');
     return NextResponse.json(
       { error: 'Error occured -- no svix headers' },
       { status: 400 }
@@ -51,7 +53,7 @@ export async function POST(req: Request) {
       'svix-signature': svix_signature,
     });
   } catch (err) {
-    console.error('Error verifying webhook:', err);
+    console.error('[clerk webhook] Svix verification failed', err);
     return NextResponse.json(
       { error: 'Error verifying webhook' },
       { status: 400 }
@@ -60,9 +62,11 @@ export async function POST(req: Request) {
 
   // Handle the webhook
   const eventType = evt.type;
+  console.log('[clerk webhook] Event type:', eventType);
 
   try {
     const graphqlClient = createGraphQLClient();
+    console.log('[clerk webhook] GraphQL client created, KEYSTONE_URL:', KEYSTONE_URL);
 
     // Handle user.created event
     if (eventType === 'user.created') {
@@ -72,13 +76,18 @@ export async function POST(req: Request) {
       )?.email_address;
 
       if (!primaryEmail) {
-        console.error('No primary email found for user:', id);
+        console.error('[clerk webhook] user.created: No primary email for clerk user', { clerkUserId: id });
         return NextResponse.json({ error: 'No primary email' }, { status: 400 });
       }
 
+      const userName = `${first_name || ''} ${last_name || ''}`.trim() || null;
+      console.log('[clerk webhook] user.created: Creating user in Keystone', {
+        clerkUserId: id,
+        email: primaryEmail,
+        name: userName,
+      });
+
       // Create User in Keystone via GraphQL mutation
-      // Note: This requires Keystone to be running and accessible
-      // For now, we'll use a direct mutation - in production, you might want to use Keystone's context API
       const mutation = `
         mutation CreateUser($data: UserCreateInput!) {
           createUser(data: $data) {
@@ -90,19 +99,33 @@ export async function POST(req: Request) {
       `;
 
       try {
-        await graphqlClient.request(mutation, {
+        const result = await graphqlClient.request(mutation, {
           data: {
             clerkUserId: id,
             email: primaryEmail,
-            name: `${first_name || ''} ${last_name || ''}`.trim() || null,
+            name: userName,
             role: 'consultantAgent', // Default role, can be updated later
             isActive: true,
           },
+        }) as { createUser?: { id: string; email: string; clerkUserId: string } };
+        console.log('[clerk webhook] user.created: Keystone createUser success', {
+          keystoneUserId: result?.createUser?.id,
+          email: result?.createUser?.email,
         });
       } catch (error: any) {
         // If user already exists, that's okay
-        if (!error.message?.includes('Unique constraint')) {
-          console.error('Error creating user in Keystone:', error);
+        if (error.message?.includes('Unique constraint')) {
+          console.log('[clerk webhook] user.created: User already exists (unique constraint)', {
+            clerkUserId: id,
+            email: primaryEmail,
+          });
+        } else {
+          console.error('[clerk webhook] user.created: Keystone createUser failed', {
+            clerkUserId: id,
+            email: primaryEmail,
+            error: error?.message ?? error,
+            response: error?.response,
+          });
         }
       }
     }
@@ -115,8 +138,16 @@ export async function POST(req: Request) {
       )?.email_address;
 
       if (!primaryEmail) {
+        console.warn('[clerk webhook] user.updated: No primary email', { clerkUserId: id });
         return NextResponse.json({ error: 'No primary email' }, { status: 400 });
       }
+
+      const userName = `${first_name || ''} ${last_name || ''}`.trim() || null;
+      console.log('[clerk webhook] user.updated: Updating user in Keystone', {
+        clerkUserId: id,
+        email: primaryEmail,
+        name: userName,
+      });
 
       const mutation = `
         mutation UpdateUser($clerkUserId: String!, $data: UserUpdateInput!) {
@@ -128,33 +159,42 @@ export async function POST(req: Request) {
       `;
 
       try {
-        await graphqlClient.request(mutation, {
+        const result = await graphqlClient.request(mutation, {
           clerkUserId: id,
           data: {
             email: primaryEmail,
-            name: `${first_name || ''} ${last_name || ''}`.trim() || null,
+            name: userName,
           },
+        }) as { updateUser?: { id: string; email: string } };
+        console.log('[clerk webhook] user.updated: Keystone updateUser success', {
+          keystoneUserId: result?.updateUser?.id,
         });
-      } catch (error) {
-        console.error('Error updating user in Keystone:', error);
+      } catch (error: any) {
+        console.error('[clerk webhook] user.updated: Keystone updateUser failed', {
+          clerkUserId: id,
+          error: error?.message ?? error,
+          response: error?.response,
+        });
       }
     }
 
     // Handle organizationMembership.created (tenant assignment)
     if (eventType === 'organizationMembership.created') {
       const { organization, public_user_data } = evt.data;
-      
-      // Map Clerk organization to Keystone Consultant (tenant)
-      // This will be implemented in Phase 2
-      console.log('Organization membership created:', {
+      console.log('[clerk webhook] organizationMembership.created', {
         userId: public_user_data.user_id,
         organizationId: organization.id,
       });
     }
 
+    console.log('[clerk webhook] Handled successfully', { eventType });
     return NextResponse.json({ received: true });
-  } catch (error) {
-    console.error('Error processing webhook:', error);
+  } catch (error: any) {
+    console.error('[clerk webhook] Error processing webhook', {
+      eventType,
+      error: error?.message ?? error,
+      stack: error?.stack,
+    });
     return NextResponse.json(
       { error: 'Error processing webhook' },
       { status: 500 }

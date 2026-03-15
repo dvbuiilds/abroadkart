@@ -1,7 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '@clerk/nextjs';
 import { useGraphQLClient } from '@app/lib/graphql';
 import { GET_DOCUMENTS } from '@app/graphql/queries/documents';
 import { CREATE_STUDENT_DOCUMENT } from '@app/graphql/mutations/documents';
+import { uploadDocument, type UploadDocumentParams } from '@app/lib/documents/upload';
 import type { StudentDocumentListItem } from '@app/graphql/types';
 
 export interface DocumentsQueryVariables {
@@ -36,6 +38,21 @@ export function useUploadDocument() {
         { data }
       );
       return result.createStudentDocument;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['documents'] });
+      queryClient.invalidateQueries({ queryKey: ['student'] });
+    },
+  });
+}
+
+export function useUploadDocumentWithFile() {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (params: UploadDocumentParams) => {
+      const token = await getToken();
+      return uploadDocument(params, token);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['documents'] });
