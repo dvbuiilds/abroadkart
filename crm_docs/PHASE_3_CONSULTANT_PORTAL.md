@@ -56,7 +56,7 @@ Key outcomes:
 
 6. **Documents**
    - Student documents list.
-   - Upload flows for required document types.
+   - Upload flows for required document types. Implemented: PDF only; Bank Statement max 1 MB, other types 100 KB; client and server validation via `POST /api/consultant/documents/upload`.
 
 7. **Tasks**
    - Tasks assigned to logged-in user.

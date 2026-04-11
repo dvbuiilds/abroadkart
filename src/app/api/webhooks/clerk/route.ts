@@ -6,8 +6,7 @@ import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 import { createGraphQLClient } from '@app/lib/graphql';
-
-const KEYSTONE_URL = process.env.NEXT_PUBLIC_KEYSTONE_URL || 'http://localhost:3001';
+import { getKeystoneBaseUrl } from '@app/lib/keystone-url';
 
 export async function POST(req: Request) {
   console.log('[clerk webhook] POST /api/webhooks/clerk received');
@@ -66,7 +65,7 @@ export async function POST(req: Request) {
 
   try {
     const graphqlClient = createGraphQLClient();
-    console.log('[clerk webhook] GraphQL client created, KEYSTONE_URL:', KEYSTONE_URL);
+    console.log('[clerk webhook] GraphQL client created, base:', getKeystoneBaseUrl());
 
     // Handle user.created event
     if (eventType === 'user.created') {

@@ -1,14 +1,13 @@
 /**
- * Clerk JWT validation and session handler for KeystoneJS
- * Uses @clerk/backend (replacement for deprecated @clerk/clerk-sdk-node)
- *
- * Instead of statelessSessions (cookie-based), we create a custom
- * SessionStrategy that extracts the Clerk JWT from the Authorization header,
- * verifies it, and resolves the corresponding Keystone User.
+ * Clerk session for KeystoneJS: Bearer JWT (Next proxy) and browser session (native Keystone host).
  */
 
 import type { SessionStrategy } from "@keystone-6/core/types";
 import { verifyToken } from "@clerk/backend";
+import type { Request as ExpressRequest } from "express";
+import { getClerkAuthorizedParties } from "./clerkAuthorizedParties";
+import { getClerkBackendClient } from "./clerkBackendClient";
+import { expressRequestToWebRequest } from "./expressRequestToWebRequest";
 
 /** Shape of the session data stored on context.session */
 export type SessionData = {
@@ -20,65 +19,98 @@ export type SessionData = {
   isActive: boolean;
 };
 
-const authorizedParties = Array.from(
-  new Set(
-    [process.env.FRONTEND_URL, "http://localhost:3000"]
-      .filter((origin): origin is string => Boolean(origin))
-      .map((origin) => origin.replace(/\/+$/, "")),
-  ),
-);
+async function loadSessionForClerkUser(
+  context: { sudo: () => unknown },
+  clerkUserId: string,
+): Promise<SessionData | undefined> {
+  const sudoContext = context.sudo() as {
+    query: {
+      User: {
+        findOne: (args: {
+          where: { clerkUserId: string };
+          query: string;
+        }) => Promise<Record<string, unknown> | null>;
+      };
+    };
+  };
+
+  const user = await sudoContext.query.User.findOne({
+    where: { clerkUserId: clerkUserId },
+    query: `
+      id
+      email
+      name
+      role
+      tenant { id }
+      isActive
+    `,
+  });
+
+  if (!user || !user.isActive) return;
+
+  return {
+    id: user.id as string,
+    email: user.email as string,
+    name: user.name as string,
+    role: user.role as string,
+    tenantId: (user.tenant as { id: string } | null)?.id,
+    isActive: user.isActive as boolean,
+  };
+}
 
 export const clerkSession: SessionStrategy<SessionData> = {
   async get({ context }) {
-    // context.req is the Express request object
-    const req = (context as any).req as
-      | { headers: Record<string, string | undefined> }
-      | undefined;
+    const req = (context as { req?: ExpressRequest }).req;
     if (!req) return;
 
-    const token = req.headers.authorization?.replace("Bearer ", "");
-    if (!token) return;
+    const bearer = req.headers.authorization?.replace(/^Bearer\s+/i, "");
+    if (bearer) {
+      try {
+        const clerkPayload = await verifyToken(bearer, {
+          secretKey: process.env.CLERK_SECRET_KEY!,
+          authorizedParties: getClerkAuthorizedParties(),
+        });
+        if (!clerkPayload?.sub) return;
+        return await loadSessionForClerkUser(context, clerkPayload.sub);
+      } catch (err) {
+        console.error("Clerk Bearer verification failed:", err);
+        return;
+      }
+    }
 
-    try {
-      // Verify Clerk JWT using @clerk/backend (returns payload directly on success)
-      const clerkPayload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY!,
-        authorizedParties,
-      });
-
-      if (!clerkPayload?.sub) return;
-
-      // Look up User in Keystone by clerkUserId
-      const sudoContext = context.sudo();
-      const user = await sudoContext.query.User.findOne({
-        where: { clerkUserId: clerkPayload.sub },
-        query: `
-          id
-          email
-          name
-          role
-          tenant { id }
-          isActive
-        `,
-      });
-
-      if (!user || !user.isActive) return;
-
-      return {
-        id: user.id as string,
-        email: user.email as string,
-        name: user.name as string,
-        role: user.role as string,
-        tenantId: (user.tenant as { id: string } | null)?.id,
-        isActive: user.isActive as boolean,
-      };
-    } catch (err) {
-      console.error("Clerk token verification failed:", err);
+    const clerk = getClerkBackendClient();
+    if (!clerk) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn(
+          "[clerkSession] Cookie-based auth disabled: set CLERK_PUBLISHABLE_KEY (or NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY) in keystone/.env",
+        );
+      }
       return;
     }
+
+    try {
+      const request = expressRequestToWebRequest(req);
+      const state = await clerk.authenticateRequest(request, {
+        authorizedParties: getClerkAuthorizedParties(),
+      });
+
+      if (state.status === "signed-in") {
+        const auth = state.toAuth();
+        const userId =
+          auth && "userId" in auth && typeof auth.userId === "string"
+            ? auth.userId
+            : null;
+        if (!userId) return;
+        return await loadSessionForClerkUser(context, userId);
+      }
+    } catch (err) {
+      console.error("Clerk authenticateRequest failed:", err);
+      return;
+    }
+
+    return;
   },
 
-  // start / end are no-ops — Clerk manages sessions externally
   async start() {
     return "";
   },

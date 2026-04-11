@@ -28,6 +28,7 @@
     "prisma": "^5.22.0"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.10.0",
     "dotenv-cli": "^11.0.0",

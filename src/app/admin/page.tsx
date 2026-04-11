@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getAdminAuth } from "@app/lib/admin-auth";
+import { getKeystoneBaseUrl } from "@app/lib/keystone-url";
 
 export default async function AdminEntryPage() {
   const authResult = await getAdminAuth();
@@ -30,5 +31,6 @@ export default async function AdminEntryPage() {
     );
   }
 
-  redirect("/admin/users");
+  /** Super-admins use native Keystone Admin (stable HMR / GraphQL). See crm_docs/REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md */
+  redirect(`${getKeystoneBaseUrl()}/admin`);
 }

@@ -3,7 +3,9 @@
  */
 
 import { config } from "@keystone-6/core";
+import { registerAdminClerkBrowserMiddleware } from "./lib/adminBrowserAuthMiddleware";
 import { clerkSession } from "./lib/clerkAuth";
+import { getKeystonePublicUrl } from "./lib/keystonePublicUrl";
 import { User } from "./schema/User";
 import { Consultant } from "./schema/Consultant";
 import { ActivityLog } from "./schema/ActivityLog";
@@ -68,12 +70,20 @@ export default config({
   })(),
   server: {
     cors: {
-      origin: process.env.FRONTEND_URL
-        ? [process.env.FRONTEND_URL]
-        : ["http://localhost:3000"],
+      origin: (() => {
+        const origins = new Set<string>();
+        const front = process.env.FRONTEND_URL?.replace(/\/+$/, "");
+        if (front) origins.add(front);
+        origins.add(getKeystonePublicUrl());
+        if (origins.size === 0) origins.add("http://localhost:3000");
+        return Array.from(origins);
+      })(),
       credentials: true,
     },
     port: process.env.PORT ? parseInt(process.env.PORT) : 3001,
+    extendExpressApp: (app) => {
+      registerAdminClerkBrowserMiddleware(app);
+    },
   },
   graphql: {
     path: "/api/graphql",

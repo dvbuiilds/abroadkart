@@ -92,6 +92,10 @@ R2_SECRET_ACCESS_KEY=your_secret_key
 R2_BUCKET_NAME=abroadkart-docs
 R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
 FRONTEND_URL=http://localhost:3000
+# Same pk as Next.js — required for Clerk browser session on Keystone (native admin).
+CLERK_PUBLISHABLE_KEY=pk_test_...
+# Optional; default is http://localhost:<PORT>
+# KEYSTONE_PUBLIC_URL=http://localhost:3001
 ```
 
 #### Frontend (.env.local)
@@ -105,13 +109,15 @@ CLERK_SECRET_KEY=sk_test_...
 CLERK_WEBHOOK_SECRET=whsec_...
 ```
 
+`NEXT_PUBLIC_KEYSTONE_URL` must be the **Keystone** origin (default `http://localhost:3001`). It must **not** be `http://localhost:3000` (that creates a self-proxy loop and breaks `/api/graphql`).
+
 ### 4. Set Up Clerk
 
 1. Create a Clerk application at [clerk.com](https://clerk.com)
 2. Enable Email/Password and Google OAuth sign-in methods
 3. Configure redirect URLs:
-   - Local: `http://localhost:3000/*`
-   - Production: `https://your-domain.com/*`
+   - Local: `http://localhost:3000/*` and **`http://localhost:3001/*`** (Keystone native admin + `redirect_url` back from sign-in)
+   - Production: `https://your-domain.com/*` and your **Keystone** public URL pattern if split from the web app
 4. Create a JWT template named `abroadkart-keystone` with these claims:
    ```json
    {
@@ -132,6 +138,8 @@ CLERK_WEBHOOK_SECRET=whsec_...
 
 ### 6. Start Development Servers
 
+Start **Keystone first**, then Next.js, so GraphQL and admin assets are available when the app proxies to them.
+
 #### Terminal 1: Keystone Backend
 
 ```bash
@@ -139,8 +147,21 @@ cd keystone
 npm run dev
 ```
 
-Keystone Admin UI: http://localhost:3000/admin (via Next.js proxy; superAdmin only; see crm_docs/ADMIN_PROXY.md)
-GraphQL API: http://localhost:3001/api/graphql
+- **GraphQL (direct, for smoke tests / tools)**: `http://localhost:3001/api/graphql`
+- **Keystone Admin (super-admin, canonical)**: **`http://localhost:3001/admin`** — Clerk **browser session** on the Keystone origin (set **`CLERK_PUBLISHABLE_KEY`** in `keystone/.env`). Unauthenticated HTML visits redirect to **`http://localhost:3000/sign-in?redirect_url=…`**; after sign-in, use the stable native dev server (HMR on **3001**). Details: [REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md](./crm_docs/REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md).
+- **`http://localhost:3000/admin`**: Still used for **Clerk sign-in / access checks** for non–super-admin messaging; **super-admins** are **redirected** to **`{NEXT_PUBLIC_KEYSTONE_URL}/admin`**. Static asset requests under `/admin/_next` may still proxy for signed-in users who hit old URLs.
+
+If you change Keystone’s port in `keystone/.env` (`PORT=…`), set **`NEXT_PUBLIC_KEYSTONE_URL`** in `.env.local` to the same origin.
+
+**Smoke tests** (with Keystone running):
+
+```bash
+curl -sS -X POST http://localhost:3001/api/graphql \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"{ __typename }"}'
+```
+
+Expect HTTP **200** and JSON `data`.
 
 #### Terminal 2: Next.js Frontend
 
@@ -148,7 +169,9 @@ GraphQL API: http://localhost:3001/api/graphql
 npm run dev
 ```
 
-Frontend: http://localhost:3000
+Frontend: `http://localhost:3000`
+
+Full proxy architecture and troubleshooting: [crm_docs/ADMIN_PROXY.md](./crm_docs/ADMIN_PROXY.md).
 
 ## Phase 1 Features
 

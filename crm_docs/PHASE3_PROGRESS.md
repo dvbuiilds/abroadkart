@@ -55,7 +55,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 | Students          | `src/components/consultant/students/`                                     | Filters, table, pagination, create dialog, edit sheet, detail tabs       |
 | Applications      | `src/components/consultant/applications/`                                 | Filters, table, create dialog, detail                                    |
 | Loans             | `src/components/consultant/loans/`                                        | Table, create dialog, detail (progress bar, read-only fulfilment fields) |
-| Documents         | `src/components/consultant/documents/`                                    | Table, upload dialog (see Known limits)                                  |
+| Documents         | `src/components/consultant/documents/`                                    | Table, upload dialog (PDF, size limits; client + server validation)       |
 | Tasks             | `src/components/consultant/tasks/`                                        | Filters, table, create dialog, inline status Select                      |
 
 ---
@@ -64,7 +64,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 - **Types and operations**: `src/graphql/types.ts`, `queries/`, `mutations/`.
 - **Dashboard pipeline**: Separate count variables per stage (e.g. `whereLead`, `whereProspect`); no variable spread in the pipeline query.
-- **Hooks**: `useStudents`, `useApplications`, `useLoans`, `useDocuments`, `useTasks`, `useDashboard`, `useCurrentUser`, `useReference` (e.g. programs). All use `useGraphQLClient()` and consistent query keys.
+- **Hooks**: `useStudents`, `useApplications`, `useLoans`, `useDocuments`, `useUploadDocumentWithFile`, `useTasks`, `useDashboard`, `useCurrentUser`, `useReference` (e.g. programs). Document upload uses `useUploadDocumentWithFile` (POST to `/api/consultant/documents/upload`); others use `useGraphQLClient()` and consistent query keys.
 
 ---
 
@@ -72,10 +72,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 ### 5.1 Document file upload
 
-- **Backend**: `createStudentDocument` requires a `file` (FileFieldInput / upload). Keystone file field is tied to R2 (or S3).
-- **Portal**: Document list and upload dialog exist; the dialog does **not** send a file. Submit is disabled with "Upload (coming soon)" and a note to use Keystone Admin for file uploads.
-- **To implement later**: Either multipart GraphQL (e.g. `apollo-upload-client` or equivalent) and pass `file` into `createStudentDocument`, or a Next.js API route that accepts `multipart/form-data`, uploads to R2, then creates the StudentDocument with the file reference.
-
+- **Implemented**: Consultant document upload is fully supported. After selecting a document type, a PDF file input is shown; file type (PDF only) and size are validated client-side (Zod) and server-side in `POST /api/consultant/documents/upload`. Limits: Bank Statement 1 MB, all other types 100 KB. The route re-validates then forwards multipart GraphQL to Keystone; file is stored in R2.
 ### 5.2 Task assignedTo
 
 - Create task form does not include an assigned-to picker (optional enhancement via tenant users query and dropdown).
@@ -94,7 +91,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 - [x] **Students**: List with search/stage/page; create student; open detail; edit in sheet; tabs (Overview, Applications, Loans, Documents, Tasks).
 - [x] **Applications**: List with status filter; create (student + program); open detail; status badges/steps.
 - [x] **Loans**: List; create (student, optional application); detail with progress bar and read-only fulfilment fields.
-- [x] **Documents**: List loads; upload dialog opens and shows "coming soon" (no file upload).
+- [x] **Documents**: List loads; upload dialog: select student and type, choose PDF, validate size, upload succeeds (client and server validation).
 - [x] **Tasks**: List with status/priority filters; create task; inline status change (todo / inProgress / done / blocked).
 - [ ] **Multi-tenant**: With two tenants, confirm each consultant sees only their tenant's data (backend filterByTenant). _(Deferred — requires two tenant setup.)_
 - [x] **Loading / error / empty**: Each list and detail shows loading state; error boundary catches errors; empty states show where applicable.
@@ -125,4 +122,4 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 ---
 
-**Next**: Phase 4 (Fulfilment Portal) or follow-up work (document upload, task assignee picker, soft-delete filter in UI).
+**Next**: Phase 4 (Fulfilment Portal) or follow-up work (task assignee picker, soft-delete filter in UI).

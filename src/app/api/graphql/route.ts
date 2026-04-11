@@ -1,8 +1,9 @@
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-
-const KEYSTONE_URL =
-  process.env.NEXT_PUBLIC_KEYSTONE_URL || "http://localhost:3001";
+import {
+  getKeystoneBaseUrl,
+  keystoneSelfProxyErrorResponse,
+} from "@app/lib/keystone-url";
 
 export async function GET(req: NextRequest) {
   return proxyGraphQL(req);
@@ -13,11 +14,15 @@ export async function POST(req: NextRequest) {
 }
 
 async function proxyGraphQL(req: NextRequest) {
+  const misconfig = keystoneSelfProxyErrorResponse(req.nextUrl.origin);
+  if (misconfig) return misconfig;
+
   try {
     const { getToken } = await auth();
     const token = await getToken();
 
-    const target = new URL("/api/graphql", KEYSTONE_URL);
+    const base = getKeystoneBaseUrl();
+    const target = new URL("/api/graphql", `${base}/`);
     target.search = req.nextUrl.search;
 
     const headers = new Headers(req.headers);
@@ -32,6 +37,17 @@ async function proxyGraphQL(req: NextRequest) {
       headers,
       body: hasBody ? await req.arrayBuffer() : undefined,
     });
+
+    if (
+      process.env.NODE_ENV === "development" &&
+      upstreamResponse.status >= 400
+    ) {
+      console.warn(
+        "[graphql proxy] upstream",
+        upstreamResponse.status,
+        target.toString(),
+      );
+    }
 
     const responseHeaders = new Headers(upstreamResponse.headers);
     responseHeaders.delete("Content-Encoding");

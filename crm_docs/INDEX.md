@@ -220,6 +220,7 @@ REQUIREMENTS_MASTER.md
 | PHASE3_PROGRESS           | Phase 3 patterns & progress | ✅ Complete | -     |
 | PHASE_4_FULFILMENT_PORTAL | Fulfilment UI               | ⏳ Next     | 8-10  |
 | ADMIN_PROXY               | Keystone Admin proxy + Clerk| ✅ Complete| -     |
+| REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Super-admin native CMS + 3000 `/admin` | ✅ Complete | - |
 | APPENDIX_CLERK_SETUP      | Clerk integration           | ⏳ Next     | -     |
 | APPENDIX_DEPLOYMENT       | DevOps & deployment         | ⏳ Next     | -     |
 
@@ -266,6 +267,7 @@ REQUIREMENTS_MASTER.md
 - [APPENDIX_DATABASE.md](./APPENDIX_DATABASE.md) (All entities)
 - [APPENDIX_GRAPHQL_API.md](./APPENDIX_GRAPHQL_API.md) (API generation)
 - [ADMIN_PROXY.md](./ADMIN_PROXY.md) (Keystone Admin + Clerk proxy)
+- [REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md](./REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md) (Super-admin on Keystone origin; `3000/admin` retained)
 
 ---
 
@@ -319,6 +321,7 @@ REQUIREMENTS_MASTER.md
 | Access control       | PHASE_2_SCHEMA       | Access Control Rules        |
 | Authentication setup | PHASE_1_FOUNDATION   | Clerk Integration           |
 | Keystone Admin proxy | ADMIN_PROXY          | Architecture, Troubleshooting|
+| Super-admin CMS split (3001 / 3000) | REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Full spec |
 | UI component example | APPENDIX_SHADCN      | Component sections          |
 
 ---

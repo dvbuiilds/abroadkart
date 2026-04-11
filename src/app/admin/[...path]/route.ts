@@ -1,14 +1,16 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { getAdminAuth } from "@app/lib/admin-auth";
+import {
+  getKeystoneBaseUrl,
+  keystoneSelfProxyErrorResponse,
+} from "@app/lib/keystone-url";
 
-const KEYSTONE_URL =
-  process.env.NEXT_PUBLIC_KEYSTONE_URL || "http://localhost:3001";
 type RouteContext = { params: Promise<{ path?: string[] }> };
 
 function buildTargetUrl(req: NextRequest, path: string[] | undefined): URL {
   const pathname = path && path.length ? `/admin/${path.join("/")}` : "/admin";
-  const target = new URL(pathname, KEYSTONE_URL);
+  const target = new URL(pathname, `${getKeystoneBaseUrl()}/`);
   target.search = req.nextUrl.search;
   return target;
 }
@@ -25,6 +27,9 @@ async function proxyToKeystone(
   req: NextRequest,
   ctx: RouteContext,
 ) {
+  const misconfig = keystoneSelfProxyErrorResponse(req.nextUrl.origin);
+  if (misconfig) return misconfig;
+
   const { path } = await ctx.params;
   const pathStr = path?.join("/") ?? "";
 
@@ -42,12 +47,19 @@ async function proxyToKeystone(
     if (authResult.status === "forbidden") {
       return new Response("Forbidden", { status: 403 });
     }
+    if (req.method === "GET" || req.method === "HEAD") {
+      const base = getKeystoneBaseUrl();
+      const suffix = pathStr ? `/${pathStr}` : "";
+      const dest = new URL(`/admin${suffix}`, `${base}/`);
+      dest.search = req.nextUrl.search;
+      return NextResponse.redirect(dest.toString(), 307);
+    }
     token = authResult.token;
   }
 
   const target = buildTargetUrl(req, path);
   const headers = new Headers(req.headers);
-  headers.set("authorization", `Bearer ${token}`);
+  headers.set("authorization", `Bearer ${token as string}`);
   headers.delete("host");
 
   const hasBody = req.method !== "GET" && req.method !== "HEAD";
