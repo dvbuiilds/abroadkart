@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_UNIVERSITIES, GET_PROGRAMS } from '@app/graphql/queries/reference';
 
 export interface UniversityItem {

@@ -13,10 +13,10 @@ generator client {
 
 model User {
   id                                          String            @id @default(uuid()) @postgresql.Uuid
-  clerkUserId                                 String            @unique @default("")
+  authUserId                                  String            @unique @default("")
   email                                       String            @unique @default("")
   name                                        String            @default("")
-  role                                        String            @default("consultantAgent")
+  role                                        String            @default("pending")
   tenant                                      Consultant?       @relation("User_tenant", fields: [tenantId], references: [id])
   tenantId                                    String?           @map("tenant") @postgresql.Uuid
   isActive                                    Boolean           @default(true)

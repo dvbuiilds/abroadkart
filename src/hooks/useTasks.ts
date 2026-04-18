@@ -1,8 +1,8 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
-import { GET_TASKS, GET_TASK } from '@app/graphql/queries/tasks';
-import { CREATE_TASK, UPDATE_TASK } from '@app/graphql/mutations/tasks';
-import type { Task, TaskListItem } from '@app/graphql/types';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useGraphQLClient } from "@app/lib/graphql-client";
+import { GET_TASKS, GET_TASK } from "@app/graphql/queries/tasks";
+import { CREATE_TASK, UPDATE_TASK } from "@app/graphql/mutations/tasks";
+import type { Task, TaskListItem } from "@app/graphql/types";
 
 export interface TasksQueryVariables {
   [key: string]: unknown;
@@ -20,7 +20,7 @@ export interface GetTasksResult {
 export function useTasks(variables: TasksQueryVariables) {
   const client = useGraphQLClient();
   return useQuery({
-    queryKey: ['tasks', variables],
+    queryKey: ["tasks", variables],
     queryFn: async () => client.request<GetTasksResult>(GET_TASKS, variables),
     staleTime: 60 * 1000,
   });
@@ -29,9 +29,11 @@ export function useTasks(variables: TasksQueryVariables) {
 export function useTask(id: string | null | undefined) {
   const client = useGraphQLClient();
   return useQuery({
-    queryKey: ['task', id],
+    queryKey: ["task", id],
     queryFn: async () => {
-      const result = await client.request<{ task: Task }>(GET_TASK, { id: id! });
+      const result = await client.request<{ task: Task }>(GET_TASK, {
+        id: id!,
+      });
       return result.task;
     },
     enabled: !!id,
@@ -44,12 +46,15 @@ export function useCreateTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: Record<string, unknown>) => {
-      const result = await client.request<{ createTask: TaskListItem }>(CREATE_TASK, { data });
+      const result = await client.request<{ createTask: TaskListItem }>(
+        CREATE_TASK,
+        { data },
+      );
       return result.createTask;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['student'] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["student"] });
     },
   });
 }
@@ -58,14 +63,23 @@ export function useUpdateTask() {
   const client = useGraphQLClient();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Record<string, unknown> }) => {
-      const result = await client.request<{ updateTask: TaskListItem }>(UPDATE_TASK, { id, data });
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Record<string, unknown>;
+    }) => {
+      const result = await client.request<{ updateTask: TaskListItem }>(
+        UPDATE_TASK,
+        { id, data },
+      );
       return result.updateTask;
     },
     onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      queryClient.invalidateQueries({ queryKey: ['task', id] });
-      queryClient.invalidateQueries({ queryKey: ['student'] });
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task", id] });
+      queryClient.invalidateQueries({ queryKey: ["student"] });
     },
   });
 }

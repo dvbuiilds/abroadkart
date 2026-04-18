@@ -19,7 +19,7 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 ### 2.1 React Query + graphql-request
 
-- **Client**: `useGraphQLClient()` from `src/hooks/useGraphQLClient` (reads Clerk token, sends to `/api/graphql`).
+- **Client**: `useGraphQLClient()` from `src/lib/graphql-client.ts` (Bearer JWT from `/api/auth/token`, sends to `/api/graphql`).
 - **Query keys**: `['entity', filters]` for lists (e.g. `['students', { search, stage, page }]`), `['entity', id]` for single items.
 - **Mutations**: Invalidate related keys (e.g. create student → invalidate `['students']`, create application → invalidate `['applications']` and `['students', …, id]`).
 
@@ -37,9 +37,9 @@ Implementation summary, patterns, and known limits for the Consultant Portal (Ne
 
 ### 2.4 Auth and role guard
 
-- **RequireRole**: Client component that uses `useCurrentUser` (Clerk `userId` → `GET_CURRENT_USER`). Renders children only for consultantAdmin/consultantAgent; otherwise redirect or message.
+- **RequireRole**: Client component that uses `useCurrentUser` (better-auth `user.id` → `GET_CURRENT_USER` by `authUserId`). Renders children only for consultantAdmin/consultantAgent; otherwise redirect or message.
 - **Note**: `superAdmin` role is not included in the default allowed roles. To grant superAdmin access to the Consultant Portal, add `'superAdmin'` to the `CONSULTANT_ROLES` array in `RequireRole.tsx`.
-- **Middleware**: Protects `/consultant/*` with Clerk (signed-in check); role check is client-side in the layout.
+- **Middleware**: Protects routes with better-auth session cookie; role check is client-side in the layout.
 
 ---
 

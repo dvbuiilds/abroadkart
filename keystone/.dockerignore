@@ -1,0 +1,7 @@
+node_modules
+.keystone
+*.log
+.env
+.env.*
+__tests__
+seeds

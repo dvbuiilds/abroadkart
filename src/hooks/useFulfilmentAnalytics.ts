@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import {
   GET_LOAN_STATUS_COUNTS,
   GET_LOANS_FOR_ANALYTICS,

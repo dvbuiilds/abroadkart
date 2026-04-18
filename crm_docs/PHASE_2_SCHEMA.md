@@ -508,7 +508,7 @@ export async function seed() {
   // Create users
   await context.sudo().query.User.createOne({
     data: {
-      clerkUserId: 'clerk_user_1',
+      authUserId: 'auth_user_1',
       email: 'agent@abc.com',
       name: 'Agent A',
       role: 'consultantAgent',

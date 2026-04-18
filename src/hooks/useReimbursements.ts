@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_REIMBURSEMENTS } from '@app/graphql/queries/reimbursements';
 import { UPDATE_REIMBURSEMENT } from '@app/graphql/mutations/reimbursements';
 import type { ReimbursementListItem } from '@app/graphql/types';

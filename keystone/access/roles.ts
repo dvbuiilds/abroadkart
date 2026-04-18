@@ -3,13 +3,15 @@
  */
 
 export enum Role {
-  SUPER_ADMIN = 'superAdmin',
-  FULFILMENT = 'fulfilment',
-  CONSULTANT_ADMIN = 'consultantAdmin',
-  CONSULTANT_AGENT = 'consultantAgent',
+  PENDING = "pending",
+  SUPER_ADMIN = "superAdmin",
+  FULFILMENT = "fulfilment",
+  CONSULTANT_ADMIN = "consultantAdmin",
+  CONSULTANT_AGENT = "consultantAgent",
 }
 
 export const ROLES = {
+  PENDING: Role.PENDING,
   SUPER_ADMIN: Role.SUPER_ADMIN,
   FULFILMENT: Role.FULFILMENT,
   CONSULTANT_ADMIN: Role.CONSULTANT_ADMIN,
@@ -17,6 +19,13 @@ export const ROLES = {
 } as const;
 
 export type RoleType = (typeof ROLES)[keyof typeof ROLES];
+
+/**
+ * New sign-ups awaiting role assignment by a super admin.
+ */
+export function isPendingRole(role: string | undefined): boolean {
+  return role === Role.PENDING;
+}
 
 /**
  * Check if a role has admin privileges

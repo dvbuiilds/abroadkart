@@ -1,6 +1,9 @@
-import { auth } from "@clerk/nextjs/server";
 import { GET_CURRENT_USER } from "@app/graphql/queries/users";
 import { createGraphQLClient } from "@app/lib/graphql";
+import {
+  getAuthSessionFromHeaders,
+  getBetterAuthJwtFromHeaders,
+} from "@app/lib/auth-server";
 
 type CurrentUserResult = {
   users: Array<{
@@ -15,13 +18,14 @@ export type AdminAuthResult =
   | { status: "authorized"; token: string };
 
 export async function getAdminAuth(): Promise<AdminAuthResult> {
-  const { userId, getToken } = await auth();
+  const session = await getAuthSessionFromHeaders();
+  const userId = session?.user?.id;
 
   if (!userId) {
     return { status: "unauthenticated" };
   }
 
-  const token = await getToken();
+  const token = await getBetterAuthJwtFromHeaders();
   if (!token) {
     return { status: "unauthenticated" };
   }
@@ -29,7 +33,7 @@ export async function getAdminAuth(): Promise<AdminAuthResult> {
   try {
     const client = createGraphQLClient(token);
     const result = await client.request<CurrentUserResult>(GET_CURRENT_USER, {
-      clerkUserId: userId,
+      authUserId: userId,
     });
 
     const user = result.users?.[0];

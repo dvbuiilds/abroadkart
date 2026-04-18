@@ -29,10 +29,9 @@ export const User = list({
   },
 
   fields: {
-    clerkUserId: text({
+    authUserId: text({
       validation: { isRequired: true },
       isIndexed: 'unique',
-      db: { map: 'clerk_user_id' },
     }),
 
     email: text({
@@ -1228,7 +1227,7 @@ For optimal performance, ensure these indexes are created:
 
 ```sql
 -- User indexes
-CREATE UNIQUE INDEX idx_user_clerk_id ON "User"(clerk_user_id);
+CREATE UNIQUE INDEX idx_user_auth_user_id ON "User"("authUserId");
 CREATE INDEX idx_user_email ON "User"(email);
 CREATE INDEX idx_user_tenant ON "User"(tenant_id);
 

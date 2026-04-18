@@ -1,7 +1,7 @@
 # Phase 1: Foundation & Infrastructure
 
 **Duration**: Weeks 1-2  
-**Goal**: Set up project structure, database, Clerk auth, Cloudflare R2, and basic deployment  
+**Goal**: Set up project structure, database, better-auth, Cloudflare R2, and basic deployment  
 **Previous Doc**: [Master Requirements](./MASTER_REQUIREMENTS.md)  
 **Next Doc**: [Phase 2: Core Schema](./PHASE_2_SCHEMA.md)
 
@@ -12,7 +12,7 @@
 1. [Overview](#overview)
 2. [Project Structure](#project-structure)
 3. [Database Setup](#database-setup)
-4. [Clerk Authentication Setup](#clerk-authentication-setup)
+4. [better-auth setup](#better-auth-setup)
 5. [Keystone Configuration](#keystone-configuration)
 6. [Cloudflare R2 Setup](#cloudflare-r2-setup)
 7. [Next.js Setup](#nextjs-setup)
@@ -28,7 +28,7 @@
 Phase 1 establishes the foundation for a multi-tenant CRM by:
 - Creating a monorepo structure (Keystone backend + Next.js frontend)
 - Setting up PostgreSQL locally and in production
-- Integrating Clerk for authentication
+- Integrating better-auth for authentication ([APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md))
 - Configuring Cloudflare R2 for storage
 - Deploying both services to dev/staging environments
 
@@ -48,7 +48,7 @@ abroadkart-crm/
 │   │   ├── autoSetTenant.ts          # Auto-assign tenant on create
 │   │   └── logActivity.ts            # Activity logging hooks
 │   ├── lib/
-│   │   ├── clerkAuth.ts              # Clerk JWT validation & session
+│   │   ├── betterAuthSession.ts      # better-auth JWT session (Keystone)
 │   │   ├── redis.ts                  # Redis caching client
 │   │   └── utils.ts                  # Helper functions
 │   ├── keystone.ts                   # Main config
@@ -58,10 +58,10 @@ abroadkart-crm/
 ├── app/                               # Frontend
 │   ├── src/
 │   │   ├── app/
-│   │   │   ├── layout.tsx            # Root layout with Clerk provider
+│   │   │   ├── layout.tsx            # Root layout
 │   │   │   ├── page.tsx              # Landing page
-│   │   │   ├── sign-in/page.tsx      # Clerk sign-in page
-│   │   │   ├── sign-up/page.tsx      # Clerk sign-up page
+│   │   │   ├── sign-in/page.tsx      # better-auth sign-in
+│   │   │   ├── sign-up/page.tsx      # better-auth sign-up
 │   │   │   ├── app/                  # Consultant routes (protected)
 │   │   │   │   ├── layout.tsx
 │   │   │   │   └── dashboard/page.tsx
@@ -69,14 +69,14 @@ abroadkart-crm/
 │   │   │       ├── layout.tsx
 │   │   │       └── dashboard/page.tsx
 │   │   ├── components/
-│   │   │   ├── Providers.tsx         # Clerk + React Query providers
+│   │   │   ├── Providers.tsx         # React Query providers
 │   │   │   └── ShadCN/               # Component copies from shadcn/ui
 │   │   ├── lib/
 │   │   │   ├── graphql.ts            # GraphQL client
 │   │   │   ├── react-query.ts        # React Query setup
 │   │   │   └── utils.ts
 │   │   └── styles/globals.css
-│   ├── middleware.ts                 # Clerk middleware
+│   ├── middleware.ts                 # better-auth session cookie gate
 │   ├── .env.local
 │   ├── next.config.js
 │   ├── tailwind.config.ts
@@ -153,194 +153,31 @@ docker-compose up -d
 
 ---
 
-## Clerk Authentication Setup
+## better-auth setup
 
-### 1. Create Clerk Project
+See **[APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)** for the full picture. Summary:
 
-1. Go to https://clerk.com
-2. Sign up / log in
-3. Create new application
-4. Choose sign-in methods:
-   - Email & Password
-   - Google OAuth (recommended)
-5. Copy API keys:
-   - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` (public, expose in frontend)
-   - `CLERK_SECRET_KEY` (private, backend only)
+### 1. Packages (root `package.json`)
 
-### 2. Configure Clerk Settings
+- `better-auth`, `kysely`, `pg`, `jose`, `@opentelemetry/api` (for CLI loading)
 
-**In Clerk Dashboard**:
-- **Allowed Origins**: Add `localhost:3000`, `app.abroadkart.com` (prod)
-- **Redirect URLs**: Add `/app/dashboard` (consultant), `/admin/dashboard` (admin)
-- **Email Domain**: Use default or custom domain
-- **User Metadata**: Add custom fields (optional, Phase 2)
+### 2. Next.js
 
-### 3. Backend: Keystone Session with Clerk
+- **`src/lib/auth.ts`** — `betterAuth()` with Postgres `auth` schema, `jwt` plugin, `databaseHooks.user.create.after` → `syncKeystoneUserFromAuthUser`, `databaseHooks.session.create.after` → update Keystone `User.lastLoginAt`.
+- **`src/lib/auth-client.ts`** — `createAuthClient({ basePath: "/api/auth" })`.
+- **`src/app/api/auth/[...all]/route.ts`** — better-auth handler.
+- **`src/middleware.ts`** — `getSessionCookie` from `better-auth/cookies`; redirect to `/sign-in?callbackUrl=…`.
+- **Sign-in / sign-up** — `/sign-in`, `/sign-up` with `SignInPageClient` / `SignUpPageClient`.
 
-**keystone/lib/clerkAuth.ts**:
-```typescript
-import { statelessSessions } from '@keystone-6/core/session';
-import { verifyToken } from '@clerk/clerk-sdk-node';
+### 3. Keystone
 
-export const clerkSession = statelessSessions({
-  secret: process.env.SESSION_SECRET!,
-  
-  async get({ req, createContext }) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return;
-    
-    try {
-      // Verify Clerk JWT
-      const clerkPayload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY!,
-      });
-      
-      if (!clerkPayload.sub) return;
-      
-      // Look up User in Keystone by clerkUserId
-      const context = await createContext();
-      const user = await context.sudo().query.User.findOne({
-        where: { clerkUserId: clerkPayload.sub },
-        query: `
-          id
-          email
-          name
-          role
-          tenant { id slug name }
-          isActive
-        `,
-      });
-      
-      if (!user || !user.isActive) return;
-      
-      return {
-        itemId: user.id,
-        listKey: 'User',
-        data: user,
-      };
-    } catch (err) {
-      console.error('Clerk token verification failed:', err);
-      return;
-    }
-  },
-});
-```
+- **`keystone/lib/betterAuthSession.ts`** — session from `Authorization: Bearer` or `ab_admin_session` cookie; JWT verified via JWKS.
+- **`keystone/lib/verifyBetterAuthJwt.ts`** — `jose` + `BETTER_AUTH_JWKS_URL`.
+- **User** list uses **`authUserId`** (unique), not `clerkUserId`.
 
-**keystone.ts**:
-```typescript
-import { config } from '@keystone-6/core';
-import { clerkSession } from './lib/clerkAuth';
+### 4. User provisioning
 
-export default config({
-  // ... other config
-  session: clerkSession,
-});
-```
-
-### 4. Frontend: Next.js Clerk Integration
-
-**app/middleware.ts** (Clerk auth middleware):
-```typescript
-import { authMiddleware } from "@clerk/nextjs";
-
-export default authMiddleware({
-  // Public routes (no auth required)
-  publicRoutes: ["/", "/about", "/pricing", "/sign-in", "/sign-up"],
-  // Routes to ignore
-  ignoredRoutes: ["/api/webhooks/clerk"],
-});
-
-export const config = {
-  matcher: ["/((?!.+\\.[\\w]+$|_next).*)", "/", "/(api|trpc)(.*)"],
-};
-```
-
-**app/layout.tsx** (Clerk provider wrapper):
-```typescript
-import { ClerkProvider } from "@clerk/nextjs";
-import { ReactQueryProvider } from "@/lib/react-query";
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <ClerkProvider>
-      <html lang="en">
-        <body>
-          <ReactQueryProvider>
-            {children}
-          </ReactQueryProvider>
-        </body>
-      </html>
-    </ClerkProvider>
-  );
-}
-```
-
-**app/sign-in/page.tsx**:
-```typescript
-import { SignIn } from "@clerk/nextjs";
-
-export default function SignInPage() {
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <SignIn redirectUrl="/app/dashboard" />
-    </div>
-  );
-}
-```
-
-### 5. Webhook: Sync Clerk Users to Keystone
-
-**app/api/webhooks/clerk/route.ts**:
-```typescript
-import { Webhook } from 'svix';
-import { keystoneContext } from '@/lib/keystone'; // Set up in Phase 1
-
-export async function POST(req: Request) {
-  const payload = await req.text();
-  const headers = Object.fromEntries(req.headers);
-
-  // Verify webhook signature
-  const wh = new Webhook(process.env.CLERK_WEBHOOK_SECRET!);
-  const msg = wh.verify(payload, headers) as any;
-
-  const { type, data } = msg;
-
-  // Create User on signup
-  if (type === 'user.created') {
-    const primaryEmail = data.email_addresses.find((e: any) => e.primary)?.email_address;
-    
-    await keystoneContext.sudo().query.User.createOne({
-      data: {
-        clerkUserId: data.id,
-        email: primaryEmail,
-        name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
-        role: 'consultantAgent', // Default role
-        tenant: null, // Assigned later by admin
-        isActive: true,
-      },
-    });
-  }
-
-  // Update User on profile change
-  if (type === 'user.updated') {
-    const primaryEmail = data.email_addresses.find((e: any) => e.primary)?.email_address;
-    
-    await keystoneContext.sudo().query.User.updateOne({
-      where: { clerkUserId: data.id },
-      data: {
-        email: primaryEmail,
-        name: `${data.first_name || ''} ${data.last_name || ''}`.trim(),
-      },
-    });
-  }
-
-  return Response.json({ ok: true });
-}
-```
+No Clerk webhooks. On **sign-up**, better-auth creates `auth.user` and the **`user.create.after`** hook inserts the Keystone `User` row.
 
 ---
 
@@ -352,7 +189,7 @@ export async function POST(req: Request) {
 import { config } from '@keystone-6/core';
 import { withAuth } from '@keystone-6/auth';
 import { lists } from './schema';
-import { clerkSession } from './lib/clerkAuth';
+import { betterAuthSession } from './lib/betterAuthSession';
 
 export default withAuth(
   config({
@@ -361,7 +198,7 @@ export default withAuth(
       url: process.env.DATABASE_URL!,
     },
     lists,
-    session: clerkSession,
+    session: betterAuthSession,
     ui: {
       isAccessAllowed: ({ session }) => !!session,
     },
@@ -392,18 +229,18 @@ export default withAuth(
 import { list } from '@keystone-6/core';
 import { text, relationship, checkbox, timestamp } from '@keystone-6/core/fields';
 
-// User list (maps to Clerk)
+// User list (authUserId links to better-auth user id)
 export const User = list({
   access: {
     operation: {
       query: ({ session }) => !!session,
-      create: () => false, // Created via Clerk webhook
+      create: () => false, // Created via better-auth hook on sign-up
       update: ({ session }) => !!session,
       delete: () => false,
     },
   },
   fields: {
-    clerkUserId: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
+    authUserId: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
     email: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
     name: text(),
     role: text(), // Will expand to enum in Phase 2
@@ -508,7 +345,7 @@ cd app
 ### 2. Install Dependencies
 
 ```bash
-npm install @clerk/nextjs graphql-request @tanstack/react-query @hookform/resolvers react-hook-form zod
+npm install better-auth graphql-request @tanstack/react-query @hookform/resolvers react-hook-form zod kysely pg jose
 npm install -D @types/node typescript
 ```
 
@@ -561,26 +398,11 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
 
 ### 5. GraphQL Client Setup
 
-**lib/graphql.ts**:
+**lib/graphql-client.ts** (pattern — use app’s [`src/lib/graphql-client.ts`](../src/lib/graphql-client.ts)):
 ```typescript
-import { GraphQLClient } from 'graphql-request';
-import { useAuth } from '@clerk/nextjs';
-
-export const useGraphQLClient = () => {
-  const { getToken } = useAuth();
-  
-  return new GraphQLClient(
-    process.env.NEXT_PUBLIC_KEYSTONE_URL + '/api/graphql',
-    {
-      headers: async () => {
-        const token = await getToken();
-        return {
-          Authorization: token ? `Bearer ${token}` : '',
-        };
-      },
-    }
-  );
-};
+import { GraphQLClient } from "graphql-request";
+import { useMemo } from "react";
+// useGraphQLClient() obtains Bearer JWT via GET /api/auth/token with session cookies
 ```
 
 ---
@@ -603,7 +425,9 @@ export const useGraphQLClient = () => {
    DATABASE_URL=... (from Railway Postgres)
    REDIS_URL=... (from Redis service)
    SESSION_SECRET=random-string
-   CLERK_SECRET_KEY=...
+   BETTER_AUTH_JWKS_URL=https://your-next-app/api/auth/jwks
+   BETTER_AUTH_ISSUER=...
+   BETTER_AUTH_AUDIENCE=...
    R2_*=...
    FRONTEND_URL=https://your-app.vercel.app
    ```
@@ -616,8 +440,9 @@ export const useGraphQLClient = () => {
 4. Set environment variables:
    ```
    NEXT_PUBLIC_KEYSTONE_URL=https://your-api.railway.app
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=...
-   CLERK_SECRET_KEY=...
+   BETTER_AUTH_SECRET=...
+   BETTER_AUTH_URL=https://your-next-app
+   DATABASE_URL=... (same DB as Keystone for better-auth)
    ```
 
 ---
@@ -633,8 +458,10 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/abroadkart
 # Redis (for caching)
 REDIS_URL=redis://localhost:6379
 
-# Clerk Auth
-CLERK_SECRET_KEY=sk_test_...
+# better-auth JWT verification (Next must be reachable for JWKS in dev)
+BETTER_AUTH_JWKS_URL=http://localhost:3000/api/auth/jwks
+BETTER_AUTH_ISSUER=http://localhost:3000
+BETTER_AUTH_AUDIENCE=http://localhost:3000
 SESSION_SECRET=generate-32-char-random-string
 
 # Cloudflare R2
@@ -647,20 +474,15 @@ R2_ENDPOINT=https://your-id.r2.cloudflarestorage.com
 # Frontend
 FRONTEND_URL=http://localhost:3000
 
-# Clerk Webhook (optional, for later)
-CLERK_WEBHOOK_SECRET=whsec_...
 ```
 
 ### Frontend (.env.local in app/)
 
 ```env
 NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
-CLERK_SECRET_KEY=sk_test_...
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/app/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/app/dashboard
+DATABASE_URL=postgresql://... (same as Keystone)
+BETTER_AUTH_SECRET=...
+BETTER_AUTH_URL=http://localhost:3000
 ```
 
 ---
@@ -671,11 +493,11 @@ NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/app/dashboard
 
 - [x] Docker Compose running (Postgres + Redis)
 - [x] Keystone starts: `cd keystone && npm run dev`
-- [x] Keystone admin UI accessible at `http://localhost:3001/api/admin`
+- [x] Keystone admin UI accessible at `http://localhost:3001/admin`
 - [x] Next.js starts: `yarn dev` (from project root)
 - [x] Frontend accessible at `http://localhost:3000`
-- [x] Clerk sign-in page loads
-- [x] User can sign up via Clerk
+- [x] Sign-in page loads (`/sign-in`)
+- [x] User can sign up via better-auth
 - [x] User created in Keystone User table
 - [x] R2 bucket accessible via SDK
 
@@ -707,13 +529,12 @@ curl 'http://localhost:3001/api/graphql' \
 - [x] Monorepo structure created
 - [x] Docker Compose file with Postgres + Redis
 - [x] Keystone initialized and configured
-- [x] Clerk project created and integrated
+- [x] better-auth configured and integrated
 - [x] Next.js app initialized with ShadCN
 - [x] Cloudflare R2 bucket created
 - [x] Environment variables documented
 - [x] Backend deployment to Railway configured
 - [x] Frontend deployment to Vercel configured
-- [x] Clerk webhook endpoint ready (optional)
 - [x] README with local setup instructions
 - [x] All tests passing
 

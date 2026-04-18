@@ -1,4 +1,26 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AbroadKart — full local stack
+#
+# Start order (enforced by depends_on + healthchecks):
+#   1. postgres  ──┐
+#   2. redis     ──┴──▶  3. keystone  ──▶  4. nextjs
+#
+# First-time setup — run this ONCE after Postgres is up:
+#   docker exec -it abroadkart-postgres psql -U postgres -d abroadkart -c 'CREATE SCHEMA IF NOT EXISTS auth;'
+#   docker exec -it abroadkart-keystone yarn db:push
+#   (from repo root, with DATABASE_URL + BETTER_AUTH_* set) yarn auth:migrate
+#   docker exec -it abroadkart-keystone yarn seed          (optional)
+#
+# Endpoints (local):
+#   Next.js frontend     → http://localhost:3000
+#   Keystone GraphQL     → http://localhost:3001/api/graphql
+#   Keystone Admin UI    → http://localhost:3001/admin
+#
+# For DigitalOcean deployment, see DEPLOY.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
 services:
+  # ── 1. PostgreSQL ────────────────────────────────────────────────────────────
   postgres:
     image: postgres:16-alpine
     container_name: abroadkart-postgres
@@ -6,32 +28,81 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: abroadkart
-    ports:
-      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - abroadkart
+    # Keep port mapping for connecting with a local DB client (TablePlus, etc.)
+    # Remove in production if you don't need external DB access.
+    ports:
+      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
+  # ── 2. Redis ──────────────────────────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: abroadkart-redis
-    ports:
-      - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
       - abroadkart
+    # Keep port mapping for connecting with a local Redis client (RedisInsight, etc.)
+    # Remove in production if you don't need external Redis access.
+    ports:
+      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # ── 3. KeystoneJS ─────────────────────────────────────────────────────────────
+  keystone:
+    build:
+      context: ./keystone
+      dockerfile: Dockerfile
+    container_name: abroadkart-keystone
+    # Real env vars — DATABASE_URL and REDIS_URL use service names, not localhost
+    env_file:
+      - ./keystone/.env.docker
+    ports:
+      - "3001:3001"
+    networks:
+      - abroadkart
+    # Wait for postgres AND redis to be healthy before starting Keystone.
+    # This prevents "ECONNREFUSED" crashes on cold starts.
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── 4. Next.js ────────────────────────────────────────────────────────────────
+  nextjs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_* vars are inlined into the client bundle at build time.
+        # For droplet deploy, pass http://<droplet-ip>:3001
+        NEXT_PUBLIC_KEYSTONE_URL: http://localhost:3001
+    container_name: abroadkart-nextjs
+    env_file:
+      - .env.nextjs
+    ports:
+      - "3000:3000"
+    networks:
+      - abroadkart
+    depends_on:
+      - keystone
+    restart: unless-stopped
 
 volumes:
   postgres_data:

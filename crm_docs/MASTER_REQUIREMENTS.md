@@ -22,11 +22,13 @@
 AbroadKart CRM is a **multi-tenant B2B2C SaaS platform** enabling study abroad consultants to manage complete student lifecycles (onboarding → enrollment) while providing AbroadKart with centralized fulfilment capabilities for loans and accommodations.
 
 ### Key Stakeholders
+
 - **Consultants (Tenants)**: Study abroad agencies managing students and requests
 - **AbroadKart (Platform Owner)**: Fulfilment team processing loans and accommodations
 - **Students (End Users)**: Applicants managed by consultants and processed by AbroadKart
 
 ### Core Value Propositions
+
 - **For Consultants**: Single platform for student management with real-time status updates
 - **For AbroadKart**: Centralized cross-tenant dashboard with full visibility and control
 - **For Students**: Faster processing and transparency
@@ -36,37 +38,41 @@ AbroadKart CRM is a **multi-tenant B2B2C SaaS platform** enabling study abroad c
 ## Technology Stack Overview
 
 ### Frontend Stack
+
 - **Framework**: Next.js 14 (App Router, TypeScript)
 - **UI Components**: ShadCN/UI (copy-paste Radix UI + TailwindCSS)
 - **Client-Side Caching**: TanStack React Query (@tanstack/react-query)
 - **Forms**: react-hook-form + zod validation
 - **Tables**: @tanstack/react-table with ShadCN components
 - **GraphQL Client**: graphql-request
-- **Authentication**: @clerk/nextjs integration
+- **Authentication**: better-auth ([docs/BETTER_AUTH_PHASE2.md](../docs/BETTER_AUTH_PHASE2.md))
 
 ### Backend Stack
+
 - **Runtime**: Node.js 20 LTS
 - **CMS/GraphQL API**: KeystoneJS 6.x
 - **Database**: PostgreSQL 16.x
 - **ORM**: Prisma (via Keystone)
 - **Caching**: Redis (ioredis) + graphql-redis-cache
-- **Authentication**: Clerk (JWT validation)
+- **Authentication**: better-auth JWT + JWKS (Keystone verifies via `BETTER_AUTH_JWKS_URL`)
 - **Storage**: Cloudflare R2 (S3-compatible)
 - **Styling**: TailwindCSS 3.x
 
 ### Deployment Stack
+
 - **Backend**: Railway / Render (Node.js + PostgreSQL)
 - **Frontend**: Vercel / Railway (Next.js)
 - **Database**: Railway PostgreSQL / Supabase (managed)
 - **Cache**: Redis Cloud / Upstash (managed Redis)
 - **Storage**: Cloudflare R2
-- **Auth**: Clerk (managed)
+- **Auth**: better-auth (self-hosted, same Postgres `auth` schema)
 
 ---
 
 ## System Architecture
 
 ### Data Flow: Multi-Tenant Model
+
 ```
 ┌─────────────────────────────────────────┐
 │    Consultant Tenant A (Company)        │
@@ -99,6 +105,7 @@ AbroadKart CRM is a **multi-tenant B2B2C SaaS platform** enabling study abroad c
 ```
 
 ### 3-Tier Caching Strategy
+
 ```
 ┌─────────────────────────────────────────────────┐
 │   Frontend (Next.js App)                         │
@@ -129,14 +136,14 @@ AbroadKart CRM is a **multi-tenant B2B2C SaaS platform** enabling study abroad c
 
 This project is divided into **6 implementation phases**. Each phase has its own detailed specification document.
 
-| Phase | Duration | Focus | Document |
-|-------|----------|-------|----------|
-| **Phase 1** | Weeks 1-2 | Foundation, Infrastructure, Auth | [Phase 1: Foundation & Infrastructure](./PHASE_1_FOUNDATION.md) |
-| **Phase 2** | Weeks 3-4 | Core Schema, Multi-Tenancy, GraphQL | [Phase 2: Core Schema & Data Model](./PHASE_2_SCHEMA.md) |
-| **Phase 3** | Weeks 5-7 | Consultant Portal UI & Features | [Phase 3: Consultant Portal](./PHASE_3_CONSULTANT_PORTAL.md) |
-| **Phase 4** | Weeks 8-10 | AbroadKart Admin Portal & Fulfilment | [Phase 4: Admin Portal](./PHASE_4_ADMIN_PORTAL.md) |
-| **Phase 5** | Weeks 11-12 | Testing, Security, Performance, Polish | [Phase 5: Hardening & Testing](./PHASE_5_HARDENING.md) |
-| **Phase 6** | Week 13+ | Production Launch & Support | [Phase 6: Production & Launch](./PHASE_6_LAUNCH.md) |
+| Phase       | Duration    | Focus                                  | Document                                                        |
+| ----------- | ----------- | -------------------------------------- | --------------------------------------------------------------- |
+| **Phase 1** | Weeks 1-2   | Foundation, Infrastructure, Auth       | [Phase 1: Foundation & Infrastructure](./PHASE_1_FOUNDATION.md) |
+| **Phase 2** | Weeks 3-4   | Core Schema, Multi-Tenancy, GraphQL    | [Phase 2: Core Schema & Data Model](./PHASE_2_SCHEMA.md)        |
+| **Phase 3** | Weeks 5-7   | Consultant Portal UI & Features        | [Phase 3: Consultant Portal](./PHASE_3_CONSULTANT_PORTAL.md)    |
+| **Phase 4** | Weeks 8-10  | AbroadKart Admin Portal & Fulfilment   | [Phase 4: Admin Portal](./PHASE_4_ADMIN_PORTAL.md)              |
+| **Phase 5** | Weeks 11-12 | Testing, Security, Performance, Polish | [Phase 5: Hardening & Testing](./PHASE_5_HARDENING.md)          |
+| **Phase 6** | Week 13+    | Production Launch & Support            | [Phase 6: Production & Launch](./PHASE_6_LAUNCH.md)             |
 
 ### How to Use This Documentation
 
@@ -155,28 +162,33 @@ This project is divided into **6 implementation phases**. Each phase has its own
 ## Core Principles
 
 ### Multi-Tenancy
+
 - **Pattern**: Shared database, shared schema with `tenant_id` column on all business entities
 - **Why**: Simplest to build, best for reporting, scales to thousands of tenants
 - **Enforcement**: All queries filtered by session user's tenant (via KeystoneJS access rules)
 
-### Authentication (Clerk)
-- **Flow**: User signs in via Clerk → Keystone creates/updates User record → maps clerkUserId → resolves role + tenant
-- **JWT Validation**: Every GraphQL request includes Clerk JWT; KeystoneJS custom session validates it
+### Authentication (better-auth)
+
+- **Flow**: User signs in via better-auth → on sign-up, `databaseHooks.user.create.after` inserts Keystone `User` with `authUserId` → GraphQL uses Bearer JWT (`sub` = auth user id)
+- **JWT Validation**: Keystone `betterAuthSession` verifies JWT via JWKS (`verifyBetterAuthJwt`)
 - **Roles**: `consultantAdmin`, `consultantAgent`, `fulfilment`, `superAdmin`
 
 ### Authorization (Access Control)
+
 - **Consultant Roles**: See only their own tenant's data
 - **Fulfilment Roles**: Cross-tenant access for loans, accommodations, reimbursements
 - **Field-Level**: Some fields writable only by fulfilment (e.g., `fulfilmentRemarks`)
 - **Implementation**: Keystone `access` rules + hooks for audit logging
 
 ### Caching Strategy
+
 - **Client (React Query)**: Query cache 1-5 min, stale time varies by entity
 - **Backend (Redis)**: GraphQL query cache 2-10 min, resolver cache 5-15 min
 - **Invalidation**: Keystone hooks invalidate Redis keys on mutations
 - **TTLs**: Aggressive for stable data (programs 1hr), aggressive for volatile data (loans 30sec)
 
 ### API Protocol
+
 - **GraphQL**: All data operations via Keystone GraphQL endpoint
 - **No REST endpoints**: Use GraphQL for consistency and caching benefits
 
@@ -185,6 +197,7 @@ This project is divided into **6 implementation phases**. Each phase has its own
 ## Contact & Support
 
 For questions or clarifications during development:
+
 - **Email**: [your-email@abroadkart.com]
 - **GitHub Issues**: Raise questions as GitHub issues in the repo
 - **Documentation**: Refer to phase documents for specific details
@@ -215,7 +228,7 @@ docs/
 ├── APPENDIX_SHADCN_COMPONENTS.md
 ├── APPENDIX_GRAPHQL_API.md
 ├── APPENDIX_DATABASE_SCHEMA.md
-└── APPENDIX_CLERK_AUTH.md
+└── APPENDIX_AUTH_SETUP.md (crm_docs)
 ```
 
 ---

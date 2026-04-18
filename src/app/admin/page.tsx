@@ -7,7 +7,7 @@ export default async function AdminEntryPage() {
   const authResult = await getAdminAuth();
 
   if (authResult.status === "unauthenticated") {
-    redirect("/sign-in?redirect_url=/admin");
+    redirect("/sign-in?callbackUrl=/admin");
   }
 
   if (authResult.status === "forbidden") {

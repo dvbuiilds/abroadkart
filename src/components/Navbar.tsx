@@ -5,8 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-
 import {
   Sheet,
   SheetContent,
@@ -16,6 +14,8 @@ import {
   SheetDescription,
 } from "@app/components/ui/sheet";
 import { Button } from "@app/components/ui/button";
+import { UserMenu } from "@app/components/auth/UserMenu";
+import { authClient } from "@app/lib/auth-client";
 
 import { Menu, X } from "lucide-react";
 
@@ -26,6 +26,8 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
   const isHome = pathname === "/";
+  const { data: session } = authClient.useSession();
+  const isSignedIn = !!session?.user;
 
   return (
     <>
@@ -86,25 +88,25 @@ export function Navbar() {
 
               {/* Auth Actions */}
               <div className="flex items-center space-x-4">
-                <SignedIn>
-                  <NavLink href="/dashboard" isHome={isHome}>
-                    Dashboard
-                  </NavLink>
-                  <UserButton afterSignOutUrl="/" />
-                </SignedIn>
-                <SignedOut>
-                  <Link href="/sign-in">
-                    <button
-                      className={`px-6 h-10 rounded-full text-sm font-semibold text-white border transition-all duration-300 cursor-pointer ${
-                        isHome
-                          ? "nav-button-animate hover:brightness-110"
-                          : "bg-blue-600 border-blue-600 hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)]"
-                      }`}
-                    >
-                      Login
-                    </button>
+                {isSignedIn ? (
+                  <>
+                    <NavLink href="/dashboard" isHome={isHome}>
+                      Dashboard
+                    </NavLink>
+                    <UserMenu />
+                  </>
+                ) : (
+                  <Link
+                    href="/sign-in"
+                    className={`inline-flex h-10 items-center justify-center rounded-full border px-6 text-sm font-semibold text-white transition-all duration-300 ${
+                      isHome
+                        ? "nav-button-animate hover:brightness-110"
+                        : "border-blue-600 bg-blue-600 hover:bg-blue-500 hover:shadow-[0_0_30px_rgba(37,99,235,0.3)]"
+                    }`}
+                  >
+                    Login
                   </Link>
-                </SignedOut>
+                )}
               </div>
             </div>
 
@@ -167,29 +169,32 @@ export function Navbar() {
                     >
                       Contact Us
                     </MobileNavLink>
-                    <SignedIn>
-                      <MobileNavLink
-                        href="/dashboard"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Dashboard
-                      </MobileNavLink>
-                      <div className="flex items-center gap-3 px-3 py-2 mt-2">
-                        <UserButton afterSignOutUrl="/" />
-                        <span className="text-sm font-medium text-gray-600">
-                          Account
-                        </span>
-                      </div>
-                    </SignedIn>
-                    <SignedOut>
-                      <div className="pt-4 px-3">
-                        <Link href="/sign-in" onClick={() => setIsOpen(false)}>
-                          <button className="w-full h-10 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-full transition-all duration-300 cursor-pointer">
-                            Login
-                          </button>
+                    {isSignedIn ? (
+                      <>
+                        <MobileNavLink
+                          href="/dashboard"
+                          onClick={() => setIsOpen(false)}
+                        >
+                          Dashboard
+                        </MobileNavLink>
+                        <div className="flex items-center gap-3 px-3 py-2 mt-2">
+                          <UserMenu />
+                          <span className="text-sm font-medium text-gray-600">
+                            Account
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="px-3 pt-4">
+                        <Link
+                          href="/sign-in"
+                          onClick={() => setIsOpen(false)}
+                          className="flex h-10 w-full items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white transition-all duration-300 hover:bg-blue-500"
+                        >
+                          Login
                         </Link>
                       </div>
-                    </SignedOut>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>

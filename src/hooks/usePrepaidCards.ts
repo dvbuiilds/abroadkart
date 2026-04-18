@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_PREPAID_CARDS } from '@app/graphql/queries/prepaid-cards';
 import { CREATE_PREPAID_CARD, UPDATE_PREPAID_CARD } from '@app/graphql/mutations/prepaid-cards';
 import type { PrepaidCardListItem } from '@app/graphql/types';

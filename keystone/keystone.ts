@@ -3,8 +3,8 @@
  */
 
 import { config } from "@keystone-6/core";
-import { registerAdminClerkBrowserMiddleware } from "./lib/adminBrowserAuthMiddleware";
-import { clerkSession } from "./lib/clerkAuth";
+import { registerAdminBetterAuthMiddleware } from "./lib/adminBetterAuthMiddleware";
+import { betterAuthSession } from "./lib/betterAuthSession";
 import { getKeystonePublicUrl } from "./lib/keystonePublicUrl";
 import { User } from "./schema/User";
 import { Consultant } from "./schema/Consultant";
@@ -19,6 +19,7 @@ import { AccommodationBooking } from "./schema/AccommodationBooking";
 import { Reimbursement } from "./schema/Reimbursement";
 import { PrepaidCard } from "./schema/PrepaidCard";
 import { Task } from "./schema/Task";
+import { ADMIN_HOME_PAGE_SRC } from "./lib/adminHomePageTemplate";
 
 const lists = {
   User,
@@ -44,12 +45,21 @@ export default config({
     idField: { kind: "uuid" },
   },
   lists,
-  session: clerkSession,
+  session: betterAuthSession,
   ui: {
     basePath: "/admin",
     isAccessAllowed: ({ session }) => {
       return session?.role === "superAdmin";
     },
+    getAdditionalFiles: [
+      async () => [
+        {
+          mode: "write",
+          outputPath: "pages/index.js",
+          src: ADMIN_HOME_PAGE_SRC,
+        },
+      ],
+    ],
   },
   storage: (() => {
     const r2Base = {
@@ -82,13 +92,37 @@ export default config({
     },
     port: process.env.PORT ? parseInt(process.env.PORT) : 3001,
     extendExpressApp: (app) => {
-      registerAdminClerkBrowserMiddleware(app);
+      registerAdminBetterAuthMiddleware(app);
     },
   },
   graphql: {
     path: "/api/graphql",
     apolloConfig: {
       introspection: process.env.NODE_ENV !== "production",
+      formatError: (formattedError, _error) => {
+        if (process.env.NODE_ENV === "development") {
+          console.error("[keystone][graphql resolver/formatError]", {
+            message: formattedError.message,
+            code: formattedError.extensions?.code,
+            path: formattedError.path,
+          });
+        }
+        return formattedError;
+      },
+      plugins: [
+        {
+          async requestDidStart() {
+            if (process.env.NODE_ENV !== "development") return {};
+            return {
+              async didResolveOperation(rc) {
+                console.info("[keystone][graphql] resolved operation", {
+                  name: rc.operationName ?? "(anonymous)",
+                });
+              },
+            };
+          },
+        },
+      ],
     },
   },
 });

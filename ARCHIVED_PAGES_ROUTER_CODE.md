@@ -1,5 +1,7 @@
 # Archived Pages Router Code
 
+> **Historical snapshot.** Current authentication is **better-auth** — see [crm_docs/APPENDIX_AUTH_SETUP.md](./crm_docs/APPENDIX_AUTH_SETUP.md).
+
 This document preserves the source code of Pages Router files that were removed during the migration to App Router. Use this for reference when re-implementing blog, dashboard, or counselling features.
 
 ---
@@ -619,7 +621,7 @@ See full file in project history — POST handler for user registration, bcrypt 
 
 ---
 
-## Auth Pages (replaced by Clerk)
+## Auth Pages (replaced by App Router + better-auth)
 
 ### src/pages/login.tsx
 

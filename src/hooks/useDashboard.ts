@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_DASHBOARD_KPIS, GET_RECENT_ACTIVITY, GET_PIPELINE_COUNTS } from '@app/graphql/queries/dashboard';
 
 export interface DashboardKPIsResult {

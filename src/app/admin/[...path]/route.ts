@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import { getAdminAuth } from "@app/lib/admin-auth";
+import { getBetterAuthJwtFromNextRequest } from "@app/lib/auth-server";
 import {
   getKeystoneBaseUrl,
   keystoneSelfProxyErrorResponse,
@@ -23,10 +23,7 @@ function isStaticAsset(pathStr: string): boolean {
   );
 }
 
-async function proxyToKeystone(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+async function proxyToKeystone(req: NextRequest, ctx: RouteContext) {
   const misconfig = keystoneSelfProxyErrorResponse(req.nextUrl.origin);
   if (misconfig) return misconfig;
 
@@ -36,8 +33,7 @@ async function proxyToKeystone(
   let token: string | null = null;
 
   if (isStaticAsset(pathStr)) {
-    const { userId, getToken } = await auth();
-    if (userId) token = await getToken();
+    token = await getBetterAuthJwtFromNextRequest(req);
     if (!token) return new Response("Unauthorized", { status: 401 });
   } else {
     const authResult = await getAdminAuth();
@@ -81,51 +77,30 @@ async function proxyToKeystone(
   });
 }
 
-export async function GET(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function GET(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function POST(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function POST(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function PUT(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function PUT(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function PATCH(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function PATCH(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function DELETE(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function DELETE(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function HEAD(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function HEAD(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }
 
-export async function OPTIONS(
-  req: NextRequest,
-  ctx: RouteContext,
-) {
+export async function OPTIONS(req: NextRequest, ctx: RouteContext) {
   return proxyToKeystone(req, ctx);
 }

@@ -75,8 +75,8 @@ A centralized, multi-tenant platform that:
                     ┌───────┴────────┐
                     ▼                ▼
         ┌──────────────────────────────────────┐
-        │     Clerk Authentication Service     │
-        │  (Identity, SSO, Access Tokens)      │
+        │     better-auth (Next.js + Postgres)  │
+        │  (Sessions, JWT, JWKS for Keystone)   │
         └──────────────────────────────────────┘
                     │
                     ▼
@@ -137,7 +137,7 @@ A centralized, multi-tenant platform that:
 | **CMS & API** | KeystoneJS 6 | Headless CMS with auto-generated GraphQL |
 | **Database** | PostgreSQL 14+ | Multi-tenant data store |
 | **Cache** | Redis 6+ | GraphQL query caching, session store |
-| **Authentication** | Clerk | Identity, SSO, MFA |
+| **Authentication** | better-auth | Email/password, optional Google, JWT for Keystone |
 | **File Storage** | S3 / Google Cloud Storage | Document storage |
 | **API Gateway** | Apollo Server | GraphQL federation & middleware |
 
@@ -309,7 +309,7 @@ A centralized, multi-tenant platform that:
 **Deliverables**:
 - Keystone project setup
 - Database connection
-- Clerk authentication integration
+- better-auth integration ([APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md))
 - Basic Admin panel
 - Initial schema
 
@@ -338,7 +338,7 @@ A centralized, multi-tenant platform that:
 **Duration**: Weeks 5-7  
 **Deliverables**:
 - Next.js project setup
-- Clerk authentication integration
+- better-auth integration ([APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md))
 - Dashboard page
 - Student CRUD pages
 - Application management
@@ -523,50 +523,18 @@ Consultant Agent
 
 ## Authentication & Access Control
 
-### Clerk Integration Points
+### better-auth integration points
 
 ```
-┌─────────────────────────────────────┐
-│   Consultant Portal / Portal UI      │
-└─────────────────────────────────────┘
-           │
-    ┌──────▼──────────────────┐
-    │  Clerk Auth Provider    │
-    │  - ClerkProvider        │
-    │  - SignedIn/SignedOut   │
-    │  - useAuth() hook       │
-    │  - useUser() hook       │
-    └──────┬──────────────────┘
-           │
-    ┌──────▼──────────────────────────┐
-    │  Set Session Data in context    │
-    │  - userId                       │
-    │  - email                        │
-    │  - org_id (tenant)              │
-    │  - role (from custom claims)    │
-    └──────┬──────────────────────────┘
-           │
-    ┌──────▼──────────────────────────┐
-    │  Apollo Client Auth Middleware  │
-    │  - Attach JWT to headers        │
-    │  - Send in Authorization header │
-    └──────┬──────────────────────────┘
-           │
-    ┌──────▼──────────────────────────┐
-    │  KeystoneJS Validation         │
-    │  - Extract from headers        │
-    │  - Validate JWT signature      │
-    │  - Populate context.session    │
-    │  - Apply access rules          │
-    └──────┬──────────────────────────┘
-           │
-    ┌──────▼──────────────────────────┐
-    │  GraphQL Resolver              │
-    │  - Check permissions           │
-    │  - Apply filters               │
-    │  - Return authorized data      │
-    └──────────────────────────────────┘
+Next.js (consultant / fulfilment UI)
+  → better-auth session cookie (/api/auth)
+  → graphql-request + Bearer JWT from GET /api/auth/token
+  → Keystone POST /api/graphql
+  → betterAuthSession: verify JWT (JWKS), load User by authUserId
+  → access rules + resolvers
 ```
+
+See [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md).
 
 ### Role-Based Access Rules
 
@@ -613,7 +581,7 @@ DATABASE_URL=mongodb+srv://user:password@cluster.mongodb.net/abroadkart
 # Environment variables
 export DATABASE_URL=...
 export REDIS_URL=redis://localhost:6379
-export CLERK_SECRET_KEY=...
+export BETTER_AUTH_SECRET=...
 export S3_BUCKET_NAME=...
 ```
 
@@ -773,18 +741,17 @@ Detailed guide to all ShadCN components used, with examples, props, and customiz
 
 ---
 
-### Appendix D: Clerk Integration Guide
-Step-by-step Clerk setup for both KeystoneJS and Next.js.
+### Appendix D: better-auth integration guide
+Self-hosted auth with the same Postgres database (`auth` schema + Keystone `public` schema).
 
-**Document**: [APPENDIX_CLERK_SETUP.md](./APPENDIX_CLERK_SETUP.md) *(Create next)*
+**Document**: [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)
 
 **Contents**:
-- Clerk organization setup
-- JWT configuration
-- KeystoneJS middleware
-- Next.js authentication
-- Role & organization sync
-- Session management
+- Environment variables
+- First-time setup (`CREATE SCHEMA auth`, `yarn auth:migrate`)
+- Next.js + Keystone JWT / JWKS
+- Keystone Admin SSO
+- GraphQL Bearer flow
 
 ---
 
@@ -809,7 +776,7 @@ Infrastructure setup, Docker containerization, and CI/CD pipeline.
 ```
 Week 1-2:    Phase 1 - Foundation
              ├─ KeystoneJS setup
-             ├─ Clerk authentication
+             ├─ better-auth authentication
              └─ Basic admin panel
                       │
 Week 3-4:    Phase 2 - Core Schema

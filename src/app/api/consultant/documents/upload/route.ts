@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import {
   ALLOWED_MIME,
   getMaxSizeForDocumentType,
 } from "@app/lib/documents/constants";
 import { getKeystoneBaseUrl } from "@app/lib/keystone-url";
+import { getBetterAuthJwtFromNextRequest } from "@app/lib/auth-server";
 
 const CREATE_STUDENT_DOCUMENT_MUTATION = `mutation CreateStudentDocument($data: StudentDocumentCreateInput!) { createStudentDocument(data: $data) { id documentType verificationStatus uploadedAt student { id fullName } } }`;
 
 export async function POST(req: NextRequest) {
   console.log("[upload route] POST /api/consultant/documents/upload received");
   try {
-    const { getToken } = await auth();
-    const token = await getToken();
+    const token = await getBetterAuthJwtFromNextRequest(req);
     if (!token) {
-      console.warn("[upload route] No Clerk token");
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      console.warn("[upload route] No auth token");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     console.log("[upload route] Auth OK (token present)");
 
@@ -41,23 +37,20 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: "Missing studentId or documentType" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     if (!file || !(file instanceof File)) {
       console.warn("[upload route] No file or not a File instance");
-      return NextResponse.json(
-        { error: "Select a PDF file" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Select a PDF file" }, { status: 400 });
     }
 
     if (file.type !== ALLOWED_MIME) {
       console.warn("[upload route] Invalid file type", { type: file.type });
       return NextResponse.json(
         { error: "Only PDF is allowed" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -68,11 +61,10 @@ export async function POST(req: NextRequest) {
         size: file.size,
         maxBytes,
       });
-      const limit =
-        documentType === "bankStatement" ? "1 MB" : "100 KB";
+      const limit = documentType === "bankStatement" ? "1 MB" : "100 KB";
       return NextResponse.json(
         { error: `File must be under ${limit}` },
-        { status: 400 }
+        { status: 400 },
       );
     }
     console.log("[upload route] Validation passed", {
@@ -131,7 +123,7 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: "Upload failed" },
-        { status: upstream.status }
+        { status: upstream.status },
       );
     }
 
@@ -145,11 +137,14 @@ export async function POST(req: NextRequest) {
       });
       return NextResponse.json(
         { error: "Invalid response from server" },
-        { status: 502 }
+        { status: 502 },
       );
     }
 
-    const data = json as { errors?: unknown[]; data?: { createStudentDocument?: unknown } };
+    const data = json as {
+      errors?: unknown[];
+      data?: { createStudentDocument?: unknown };
+    };
     if (data.errors?.length) {
       const msg =
         (data.errors[0] as { message?: string })?.message ?? "Upload failed";
@@ -167,7 +162,7 @@ export async function POST(req: NextRequest) {
     console.error("[upload route] Unexpected error", err);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

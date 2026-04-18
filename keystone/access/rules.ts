@@ -1,14 +1,14 @@
 /**
  * Reusable access control functions for Keystone lists.
  *
- * context.session is now a flat SessionData object (returned directly by
- * the custom Clerk SessionStrategy), so there is no { data: … } wrapper.
+ * context.session is a flat SessionData object (returned by betterAuthSession),
+ * so there is no { data: … } wrapper.
  */
 
 import { Role, isFulfilmentRole, isConsultantRole } from "./roles";
 
 /**
- * Shape of context.session (set by our Clerk SessionStrategy).
+ * Shape of context.session (set by betterAuthSession from better-auth JWT).
  */
 export type SessionData = {
   id: string;
@@ -37,7 +37,9 @@ export function isSuperAdmin(
   sessionOrArgs: Session | { session: Session },
 ): boolean {
   const session =
-    sessionOrArgs && typeof sessionOrArgs === "object" && "session" in sessionOrArgs
+    sessionOrArgs &&
+    typeof sessionOrArgs === "object" &&
+    "session" in sessionOrArgs
       ? (sessionOrArgs as { session: Session }).session
       : (sessionOrArgs as Session);
   return session?.role === Role.SUPER_ADMIN;

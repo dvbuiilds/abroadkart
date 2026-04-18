@@ -68,7 +68,7 @@ Key outcomes:
 ## 3. Tech Stack & Routing
 
 - Same stack as Consultant Portal (Next.js + ShadCN + Apollo Client).
-- Auth via Clerk; routes restricted to `fulfilment` and `superAdmin`.
+- Auth via better-auth; routes restricted to `fulfilment` and `superAdmin`.
 
 Suggested route structure:
 

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { UserButton } from '@clerk/nextjs';
+import { UserMenu } from "@app/components/auth/UserMenu";
 
 export function FulfilmentTopbar() {
   return (
@@ -9,14 +9,7 @@ export function FulfilmentTopbar() {
         <span className="font-medium text-foreground">Fulfilment Portal</span>
       </div>
       <div className="flex items-center gap-2">
-        <UserButton
-          afterSignOutUrl="/"
-          appearance={{
-            elements: {
-              avatarBox: 'h-8 w-8',
-            },
-          }}
-        />
+        <UserMenu compact />
       </div>
     </header>
   );

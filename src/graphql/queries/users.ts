@@ -3,8 +3,8 @@
  */
 
 export const GET_CURRENT_USER = `
-  query GetCurrentUser($clerkUserId: String!) {
-    users(where: { clerkUserId: { equals: $clerkUserId } }, take: 1) {
+  query GetCurrentUser($authUserId: String!) {
+    users(where: { authUserId: { equals: $authUserId } }, take: 1) {
       id
       email
       name

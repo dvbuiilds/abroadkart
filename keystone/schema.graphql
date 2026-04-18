@@ -3,7 +3,7 @@
 
 type User {
   id: ID!
-  clerkUserId: String
+  authUserId: String
   email: String
   name: String
   role: String
@@ -18,7 +18,7 @@ scalar DateTime @specifiedBy(url: "https://datatracker.ietf.org/doc/html/rfc3339
 
 input UserWhereUniqueInput {
   id: ID
-  clerkUserId: String
+  authUserId: String
   email: String
 }
 
@@ -27,7 +27,7 @@ input UserWhereInput {
   OR: [UserWhereInput!]
   NOT: [UserWhereInput!]
   id: IDFilter
-  clerkUserId: StringFilter
+  authUserId: StringFilter
   email: StringFilter
   name: StringFilter
   role: StringFilter
@@ -101,7 +101,7 @@ input DateTimeNullableFilter {
 
 input UserOrderByInput {
   id: OrderDirection
-  clerkUserId: OrderDirection
+  authUserId: OrderDirection
   email: OrderDirection
   name: OrderDirection
   role: OrderDirection
@@ -117,7 +117,7 @@ enum OrderDirection {
 }
 
 input UserUpdateInput {
-  clerkUserId: String
+  authUserId: String
   email: String
   name: String
   role: String
@@ -140,7 +140,7 @@ input UserUpdateArgs {
 }
 
 input UserCreateInput {
-  clerkUserId: String
+  authUserId: String
   email: String
   name: String
   role: String

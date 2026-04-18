@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_CONSULTANTS } from '@app/graphql/queries/consultants';
 import type { ConsultantListItem } from '@app/graphql/types';
 

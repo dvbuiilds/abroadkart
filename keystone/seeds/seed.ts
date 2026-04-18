@@ -28,7 +28,7 @@ export async function seed() {
 
   await context.sudo().query.User.createOne({
     data: {
-      clerkUserId: "seed_super_admin_1",
+      authUserId: "seed:auth:super_admin",
       email: "superadmin@abroadkart.com",
       name: "Super Admin",
       role: "superAdmin",
@@ -39,7 +39,7 @@ export async function seed() {
 
   await context.sudo().query.User.createOne({
     data: {
-      clerkUserId: "seed_fulfilment_1",
+      authUserId: "seed:auth:fulfilment",
       email: "fulfilment@abroadkart.com",
       name: "Fulfilment User",
       role: "fulfilment",
@@ -50,7 +50,7 @@ export async function seed() {
 
   await context.sudo().query.User.createOne({
     data: {
-      clerkUserId: "seed_consultant_admin_abc",
+      authUserId: "seed:auth:consultant_admin_abc",
       email: "admin@abc.com",
       name: "ABC Admin",
       role: "consultantAdmin",
@@ -61,7 +61,7 @@ export async function seed() {
 
   await context.sudo().query.User.createOne({
     data: {
-      clerkUserId: "seed_consultant_agent_xyz",
+      authUserId: "seed:auth:consultant_agent_xyz",
       email: "agent@xyz.com",
       name: "XYZ Agent",
       role: "consultantAgent",

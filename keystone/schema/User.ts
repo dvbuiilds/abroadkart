@@ -1,5 +1,5 @@
 /**
- * User - maps to Clerk. Created via webhook; role/tenant updated by superAdmin.
+ * User — domain profile. `authUserId` links to better-auth `auth.user.id`.
  */
 
 import { list } from "@keystone-6/core";
@@ -44,7 +44,7 @@ export const User = list({
     },
   },
   fields: {
-    clerkUserId: text({
+    authUserId: text({
       validation: { isRequired: true },
       isIndexed: "unique",
     }),
@@ -58,13 +58,14 @@ export const User = list({
     name: text({ validation: { isRequired: false } }),
     role: select({
       options: [
+        { label: "Pending", value: "pending" },
         { label: "Super Admin", value: "superAdmin" },
         { label: "Fulfilment", value: "fulfilment" },
         { label: "Consultant Admin", value: "consultantAdmin" },
         { label: "Consultant Agent", value: "consultantAgent" },
       ],
       validation: { isRequired: true },
-      defaultValue: "consultantAgent",
+      defaultValue: "pending",
       access: {
         update: ({ session }) => isSuperAdmin({ session }),
       },
@@ -81,6 +82,22 @@ export const User = list({
     lastLoginAt: timestamp(),
     createdAt: timestamp({ defaultValue: { kind: "now" } }),
     updatedAt: timestamp({ db: { updatedAt: true } }),
+  },
+  ui: {
+    labelField: "name",
+    listView: {
+      initialColumns: [
+        "name",
+        "email",
+        "role",
+        "tenant",
+        "isActive",
+        "lastLoginAt",
+      ],
+      initialSort: { field: "lastLoginAt", direction: "DESC" },
+      pageSize: 50,
+    },
+    searchFields: ["name", "email"],
   },
   graphql: {
     plural: "Users",

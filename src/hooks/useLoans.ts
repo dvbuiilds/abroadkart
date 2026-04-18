@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_LOANS, GET_LOAN } from '@app/graphql/queries/loans';
 import { CREATE_LOAN, UPDATE_LOAN_CONSULTANT_REMARKS } from '@app/graphql/mutations/loans';
 import type { LoanApplication, LoanListItem } from '@app/graphql/types';

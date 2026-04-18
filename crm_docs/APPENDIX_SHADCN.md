@@ -842,11 +842,13 @@ import {
   Home,
   LogOut,
 } from 'lucide-react';
-import { useClerk } from '@clerk/nextjs';
+import { authClient } from '@/lib/auth-client';
 
 export function ConsultantSidebar() {
   const pathname = usePathname();
-  const { signOut } = useClerk();
+  async function signOut() {
+    await authClient.signOut();
+  }
 
   const menuItems = [
     {

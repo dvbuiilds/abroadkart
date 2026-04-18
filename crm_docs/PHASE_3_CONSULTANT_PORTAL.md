@@ -28,7 +28,7 @@ Key outcomes:
 ## 2. High-Level Screens
 
 1. **Login & Onboarding**
-   - Clerk-hosted or custom sign-in/sign-up.
+   - better-auth sign-in/sign-up on Next (`/sign-in`, `/sign-up`).
    - Post-login role and tenant resolution.
 
 2. **Dashboard**
@@ -67,7 +67,7 @@ Key outcomes:
 ## 3. Tech Stack & Integration
 
 - **Framework**: Next.js App Router
-- **Auth**: `@clerk/nextjs`
+- **Auth**: better-auth ([`src/lib/auth.ts`](../src/lib/auth.ts), [`auth-client`](../src/lib/auth-client.ts))
 - **UI**: ShadCN + Tailwind CSS
 - **Data**: Apollo Client (GraphQL) or React Query + GraphQL adapter
 - **State**: Local component state + server cache
@@ -85,7 +85,7 @@ Top-level App Router structure (example):
 
 ```text
 /app
-  /layout.tsx               (ClerkProvider, base shell)
+  /layout.tsx               (base shell; session via better-auth)
   /consultant
     /layout.tsx             (Sidebar + TopBar)
     /dashboard/page.tsx
@@ -222,7 +222,7 @@ View team-level metrics on dashboard.
 
 All key operations:
 
-Are guarded by Clerk auth + role checks.
+Are guarded by better-auth session + role checks (`RequireRole`, middleware).
 
 Respect Keystone access rules.
 

@@ -1,22 +1,12 @@
 # Appendix E: Deployment, Docker & DevOps
 
-
-
 **Related**: [Master Requirements](./REQUIREMENTS_MASTER.md) | [Phase 1](./PHASE_1_FOUNDATION.md) | [Phase 2](./PHASE_2_SCHEMA.md)
-
-
 
 ---
 
-
-
 ## 1. Environments & Targets
 
-
-
 ### 1.1 Environments
-
-
 
 - **Local**: Docker Compose, hot reload, seeded data.
 
@@ -24,11 +14,7 @@
 
 - **Production**: Managed Postgres, Redis, object storage, autoscaled frontends.
 
-
-
 ### 1.2 Services
-
-
 
 - `keystone-api` – Keystone GraphQL + Admin UI
 
@@ -44,23 +30,13 @@
 
 - `reverse-proxy` – Nginx or platform load balancer
 
-
-
 ---
-
-
 
 ## 2. Dockerfiles
 
-
-
 ### 2.1 Keystone API Dockerfile
 
-
-
 `keystone/Dockerfile`:
-
-
 
 ```dockerfile
 
@@ -78,7 +54,7 @@ FROM base AS deps
 
 RUN apk add --no-cache libc6-compat
 
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock ./
 
 RUN npm ci
 
@@ -134,7 +110,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS deps
 
-COPY package.json package-lock.json ./
+COPY package.json yarn.lock ./
 
 RUN npm ci
 
@@ -603,3 +579,4 @@ Restrict DB and Redis to private network.
 
 
 Restrict S3 buckets via IAM policies to app roles only.
+```

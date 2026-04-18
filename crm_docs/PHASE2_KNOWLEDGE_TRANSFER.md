@@ -114,7 +114,7 @@ All tenant-scoped entities must use `afterOperationWithCache` to maintain a cons
 
 **Benefits**: DB does filtering; no N+1; consistent pattern for all tenant-scoped lists.
 
-**Risks**: Session must always carry `tenantId` for consultants; Clerk auth and session shape must match.
+**Risks**: Session must always carry `tenantId` for consultants; better-auth JWT → Keystone session shape must match (`authUserId` lookup).
 
 ---
 

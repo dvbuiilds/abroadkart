@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useGraphQLClient } from '@app/lib/graphql';
+import { useGraphQLClient } from '@app/lib/graphql-client';
 import { GET_DOCUMENT_QUEUE } from '@app/graphql/queries/documents';
 import { VERIFY_DOCUMENT } from '@app/graphql/mutations/fulfilment-documents';
 import type { StudentDocumentListItem } from '@app/graphql/types';

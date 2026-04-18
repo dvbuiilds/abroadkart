@@ -36,7 +36,7 @@ Abroad Kart Web Application
 ├─ 📄 PHASE_1_FOUNDATION.md (Weeks 1-2) ✅
 │  ├─ Keystone Setup
 │  ├─ Database Connection
-│  ├─ Clerk Authentication
+│  ├─ better-auth authentication
 │  ├─ Admin Panel
 │  └─ Testing Strategy
 │
@@ -135,18 +135,17 @@ Complete guide to ShadCN UI components:
 
 ---
 
-### Appendix D: Clerk Integration Guide (Next)
+### Appendix D: better-auth integration
 
-**File**: `APPENDIX_CLERK_SETUP.md` _(To be created)_
+**File**: [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)
 
-Step-by-step Clerk setup:
+Step-by-step better-auth setup:
 
-- Organization structure
-- JWT configuration
-- KeystoneJS middleware
-- Next.js authentication
-- Role & tenant sync
-- Session management
+- Same Postgres (`auth` schema + Keystone `public`)
+- JWT + JWKS for Keystone
+- Next.js routes and middleware
+- Keystone session and Admin SSO
+- Environment variables
 
 ---
 
@@ -154,7 +153,7 @@ Step-by-step Clerk setup:
 
 **File**: `ADMIN_PROXY.md`
 
-Clerk-authenticated proxy for Keystone Admin UI (superAdmin only):
+better-auth + JWT proxy for Keystone Admin UI (superAdmin only):
 
 - Architecture and request flow
 - Files involved (admin page, proxy routes, admin-auth)
@@ -163,19 +162,11 @@ Clerk-authenticated proxy for Keystone Admin UI (superAdmin only):
 
 ---
 
-### Appendix F: Deployment & DevOps (Next)
+### Appendix F: Deployment & DevOps
 
-**File**: `APPENDIX_DEPLOYMENT.md` _(To be created)_
+**File**: [APPENDIX_DEPLOYMENT.md](./APPENDIX_DEPLOYMENT.md)
 
-Infrastructure setup:
-
-- Docker containerization
-- Kubernetes manifests
-- GitHub Actions CI/CD
-- Database migrations
-- Redis setup
-- Environment management
-- Monitoring & logging
+Docker, environments, CI/CD patterns, and related ops notes.
 
 ---
 
@@ -198,8 +189,8 @@ REQUIREMENTS_MASTER.md
         ├─→ PHASE_4_FULFILMENT_PORTAL.md
         │   └─→ APPENDIX_SHADCN.md
         │
-        ├─→ APPENDIX_CLERK_SETUP.md (For Auth)
-        ├─→ ADMIN_PROXY.md (Keystone Admin + Clerk)
+        ├─→ APPENDIX_AUTH_SETUP.md (For Auth)
+        ├─→ ADMIN_PROXY.md (Keystone Admin + better-auth)
         ├─→ APPENDIX_DEPLOYMENT.md (For DevOps)
         └─→ APPENDIX_SHADCN.md (UI Components)
 ```
@@ -219,10 +210,10 @@ REQUIREMENTS_MASTER.md
 | PHASE_3_CONSULTANT_PORTAL | Consultant UI               | ✅ Complete | 5-7   |
 | PHASE3_PROGRESS           | Phase 3 patterns & progress | ✅ Complete | -     |
 | PHASE_4_FULFILMENT_PORTAL | Fulfilment UI               | ⏳ Next     | 8-10  |
-| ADMIN_PROXY               | Keystone Admin proxy + Clerk| ✅ Complete| -     |
+| ADMIN_PROXY               | Keystone Admin proxy + better-auth | ✅ Complete | -     |
 | REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Super-admin native CMS + 3000 `/admin` | ✅ Complete | - |
-| APPENDIX_CLERK_SETUP      | Clerk integration           | ⏳ Next     | -     |
-| APPENDIX_DEPLOYMENT       | DevOps & deployment         | ⏳ Next     | -     |
+| APPENDIX_AUTH_SETUP       | better-auth integration      | ✅ Complete | -     |
+| APPENDIX_DEPLOYMENT       | DevOps & deployment         | ✅ Draft    | -     |
 
 ---
 
@@ -266,7 +257,7 @@ REQUIREMENTS_MASTER.md
 
 - [APPENDIX_DATABASE.md](./APPENDIX_DATABASE.md) (All entities)
 - [APPENDIX_GRAPHQL_API.md](./APPENDIX_GRAPHQL_API.md) (API generation)
-- [ADMIN_PROXY.md](./ADMIN_PROXY.md) (Keystone Admin + Clerk proxy)
+- [ADMIN_PROXY.md](./ADMIN_PROXY.md) (Keystone Admin + better-auth proxy)
 - [REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md](./REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE.md) (Super-admin on Keystone origin; `3000/admin` retained)
 
 ---
@@ -290,7 +281,7 @@ REQUIREMENTS_MASTER.md
 **Read** _(When available)_:
 
 - APPENDIX_DEPLOYMENT.md
-- APPENDIX_CLERK_SETUP.md (for auth infrastructure)
+- [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md) (for auth infrastructure)
 
 ---
 
@@ -319,69 +310,10 @@ REQUIREMENTS_MASTER.md
 | Phase timeline       | REQUIREMENTS_MASTER  | Implementation Roadmap      |
 | Loan processing flow | REQUIREMENTS_MASTER  | Workflow 2: Loan Processing |
 | Access control       | PHASE_2_SCHEMA       | Access Control Rules        |
-| Authentication setup | PHASE_1_FOUNDATION   | Clerk Integration           |
+| Authentication setup | PHASE_1_FOUNDATION   | better-auth setup           |
 | Keystone Admin proxy | ADMIN_PROXY          | Architecture, Troubleshooting|
 | Super-admin CMS split (3001 / 3000) | REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Full spec |
 | UI component example | APPENDIX_SHADCN      | Component sections          |
-
----
-
-## ✨ Key Features by Document
-
-### REQUIREMENTS_MASTER.md
-
-- 🏗️ Full architecture diagram
-- 📊 Tech stack table
-- 👥 Role-based features
-- 🔄 3 complete workflows
-- 📈 Success metrics
-- 🔐 Security & compliance
-
-### PHASE_1_FOUNDATION.md
-
-- 🚀 Keystone project setup
-- 🗄️ Database connection
-- 🔐 Clerk authentication
-- 👨‍💼 Admin panel basics
-- ✅ Testing checklist
-
-### PHASE_2_SCHEMA.md
-
-- 🏢 Multi-tenant architecture
-- 🗂️ 13 core entities
-- 🛡️ Access control rules
-- ⚙️ Hooks & auto-assignment
-- 💾 Caching strategy
-- 📡 GraphQL API generation
-
-### APPENDIX_DATABASE.md
-
-- 📋 All 13 entity definitions
-- 🔗 Complete relationships
-- 🔐 Access rules per entity
-- 📑 Relationships summary
-- 🔍 Database indexes
-- 🚀 Migration guide
-
-### APPENDIX_GRAPHQL_API.md
-
-- 🔍 20+ query examples
-- ✏️ 15+ mutation examples
-- 📡 Subscription examples
-- 🔎 Filtering patterns
-- 📄 Pagination examples
-- ⚙️ Error handling guide
-
-### APPENDIX_SHADCN.md
-
-- 📊 Data display components
-- 📝 Form components
-- 📐 Layout components
-- 🧭 Navigation components
-- 📢 Feedback components
-- 📈 Data visualization
-- ♿ Accessibility guide
-- 🎨 Theming guide
 
 ---
 
@@ -406,46 +338,6 @@ REQUIREMENTS_MASTER.md
 
 ---
 
-## 📝 Implementation Checklist
-
-### Phase 1: Foundation
-
-- [ ] Read PHASE_1_FOUNDATION.md
-- [ ] Setup KeystoneJS project
-- [ ] Configure database connection
-- [ ] Integrate Clerk authentication
-- [ ] Test admin panel
-- [ ] Document any issues
-
-### Phase 2: Schema
-
-- [ ] Read PHASE_2_SCHEMA.md & APPENDIX_DATABASE.md
-- [ ] Implement 13 entities
-- [ ] Configure access control
-- [ ] Setup caching with Redis
-- [ ] Create seed data
-- [ ] Test GraphQL queries
-
-### Phase 3: Consultant Portal
-
-- [x] Read PHASE_3_CONSULTANT_PORTAL.md & APPENDIX_SHADCN.md
-- [x] Setup Next.js project
-- [x] Configure Clerk + graphql-request / React Query
-- [x] Build dashboard page
-- [x] Implement student, application, loan, document, task CRUD
-- [x] Test GraphQL mutations; see PHASE3_PROGRESS.md for testing checklist
-
-### Phase 4: Fulfilment Portal
-
-- [x] Read PHASE_4_FULFILMENT_PORTAL.md
-- [x] Build loan approval workflow
-- [x] Implement document queue
-- [x] Create approval dialogs
-- [x] Build analytics dashboards
-- [ ] Test workflow end-to-end
-
----
-
 ## ❓ FAQ - Document Location
 
 **Q: Where do I find entity definitions?**  
@@ -463,10 +355,10 @@ A: PHASE_2_SCHEMA.md - Core Principles & Multi-Tenancy Pattern section
 **Q: What are the access control rules?**  
 A: PHASE_2_SCHEMA.md - Access Control Rules section
 
-**Q: How do I setup Clerk authentication?**  
-A: PHASE_1_FOUNDATION.md - Clerk Integration section
+**Q: How do I setup better-auth?**  
+A: [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)
 
-**Q: How does the Keystone Admin proxy work with Clerk?**  
+**Q: How does the Keystone Admin proxy work with better-auth?**  
 A: ADMIN_PROXY.md - Architecture, Access Control, Troubleshooting
 
 **Q: What's the complete system architecture?**  
@@ -495,33 +387,10 @@ A: REQUIREMENTS_MASTER.md - Support & Documentation → Common Questions
 | ------- | ------------ | --------------------------------------------------------------------------- |
 | 1.0     | Jan 18, 2026 | Initial complete documentation for Phases 1-2 + Appendices A-C              |
 | 1.1     | Feb 2026     | Phase 3 Consultant Portal complete; PHASE3_PROGRESS.md added; INDEX updated |
-| 1.2     | Feb 2026     | Add ADMIN_PROXY.md (Keystone Admin + Clerk proxy)                            |
+| 1.2     | Feb 2026     | Add ADMIN_PROXY.md (Keystone Admin proxy; auth migrated to better-auth Apr 2026) |
+| 1.4     | Apr 2026     | Clerk removed; auth consolidated in [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md) |
 | 1.3     | TBD          | Add Phase 4 documentation, Appendix D & E                                    |
 | 2.0     | TBD          | Post-launch updates & improvements                                          |
-
----
-
-## 📄 Document Statistics
-
-**Total Documents**: 7  
-**Total Sections**: 150+  
-**Total Examples**: 50+  
-**Total Pages**: ~500 (estimated)
-
----
-
-## ✅ Verification Checklist
-
-- ✅ All documents created and linked
-- ✅ Cross-references verified
-- ✅ Examples provided
-- ✅ Appendices comprehensive
-- ✅ Phase documentation complete for 1-2
-- ✅ Component reference complete
-- ✅ API reference complete
-- ✅ Database schema complete
-- ✅ Index document created
-- ✅ Phase 3 complete (PHASE3_PROGRESS.md); Phase 4 next
 
 ---
 
@@ -552,7 +421,7 @@ A: REQUIREMENTS_MASTER.md - Support & Documentation → Common Questions
 
 1. REQUIREMENTS_MASTER.md (Architecture + Tech Stack) - 15 min
 2. APPENDIX_DEPLOYMENT.md (when available) - 30 min
-3. APPENDIX_CLERK_SETUP.md (when available) - 15 min
+3. [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md) - 15 min
 
 ---
 

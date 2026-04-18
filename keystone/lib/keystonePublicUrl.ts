@@ -1,5 +1,5 @@
 /**
- * Public URL of this Keystone process (used in redirects and Clerk authorizedParties).
+ * Public URL of this Keystone process (used in redirects and CORS).
  */
 
 export function getKeystonePort(): number {

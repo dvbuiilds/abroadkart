@@ -2,7 +2,6 @@
 
 import { type ReactNode } from "react";
 import { useCurrentUser } from "@app/hooks/useCurrentUser";
-import { SignInButton, useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Button } from "@app/components/ui/button";
 import {
@@ -12,6 +11,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@app/components/ui/card";
+import { authClient } from "@app/lib/auth-client";
+import { PendingRoleScreen } from "@app/components/auth/PendingRoleScreen";
 
 const CONSULTANT_ROLES = ["superAdmin", "consultantAdmin", "consultantAgent"];
 
@@ -22,10 +23,12 @@ export function RequireRole({
   roles?: string[];
   children: ReactNode;
 }) {
-  const { isSignedIn, isLoaded: clerkLoaded } = useAuth();
+  const { data: session, isPending: sessionPending } = authClient.useSession();
   const { user, isLoading, isError, refetch } = useCurrentUser();
 
-  if (!clerkLoaded || !isSignedIn) {
+  const isSignedIn = !!session?.user;
+
+  if (!sessionPending && !isSignedIn) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <Card className="w-full max-w-md">
@@ -36,16 +39,16 @@ export function RequireRole({
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <SignInButton mode="modal">
-              <Button>Sign in</Button>
-            </SignInButton>
+            <Button asChild>
+              <Link href="/sign-in">Sign in</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
     );
   }
 
-  if (isLoading) {
+  if (sessionPending || (isSignedIn && isLoading)) {
     return (
       <div
         className="flex min-h-[50vh] items-center justify-center"
@@ -81,6 +84,10 @@ export function RequireRole({
     );
   }
 
+  if (user?.role === "pending") {
+    return <PendingRoleScreen />;
+  }
+
   if (!user || !roles.includes(user.role ?? "")) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center p-4">
@@ -88,7 +95,7 @@ export function RequireRole({
           <CardHeader>
             <CardTitle>Access denied</CardTitle>
             <CardDescription>
-              You don&apos;t have permission to access the Consultant Portal.
+              You don&apos;t have permission to access this area.
               {user ? (
                 <> Your role: {user.role ?? "unknown"}.</>
               ) : (

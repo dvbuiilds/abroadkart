@@ -2,7 +2,7 @@
 
 Keystone/Prisma auto-creates indexes for:
 
-- **Unique fields**: `User.clerkUserId`, `User.email`, `Consultant.slug`, `University.slug`
+- **Unique fields**: `User.authUserId`, `User.email`, `Consultant.slug`, `University.slug`
 - **Relationship foreign keys**: `tenantId`, `studentId`, `actorId`, etc. (single-column indexes)
 - **Scalar `isIndexed: true`**: e.g. `Student.email`
 
