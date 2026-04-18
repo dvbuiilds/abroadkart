@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import {
   getKeystoneBaseUrl,
+  getKeystoneInternalUrl,
   keystoneSelfProxyErrorResponse,
 } from "@app/lib/keystone-url";
 import { getBetterAuthJwtFromNextRequest } from "@app/lib/auth-server";
@@ -32,7 +33,7 @@ async function proxyGraphQL(req: NextRequest) {
   try {
     token = await getBetterAuthJwtFromNextRequest(req);
 
-    const base = getKeystoneBaseUrl();
+    const base = getKeystoneInternalUrl();
     const target = new URL("/api/graphql", `${base}/`);
     target.search = req.nextUrl.search;
 
@@ -78,7 +79,7 @@ async function proxyGraphQL(req: NextRequest) {
       headers: responseHeaders,
     });
   } catch (err) {
-    const base = getKeystoneBaseUrl();
+    const base = getKeystoneInternalUrl();
     const code = getNestedErrnoCode(err);
     const unreachable = code === "ECONNREFUSED" || code === "ENOTFOUND";
 
@@ -102,9 +103,11 @@ async function proxyGraphQL(req: NextRequest) {
       err,
     );
     if (process.env.NODE_ENV === "development" && unreachable) {
-      console.error(
-        `[graphql proxy] Start Keystone so this URL is listening (e.g. cd keystone && yarn dev): ${base}`,
-      );
+      const hint =
+        process.env.KEYSTONE_INTERNAL_URL?.trim() ?
+          `KEYSTONE_INTERNAL_URL=${getKeystoneInternalUrl()}`
+          : `NEXT_PUBLIC_KEYSTONE_URL / Keystone (e.g. cd keystone && yarn dev): ${getKeystoneBaseUrl()}`;
+      console.error(`[graphql proxy] Upstream unreachable. Check ${hint}`);
     }
 
     const message = unreachable

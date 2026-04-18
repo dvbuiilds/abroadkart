@@ -3,7 +3,7 @@ import {
   ALLOWED_MIME,
   getMaxSizeForDocumentType,
 } from "@app/lib/documents/constants";
-import { getKeystoneBaseUrl } from "@app/lib/keystone-url";
+import { getKeystoneInternalUrl } from "@app/lib/keystone-url";
 import { getBetterAuthJwtFromNextRequest } from "@app/lib/auth-server";
 
 const CREATE_STUDENT_DOCUMENT_MUTATION = `mutation CreateStudentDocument($data: StudentDocumentCreateInput!) { createStudentDocument(data: $data) { id documentType verificationStatus uploadedAt student { id fullName } } }`;
@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     multipart.append("map", map);
     multipart.append("0", file);
 
-    const target = new URL("/api/graphql", `${getKeystoneBaseUrl()}/`);
+    const target = new URL("/api/graphql", `${getKeystoneInternalUrl()}/`);
     console.log("[upload route] Forwarding to Keystone", {
       target: target.toString(),
     });

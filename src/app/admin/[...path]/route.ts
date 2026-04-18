@@ -3,6 +3,7 @@ import { getAdminAuth } from "@app/lib/admin-auth";
 import { getBetterAuthJwtFromNextRequest } from "@app/lib/auth-server";
 import {
   getKeystoneBaseUrl,
+  getKeystoneInternalUrl,
   keystoneSelfProxyErrorResponse,
 } from "@app/lib/keystone-url";
 
@@ -10,7 +11,7 @@ type RouteContext = { params: Promise<{ path?: string[] }> };
 
 function buildTargetUrl(req: NextRequest, path: string[] | undefined): URL {
   const pathname = path && path.length ? `/admin/${path.join("/")}` : "/admin";
-  const target = new URL(pathname, `${getKeystoneBaseUrl()}/`);
+  const target = new URL(pathname, `${getKeystoneInternalUrl()}/`);
   target.search = req.nextUrl.search;
   return target;
 }

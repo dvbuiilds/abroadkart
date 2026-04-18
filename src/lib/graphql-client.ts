@@ -6,7 +6,7 @@
 
 import { ClientError, GraphQLClient, type ResponseMiddleware } from "graphql-request";
 import { useMemo, useEffect, useRef } from "react";
-import { getKeystoneBaseUrl } from "@app/lib/keystone-url";
+import { getKeystoneInternalUrl } from "@app/lib/keystone-url";
 import { authClient } from "@app/lib/auth-client";
 
 const devGraphqlResponseMiddleware: ResponseMiddleware = (response) => {
@@ -61,7 +61,7 @@ export function useGraphQLClient() {
     // Server (SSR): call Keystone directly; Node has no "current origin" for relative URLs.
     const endpoint =
       typeof window === "undefined"
-        ? `${getKeystoneBaseUrl()}/api/graphql`
+        ? `${getKeystoneInternalUrl()}/api/graphql`
         : "/api/graphql";
 
     return new GraphQLClient(endpoint, {

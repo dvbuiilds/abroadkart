@@ -3,13 +3,13 @@
  */
 
 import { GraphQLClient } from "graphql-request";
-import { getKeystoneBaseUrl } from "@app/lib/keystone-url";
+import { getKeystoneInternalUrl } from "@app/lib/keystone-url";
 
 /**
  * Create a GraphQL client (for server-side usage)
  */
 export function createGraphQLClient(token?: string) {
-  const base = getKeystoneBaseUrl();
+  const base = getKeystoneInternalUrl();
   return new GraphQLClient(`${base}/api/graphql`, {
     headers: {
       Authorization: token ? `Bearer ${token}` : "",

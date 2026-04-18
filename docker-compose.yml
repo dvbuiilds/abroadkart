@@ -7,6 +7,9 @@
 # Root `.env` is the single Next.js env file; `keystone/.env` is the single Keystone file.
 # For keystone / nextjs services, DATABASE_URL (and Keystone REDIS_URL) are set below so
 # Docker uses hostnames `postgres` and `redis` — overrides URLs that point at localhost in those files.
+# Next.js server-side proxies use KEYSTONE_INTERNAL_URL=http://keystone:3001 (inside the Docker
+# network); browsers still use NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001 from `.env`.
+# Keystone fetches JWKS from Next.js via BETTER_AUTH_JWKS_URL=http://nextjs:3000/... (not localhost).
 #
 # Start order (enforced by depends_on + healthchecks):
 #   1. postgres  ──┐
@@ -84,6 +87,7 @@ services:
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      BETTER_AUTH_JWKS_URL: http://nextjs:3000/api/auth/jwks
     ports:
       - "3001:3001"
     networks:
@@ -107,6 +111,7 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
+      KEYSTONE_INTERNAL_URL: http://keystone:3001
     ports:
       - "3000:3000"
     networks:
