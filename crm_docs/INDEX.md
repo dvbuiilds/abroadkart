@@ -199,21 +199,21 @@ REQUIREMENTS_MASTER.md
 
 ## 📋 Document Summary Table
 
-| Document                  | Purpose                     | Status      | Weeks |
-| ------------------------- | --------------------------- | ----------- | ----- |
-| REQUIREMENTS_MASTER       | Project overview & spec     | ✅ Complete | -     |
-| PHASE_1_FOUNDATION        | Setup & authentication      | ✅ Complete | 1-2   |
-| PHASE_2_SCHEMA            | Data model & API            | ✅ Complete | 3-4   |
-| APPENDIX_DATABASE         | Entity definitions          | ✅ Complete | -     |
-| APPENDIX_GRAPHQL_API      | API examples                | ✅ Complete | -     |
-| APPENDIX_SHADCN           | Component reference         | ✅ Complete | -     |
-| PHASE_3_CONSULTANT_PORTAL | Consultant UI               | ✅ Complete | 5-7   |
-| PHASE3_PROGRESS           | Phase 3 patterns & progress | ✅ Complete | -     |
-| PHASE_4_FULFILMENT_PORTAL | Fulfilment UI               | ⏳ Next     | 8-10  |
-| ADMIN_PROXY               | Keystone Admin proxy + better-auth | ✅ Complete | -     |
-| REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Super-admin native CMS + 3000 `/admin` | ✅ Complete | - |
-| APPENDIX_AUTH_SETUP       | better-auth integration      | ✅ Complete | -     |
-| APPENDIX_DEPLOYMENT       | DevOps & deployment         | ✅ Draft    | -     |
+| Document                                 | Purpose                                | Status      | Weeks |
+| ---------------------------------------- | -------------------------------------- | ----------- | ----- |
+| REQUIREMENTS_MASTER                      | Project overview & spec                | ✅ Complete | -     |
+| PHASE_1_FOUNDATION                       | Setup & authentication                 | ✅ Complete | 1-2   |
+| PHASE_2_SCHEMA                           | Data model & API                       | ✅ Complete | 3-4   |
+| APPENDIX_DATABASE                        | Entity definitions                     | ✅ Complete | -     |
+| APPENDIX_GRAPHQL_API                     | API examples                           | ✅ Complete | -     |
+| APPENDIX_SHADCN                          | Component reference                    | ✅ Complete | -     |
+| PHASE_3_CONSULTANT_PORTAL                | Consultant UI                          | ✅ Complete | 5-7   |
+| PHASE3_PROGRESS                          | Phase 3 patterns & progress            | ✅ Complete | -     |
+| PHASE_4_FULFILMENT_PORTAL                | Fulfilment UI                          | ⏳ Next     | 8-10  |
+| ADMIN_PROXY                              | Keystone Admin proxy + better-auth     | ✅ Complete | -     |
+| REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Super-admin native CMS + 3000 `/admin` | ✅ Complete | -     |
+| APPENDIX_AUTH_SETUP                      | better-auth integration                | ✅ Complete | -     |
+| APPENDIX_DEPLOYMENT                      | DevOps & deployment                    | ✅ Draft    | -     |
 
 ---
 
@@ -300,20 +300,20 @@ REQUIREMENTS_MASTER.md
 
 **"I want to know about [X]"**
 
-| Looking For          | Document             | Section                     |
-| -------------------- | -------------------- | --------------------------- |
-| System architecture  | REQUIREMENTS_MASTER  | Architecture                |
-| Database schema      | APPENDIX_DATABASE    | Complete Entity Definitions |
-| GraphQL queries      | APPENDIX_GRAPHQL_API | Query API                   |
-| ShadCN components    | APPENDIX_SHADCN      | Data Display, Forms, etc    |
-| Student workflow     | REQUIREMENTS_MASTER  | Key Workflows               |
-| Phase timeline       | REQUIREMENTS_MASTER  | Implementation Roadmap      |
-| Loan processing flow | REQUIREMENTS_MASTER  | Workflow 2: Loan Processing |
-| Access control       | PHASE_2_SCHEMA       | Access Control Rules        |
-| Authentication setup | PHASE_1_FOUNDATION   | better-auth setup           |
-| Keystone Admin proxy | ADMIN_PROXY          | Architecture, Troubleshooting|
-| Super-admin CMS split (3001 / 3000) | REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Full spec |
-| UI component example | APPENDIX_SHADCN      | Component sections          |
+| Looking For                         | Document                                 | Section                       |
+| ----------------------------------- | ---------------------------------------- | ----------------------------- |
+| System architecture                 | REQUIREMENTS_MASTER                      | Architecture                  |
+| Database schema                     | APPENDIX_DATABASE                        | Complete Entity Definitions   |
+| GraphQL queries                     | APPENDIX_GRAPHQL_API                     | Query API                     |
+| ShadCN components                   | APPENDIX_SHADCN                          | Data Display, Forms, etc      |
+| Student workflow                    | REQUIREMENTS_MASTER                      | Key Workflows                 |
+| Phase timeline                      | REQUIREMENTS_MASTER                      | Implementation Roadmap        |
+| Loan processing flow                | REQUIREMENTS_MASTER                      | Workflow 2: Loan Processing   |
+| Access control                      | PHASE_2_SCHEMA                           | Access Control Rules          |
+| Authentication setup                | PHASE_1_FOUNDATION                       | better-auth setup             |
+| Keystone Admin proxy                | ADMIN_PROXY                              | Architecture, Troubleshooting |
+| Super-admin CMS split (3001 / 3000) | REQUIREMENTS_SUPER_ADMIN_KEYSTONE_NATIVE | Full spec                     |
+| UI component example                | APPENDIX_SHADCN                          | Component sections            |
 
 ---
 
@@ -383,14 +383,14 @@ A: REQUIREMENTS_MASTER.md - Support & Documentation → Common Questions
 
 ## 🚀 Version History
 
-| Version | Date         | Changes                                                                     |
-| ------- | ------------ | --------------------------------------------------------------------------- |
-| 1.0     | Jan 18, 2026 | Initial complete documentation for Phases 1-2 + Appendices A-C              |
-| 1.1     | Feb 2026     | Phase 3 Consultant Portal complete; PHASE3_PROGRESS.md added; INDEX updated |
+| Version | Date         | Changes                                                                          |
+| ------- | ------------ | -------------------------------------------------------------------------------- |
+| 1.0     | Jan 18, 2026 | Initial complete documentation for Phases 1-2 + Appendices A-C                   |
+| 1.1     | Feb 2026     | Phase 3 Consultant Portal complete; PHASE3_PROGRESS.md added; INDEX updated      |
 | 1.2     | Feb 2026     | Add ADMIN_PROXY.md (Keystone Admin proxy; auth migrated to better-auth Apr 2026) |
-| 1.4     | Apr 2026     | Clerk removed; auth consolidated in [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md) |
-| 1.3     | TBD          | Add Phase 4 documentation, Appendix D & E                                    |
-| 2.0     | TBD          | Post-launch updates & improvements                                          |
+| 1.4     | Apr 2026     | auth consolidated in [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)          |
+| 1.3     | TBD          | Add Phase 4 documentation, Appendix D & E                                        |
+| 2.0     | TBD          | Post-launch updates & improvements                                               |
 
 ---
 

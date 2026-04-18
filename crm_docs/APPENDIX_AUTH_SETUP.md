@@ -10,7 +10,7 @@ This appendix describes **better-auth** as the identity layer for:
 - Fulfilment Portal (Next.js)
 - Keystone GraphQL API (authorization, tenancy, and roles)
 
-Authentication is **self-hosted** in the Next.js app: email/password, optional Google OAuth, sessions, and JWTs (with JWKS) consumed by Keystone. There is **no Clerk** and no third-party identity webhooks.
+Authentication is **self-hosted** in the Next.js app: email/password, optional Google OAuth, sessions, and JWTs (with JWKS) consumed by Keystone.
 
 ## 2. Architecture
 
@@ -70,7 +70,7 @@ Verification: after `yarn auth:migrate`, confirm `auth` tables exist and sign-in
 | JWKS verify                    | [`keystone/lib/verifyBetterAuthJwt.ts`](../keystone/lib/verifyBetterAuthJwt.ts)             |
 | Admin HTML gate + SSO callback | [`keystone/lib/adminBetterAuthMiddleware.ts`](../keystone/lib/adminBetterAuthMiddleware.ts) |
 
-Keystone `User` links via **`authUserId`** (not `clerkUserId`). On sign-up, [`syncKeystoneUserFromAuthUser`](../src/lib/sync-keystone-user.ts) inserts the Keystone row. On sign-in, a **`session.create`** database hook updates **`lastLoginAt`** on the Keystone `User` row.
+Keystone `User` links via **`authUserId`**. On sign-up, [`syncKeystoneUserFromAuthUser`](../src/lib/sync-keystone-user.ts) inserts the Keystone row. On sign-in, a **`session.create`** database hook updates **`lastLoginAt`** on the Keystone `User` row.
 
 ## 7. Keystone Admin SSO (super-admin)
 
@@ -96,6 +96,5 @@ Obtain a JWT via **`GET /api/auth/token`** with a valid better-auth session cook
 
 - Validate JWTs server-side in Keystone (`verifyBetterAuthJwt`); do not trust role from the client alone.
 - Use HTTPS in production; keep `BETTER_AUTH_SECRET` and DB credentials out of client bundles.
-- No Clerk-style webhooks: user sync is handled in better-auth `databaseHooks`.
 
 **Last updated**: April 2026

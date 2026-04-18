@@ -14,10 +14,10 @@ Super-admins need a **stable** Keystone Admin UI and GraphQL on the **Keystone H
 
 ## 2. Problem statement
 
-| Issue | Cause |
-|-------|--------|
+| Issue                                             | Cause                                                                               |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------- |
 | `webpack-hmr` WebSocket failures on proxied admin | Keystone Admin is a Next dev bundle; HMR cannot traverse `fetch` proxy from `3000`. |
-| Extra hop GraphQL on `3000` | Prefer same-origin `3001/api/graphql` from Admin on Keystone. |
+| Extra hop GraphQL on `3000`                       | Prefer same-origin `3001/api/graphql` from Admin on Keystone.                       |
 
 Legacy note: Keystone previously expected Bearer-only; **HTML** navigations to `3001/admin` now use **SSO**: redirect to Next → mint JWT → `/admin/_sso_callback` sets `ab_admin_session`. See [`keystone/lib/adminBetterAuthMiddleware.ts`](../keystone/lib/adminBetterAuthMiddleware.ts).
 
@@ -34,17 +34,17 @@ Legacy note: Keystone previously expected Bearer-only; **HTML** navigations to `
 
 ### Non-goals
 
-- **NG1**: Third-party hosted identity (e.g. Clerk) — replaced by self-hosted better-auth.
+- **NG1**: Third-party hosted identity — replaced by self-hosted better-auth.
 - **NG2**: Non–super-admin full Keystone Admin on 3001 (unless requirements change).
 
 ---
 
 ## 4. Audiences and entry points
 
-| Audience | Canonical entry (dev) | Auth |
-|----------|----------------------|------|
+| Audience        | Canonical entry (dev)                                       | Auth                                           |
+| --------------- | ----------------------------------------------------------- | ---------------------------------------------- |
 | **Super-admin** | `http://localhost:3001/admin` (or Next `/admin` → redirect) | better-auth session on Next + JWT for Keystone |
-| **Other roles** | `http://localhost:3000/...` | better-auth; no full Keystone Admin |
+| **Other roles** | `http://localhost:3000/...`                                 | better-auth; no full Keystone Admin            |
 
 ---
 
@@ -66,12 +66,12 @@ Express middleware (`registerAdminBetterAuthMiddleware`) redirects HTML document
 
 ### 5.4 Environment variables
 
-| Variable | Purpose |
-|----------|---------|
-| `BETTER_AUTH_JWKS_URL` | e.g. `http://localhost:3000/api/auth/jwks` |
-| `BETTER_AUTH_ISSUER` / `BETTER_AUTH_AUDIENCE` | Must match JWT claims |
-| `FRONTEND_URL` | Next origin for SSO redirect |
-| `KEYSTONE_PUBLIC_URL` | Keystone public URL (redirects, CORS) |
+| Variable                                      | Purpose                                    |
+| --------------------------------------------- | ------------------------------------------ |
+| `BETTER_AUTH_JWKS_URL`                        | e.g. `http://localhost:3000/api/auth/jwks` |
+| `BETTER_AUTH_ISSUER` / `BETTER_AUTH_AUDIENCE` | Must match JWT claims                      |
+| `FRONTEND_URL`                                | Next origin for SSO redirect               |
+| `KEYSTONE_PUBLIC_URL`                         | Keystone public URL (redirects, CORS)      |
 
 ---
 
@@ -84,17 +84,17 @@ Express middleware (`registerAdminBetterAuthMiddleware`) redirects HTML document
 
 ## 7. Testing matrix (acceptance)
 
-| Case | Expected |
-|------|----------|
+| Case                                     | Expected                               |
+| ---------------------------------------- | -------------------------------------- |
 | Super-admin, `3001/admin` without cookie | Redirect through SSO; then Admin loads |
-| Super-admin repeat visit | `ab_admin_session` valid → Admin loads |
-| Non–super-admin | `isAccessAllowed` denies Admin UI |
+| Super-admin repeat visit                 | `ab_admin_session` valid → Admin loads |
+| Non–super-admin                          | `isAccessAllowed` denies Admin UI      |
 
 ---
 
 ## 8. Document history
 
-| Date | Change |
-|------|--------|
-| 2026-04 | Initial draft (HMR, dual origin). |
-| 2026-04 | **Migrated to better-auth**: JWT + JWKS; SSO handoff; removed Clerk/cookie `authenticateRequest` design. |
+| Date    | Change                                                |
+| ------- | ----------------------------------------------------- |
+| 2026-04 | Initial draft (HMR, dual origin).                     |
+| 2026-04 | **Migrated to better-auth**: JWT + JWKS; SSO handoff; |

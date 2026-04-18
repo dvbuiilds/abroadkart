@@ -26,6 +26,7 @@
 ## Overview
 
 Phase 1 establishes the foundation for a multi-tenant CRM by:
+
 - Creating a monorepo structure (Keystone backend + Next.js frontend)
 - Setting up PostgreSQL locally and in production
 - Integrating better-auth for authentication ([APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md))
@@ -96,8 +97,9 @@ abroadkart-crm/
 ### Local Development (Docker)
 
 **docker-compose.yml**:
+
 ```yaml
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -132,6 +134,7 @@ networks:
 ```
 
 **Startup**:
+
 ```bash
 docker-compose up -d
 # Postgres: localhost:5432, user: postgres, password: password, db: abroadkart
@@ -141,12 +144,14 @@ docker-compose up -d
 ### Production Database
 
 **Railway Postgres Setup**:
+
 1. Create Railway project
 2. Add Postgres service
 3. Get connection string: `postgresql://user:pass@host:5432/abroadkart`
 4. Store in `.env` as `DATABASE_URL`
 
 **Redis Setup (Railway or Upstash)**:
+
 1. Add Redis service (Railway) or create Upstash account
 2. Get connection string: `redis://host:port`
 3. Store in `.env` as `REDIS_URL`
@@ -173,11 +178,11 @@ See **[APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md)** for the full picture.
 
 - **`keystone/lib/betterAuthSession.ts`** — session from `Authorization: Bearer` or `ab_admin_session` cookie; JWT verified via JWKS.
 - **`keystone/lib/verifyBetterAuthJwt.ts`** — `jose` + `BETTER_AUTH_JWKS_URL`.
-- **User** list uses **`authUserId`** (unique), not `clerkUserId`.
+- **User** list uses **`authUserId`** (unique).
 
 ### 4. User provisioning
 
-No Clerk webhooks. On **sign-up**, better-auth creates `auth.user` and the **`user.create.after`** hook inserts the Keystone `User` row.
+On **sign-up**, better-auth creates `auth.user` and the **`user.create.after`** hook inserts the Keystone `User` row.
 
 ---
 
@@ -186,15 +191,15 @@ No Clerk webhooks. On **sign-up**, better-auth creates `auth.user` and the **`us
 ### Minimal keystone.ts (Phase 1)
 
 ```typescript
-import { config } from '@keystone-6/core';
-import { withAuth } from '@keystone-6/auth';
-import { lists } from './schema';
-import { betterAuthSession } from './lib/betterAuthSession';
+import { config } from "@keystone-6/core";
+import { withAuth } from "@keystone-6/auth";
+import { lists } from "./schema";
+import { betterAuthSession } from "./lib/betterAuthSession";
 
 export default withAuth(
   config({
     db: {
-      provider: 'postgresql',
+      provider: "postgresql",
       url: process.env.DATABASE_URL!,
     },
     lists,
@@ -204,10 +209,10 @@ export default withAuth(
     },
     storage: {
       r2_storage: {
-        kind: 's3',
-        type: 'file',
+        kind: "s3",
+        type: "file",
         bucketName: process.env.R2_BUCKET_NAME!,
-        region: 'auto',
+        region: "auto",
         endpoint: process.env.R2_ENDPOINT,
         accessKeyId: process.env.R2_ACCESS_KEY_ID!,
         secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
@@ -219,15 +224,20 @@ export default withAuth(
         origin: [process.env.FRONTEND_URL!],
       },
     },
-  })
+  }),
 );
 ```
 
 ### Minimal schema/index.ts (Phase 1)
 
 ```typescript
-import { list } from '@keystone-6/core';
-import { text, relationship, checkbox, timestamp } from '@keystone-6/core/fields';
+import { list } from "@keystone-6/core";
+import {
+  text,
+  relationship,
+  checkbox,
+  timestamp,
+} from "@keystone-6/core/fields";
 
 // User list (authUserId links to better-auth user id)
 export const User = list({
@@ -240,12 +250,12 @@ export const User = list({
     },
   },
   fields: {
-    authUserId: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
-    email: text({ validation: { isRequired: true }, isIndexed: 'unique' }),
+    authUserId: text({ validation: { isRequired: true }, isIndexed: "unique" }),
+    email: text({ validation: { isRequired: true }, isIndexed: "unique" }),
     name: text(),
     role: text(), // Will expand to enum in Phase 2
     isActive: checkbox({ defaultValue: true }),
-    createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+    createdAt: timestamp({ defaultValue: { kind: "now" } }),
   },
 });
 
@@ -254,17 +264,17 @@ export const Consultant = list({
   access: {
     operation: {
       query: ({ session }) => !!session,
-      create: ({ session }) => session?.data?.role === 'superAdmin',
+      create: ({ session }) => session?.data?.role === "superAdmin",
       update: ({ session }) => !!session,
       delete: () => false,
     },
   },
   fields: {
     name: text({ validation: { isRequired: true } }),
-    slug: text({ isIndexed: 'unique' }),
+    slug: text({ isIndexed: "unique" }),
     contactEmail: text(),
     status: text(), // Will expand to enum in Phase 2
-    createdAt: timestamp({ defaultValue: { kind: 'now' } }),
+    createdAt: timestamp({ defaultValue: { kind: "now" } }),
   },
 });
 
@@ -326,7 +336,7 @@ export async function uploadToR2(key: string, body: Buffer) {
       Bucket: process.env.R2_BUCKET_NAME,
       Key: key,
       Body: body,
-    })
+    }),
   );
 }
 ```
@@ -366,6 +376,7 @@ npx shadcn-ui@latest add form
 ### 4. React Query Setup
 
 **lib/react-query.tsx**:
+
 ```typescript
 'use client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -399,6 +410,7 @@ export function ReactQueryProvider({ children }: { children: React.ReactNode }) 
 ### 5. GraphQL Client Setup
 
 **lib/graphql-client.ts** (pattern — use app’s [`src/lib/graphql-client.ts`](../src/lib/graphql-client.ts)):
+
 ```typescript
 import { GraphQLClient } from "graphql-request";
 import { useMemo } from "react";
