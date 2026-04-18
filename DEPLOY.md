@@ -1,5 +1,14 @@
 # AbroadKart — Deployment Guide
 
+## Environment files (before `docker compose`)
+
+1. Copy [`.env.example`](./.env.example) to **`.env`** in the repo root. It holds **Next.js** settings and **`POSTGRES_PASSWORD` / `REDIS_PASSWORD`** for Compose. Fill all values (see comments in the example).
+2. Copy [`keystone/.env.example`](./keystone/.env.example) to **`keystone/.env`**. Use the **same** passwords in `DATABASE_URL` / `REDIS_URL` as in root **`.env`**.
+
+For **`docker compose`**, [`docker-compose.yml`](./docker-compose.yml) **overrides** `DATABASE_URL` (and Keystone’s `REDIS_URL`) for the `keystone` and `nextjs` services so containers use Docker hostnames `postgres` and `redis`. You do not need separate `.env.docker` / `.env.nextjs` files.
+
+Rotating only the Postgres password on an **existing** volume: updating **`.env`** does not change the password inside Postgres. Either run `ALTER ROLE postgres WITH PASSWORD '...'` via `psql` inside the container, or `docker compose down -v` (destructive, wipes data).
+
 ## Stack
 
 | Service    | Image / Source        | Port | Start order |
@@ -16,11 +25,8 @@
 ### Prerequisites
 
 - Docker Desktop running
-- Env files for your workflow:
-  - **Local Next.js** (`yarn dev`): `.env.local` at repo root (not `.env` — see README).
-  - **Local Keystone** (`cd keystone && npm run dev`): `keystone/.env`
-  - **Docker Keystone**: `keystone/.env.docker`
-  - **Docker Next.js**: `.env.nextjs`
+- **`.env`** at repo root (from **`.env.example`**) — Next.js + Compose passwords
+- **`keystone/.env`** (from **`keystone/.env.example`**) — Keystone (same passwords as root `.env` in connection strings)
 
 ### Step 1 — Start infra only
 
@@ -137,21 +143,22 @@ rsync -avz --exclude node_modules --exclude .next --exclude .keystone \
 
 ### Step 4 — Update env files for the droplet IP
 
-On the droplet, edit the two env files to replace `localhost` with the real IP:
+On the droplet, edit **`keystone/.env`** and **`.env`** to replace `localhost` with the real IP (or your domain):
 
 ```bash
 cd /opt/abroadkart
 
-# Keystone env
-nano keystone/.env.docker
+# Keystone
+nano keystone/.env
 # Change:
 #   FRONTEND_URL=http://localhost:3000       →  http://<DROPLET_IP>:3000
 #   KEYSTONE_PUBLIC_URL=http://localhost:3001 →  http://<DROPLET_IP>:3001
 
-# Next.js env
-nano .env.nextjs
+# Next.js (repo root)
+nano .env
 # Change:
 #   NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001  →  http://<DROPLET_IP>:3001
+#   (and any BETTER_AUTH_* / NEXT_PUBLIC_* URLs that still say localhost)
 ```
 
 If you use **Google OAuth**, update the Google Cloud Console OAuth client:
@@ -209,9 +216,9 @@ docker compose logs -f
 
 ## Checklist — Before Going Live
 
-- [ ] Change `POSTGRES_PASSWORD` to something strong in `keystone/.env.docker`
+- [ ] **`POSTGRES_PASSWORD`** and **`REDIS_PASSWORD`** in root **`.env`** are strong; **`keystone/.env`** connection strings use the same passwords (no default passwords committed)
 - [ ] Rotate `SESSION_SECRET` to a fresh 64-char random hex string
-- [ ] Remove host port mappings for `postgres` (5432) and `redis` (6379) from `docker-compose.yml` — they should only be accessible inside the Docker network, not exposed publicly
+- [ ] On the public server, do **not** publish Postgres or Redis to the internet: **remove or comment out** the entire `ports:` blocks under **`postgres`** and **`redis`** in [`docker-compose.yml`](./docker-compose.yml) on that host (Compose merges override files in a way that does **not** reliably strip ports, so editing the published compose file or a **gitignored** `docker-compose.override.yml` with no `ports` key duplicated is safer than relying on an empty `ports: []` merge). App containers still reach `postgres:5432` and `redis:6379` on the internal network. Use UFW/host firewall as a second layer.
 - [ ] Set strong **`BETTER_AUTH_SECRET`** and verify **`BETTER_AUTH_*`** / JWKS URLs match production origins
 - [ ] Confirm Cloudflare R2 CORS allows the droplet origin
 - [ ] Set up a proper domain + Nginx/Caddy reverse proxy (so you can use port 80/443 instead of :3000 / :3001)

@@ -144,149 +144,30 @@ EXPOSE 3000
 
 CMD ["npm", "run", "start"]
 
-3. docker-compose (Local Dev)
+## 3. docker-compose (local dev)
 
-docker-compose.yml:
+The **canonical** stack is maintained in the repository: [`docker-compose.yml`](../docker-compose.yml), with a gitignored **`.env`** at the repo root (from [`.env.example`](../.env.example)) and **`keystone/.env`** (from [`keystone/.env.example`](../keystone/.env.example)). Compose overrides DB/Redis URLs for container hostnames. See [`DEPLOY.md`](../DEPLOY.md).
 
+The draft multi-app layout below is **illustrative only** (not maintained; do not copy credentials). Replace all placeholders with secrets from your environment; prefer the real `docker-compose.yml` for local runs.
 
-
-text
-
-version: '3.9'
-
-
-
+```yaml
+# Illustrative only — use repository docker-compose.yml instead
 services:
-
   postgres:
-
     image: postgres:16-alpine
-
     environment:
-
       POSTGRES_DB: abroadkart
-
-      POSTGRES_USER: abroadkart
-
-      POSTGRES_PASSWORD: password
-
-    ports:
-
-      - '5432:5432'
-
-    volumes:
-
-      - pgdata:/var/lib/postgresql/data
-
-
-
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: <POSTGRES_PASSWORD>
   redis:
-
     image: redis:7-alpine
-
-    ports:
-
-      - '6379:6379'
-
-
-
+    # Require a password in production; see repository compose file
   minio:
-
     image: minio/minio
-
-    command: server /data --console-address ":9001"
-
     environment:
-
-      MINIO_ROOT_USER: admin
-
-      MINIO_ROOT_PASSWORD: admin123
-
-    ports:
-
-      - '9000:9000'
-
-      - '9001:9001'
-
-    volumes:
-
-      - minio:/data
-
-
-
-  keystone-api:
-
-    build: ./keystone
-
-    env_file: .env.local
-
-    environment:
-
-      DATABASE_URL: postgres://abroadkart:password@postgres:5432/abroadkart
-
-      REDIS_URL: redis://redis:6379
-
-      S3_ENDPOINT: http://minio:9000
-
-    depends_on:
-
-      - postgres
-
-      - redis
-
-      - minio
-
-    ports:
-
-      - '3001:3001'
-
-
-
-  consultant-web:
-
-    build: ./apps/consultant
-
-    env_file: ./apps/consultant/.env.local
-
-    environment:
-
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api/graphql
-
-    depends_on:
-
-      - keystone-api
-
-    ports:
-
-      - '3000:3000'
-
-
-
-  fulfilment-web:
-
-    build: ./apps/fulfilment
-
-    env_file: ./apps/fulfilment/.env.local
-
-    environment:
-
-      NEXT_PUBLIC_API_URL: http://localhost:3001/api/graphql
-
-    depends_on:
-
-      - keystone-api
-
-    ports:
-
-      - '4000:3000'
-
-
-
-volumes:
-
-  pgdata:
-
-  minio:
+      MINIO_ROOT_USER: <MINIO_ROOT_USER>
+      MINIO_ROOT_PASSWORD: <MINIO_ROOT_PASSWORD>
+```
 
 4. Database Migrations
 

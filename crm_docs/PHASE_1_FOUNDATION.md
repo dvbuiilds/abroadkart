@@ -96,49 +96,14 @@ abroadkart-crm/
 
 ### Local Development (Docker)
 
-**docker-compose.yml**:
-
-```yaml
-version: "3.8"
-
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: abroadkart
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - abroadkart
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - abroadkart
-
-volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  abroadkart:
-    driver: bridge
-```
+Use the repository **[`docker-compose.yml`](../docker-compose.yml)** (not a copy-pasted excerpt). Copy **[`.env.example`](../.env.example)** to **`.env`** and **[`keystone/.env.example`](../keystone/.env.example)** to **`keystone/.env`**, and set secrets (including **`POSTGRES_PASSWORD`** and **`REDIS_PASSWORD`**). Postgres user remains **`postgres`** and database **`abroadkart`**.
 
 **Startup**:
 
 ```bash
-docker-compose up -d
-# Postgres: localhost:5432, user: postgres, password: password, db: abroadkart
-# Redis: localhost:6379
+docker compose up -d
+# Postgres: localhost:5432 — user postgres, db abroadkart, password from .env
+# Redis: localhost:6379 — password from .env (Redis uses --requirepass)
 ```
 
 ### Production Database
@@ -147,7 +112,7 @@ docker-compose up -d
 
 1. Create Railway project
 2. Add Postgres service
-3. Get connection string: `postgresql://user:pass@host:5432/abroadkart`
+3. Get connection string: `postgresql://<user>:<password>@host:5432/abroadkart`
 4. Store in `.env` as `DATABASE_URL`
 
 **Redis Setup (Railway or Upstash)**:
@@ -463,12 +428,14 @@ import { useMemo } from "react";
 
 ### Backend (.env in keystone/)
 
-```env
-# Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/abroadkart
+See **[`keystone/.env.example`](../keystone/.env.example)**. Example shape:
 
-# Redis (for caching)
-REDIS_URL=redis://localhost:6379
+```env
+# Database — use same POSTGRES_PASSWORD as root .env for Docker
+DATABASE_URL=postgresql://postgres:<POSTGRES_PASSWORD>@localhost:5432/abroadkart
+
+# Redis — use same REDIS_PASSWORD as root .env
+REDIS_URL=redis://:<REDIS_PASSWORD>@localhost:6379
 
 # better-auth JWT verification (Next must be reachable for JWKS in dev)
 BETTER_AUTH_JWKS_URL=http://localhost:3000/api/auth/jwks

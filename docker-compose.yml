@@ -1,6 +1,13 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # AbroadKart — full local stack
 #
+# Prerequisites: copy .env.example to .env in this directory (gitignored).
+# Docker Compose loads .env for variable substitution in this file only.
+#
+# Root `.env` is the single Next.js env file; `keystone/.env` is the single Keystone file.
+# For keystone / nextjs services, DATABASE_URL (and Keystone REDIS_URL) are set below so
+# Docker uses hostnames `postgres` and `redis` — overrides URLs that point at localhost in those files.
+#
 # Start order (enforced by depends_on + healthchecks):
 #   1. postgres  ──┐
 #   2. redis     ──┴──▶  3. keystone  ──▶  4. nextjs
@@ -26,14 +33,14 @@ services:
     container_name: abroadkart-postgres
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: abroadkart
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - abroadkart
     # Keep port mapping for connecting with a local DB client (TablePlus, etc.)
-    # Remove in production if you don't need external DB access.
+    # Remove in production if you don't need external DB access (see DEPLOY.md).
     ports:
       - "5432:5432"
     healthcheck:
@@ -47,16 +54,20 @@ services:
   redis:
     image: redis:7-alpine
     container_name: abroadkart-redis
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     networks:
       - abroadkart
     # Keep port mapping for connecting with a local Redis client (RedisInsight, etc.)
-    # Remove in production if you don't need external Redis access.
+    # Remove in production if you don't need external Redis access (see DEPLOY.md).
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -68,15 +79,15 @@ services:
       context: ./keystone
       dockerfile: Dockerfile
     container_name: abroadkart-keystone
-    # Real env vars — DATABASE_URL and REDIS_URL use service names, not localhost
     env_file:
-      - ./keystone/.env.docker
+      - ./keystone/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
     ports:
       - "3001:3001"
     networks:
       - abroadkart
-    # Wait for postgres AND redis to be healthy before starting Keystone.
-    # This prevents "ECONNREFUSED" crashes on cold starts.
     depends_on:
       postgres:
         condition: service_healthy
@@ -90,12 +101,12 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        # NEXT_PUBLIC_* vars are inlined into the client bundle at build time.
-        # For droplet deploy, pass http://<droplet-ip>:3001
-        NEXT_PUBLIC_KEYSTONE_URL: http://localhost:3001
+        NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-http://localhost:3001}
     container_name: abroadkart-nextjs
     env_file:
-      - .env.nextjs
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
     ports:
       - "3000:3000"
     networks:

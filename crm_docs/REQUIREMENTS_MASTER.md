@@ -573,10 +573,10 @@ See [APPENDIX_AUTH_SETUP.md](./APPENDIX_AUTH_SETUP.md).
 
 ```bash
 # PostgreSQL (recommended)
-DATABASE_URL=postgresql://user:password@host:5432/abroadkart
+DATABASE_URL=postgresql://<db_user>:<db_password>@host:5432/abroadkart
 
 # MongoDB
-DATABASE_URL=mongodb+srv://user:password@cluster.mongodb.net/abroadkart
+DATABASE_URL=mongodb+srv://<db_user>:<db_password>@cluster.mongodb.net/abroadkart
 
 # Environment variables
 export DATABASE_URL=...

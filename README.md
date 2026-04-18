@@ -57,76 +57,50 @@ npm install
 cd ..
 ```
 
-### 2. Start Docker Services
+### 2. Environment variables (two files)
+
+There are **two** env files:
+
+| File | Purpose |
+|------|--------|
+| **`.env`** (repo root) | Next.js (`yarn dev` / Docker `nextjs` service) **and** Compose secrets (`POSTGRES_PASSWORD`, `REDIS_PASSWORD`). Copy from [`.env.example`](./.env.example). |
+| **`keystone/.env`** | Keystone only. Copy from [`keystone/.env.example`](./keystone/.env.example). Use the **same** `POSTGRES_PASSWORD` / `REDIS_PASSWORD` as in root `.env` inside `DATABASE_URL` / `REDIS_URL`. |
+
+When you run **`docker compose`**, `DATABASE_URL` for Keystone and Next is **overridden** in [`docker-compose.yml`](./docker-compose.yml) so containers use the `postgres` and `redis` hostnames; your files can keep `localhost` URLs for local dev.
+
+### 3. Start Docker Services
 
 ```bash
 # Start PostgreSQL and Redis
-docker-compose up -d
+docker compose up -d
 
 # Verify services are running
-docker-compose ps
+docker compose ps
 ```
 
-PostgreSQL: `localhost:5432`
+PostgreSQL: `localhost:5432` — user `postgres`, database `abroadkart`, password: value you set in **`.env`** as `POSTGRES_PASSWORD`.
 
-- User: `postgres`
-- Password: `password`
-- Database: `abroadkart`
+Redis: `localhost:6379` — password: value you set in **`.env`** as `REDIS_PASSWORD` (required; Redis is started with `--requirepass`).
 
-Redis: `localhost:6379`
+### 4. Fill in `.env` and `keystone/.env`
 
-### 3. Configure Environment Variables
+Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example`](./keystone/.env.example) → **`keystone/.env`**, then set secrets and R2 values. Root **`.env`** holds all Next.js and Compose variables (including `BETTER_AUTH_*`, `DATABASE_URL` for local dev, `NEXT_PUBLIC_*`). **`keystone/.env`** holds Keystone/R2/session/JWT settings.
 
-#### Backend (keystone/.env)
+`NEXT_PUBLIC_KEYSTONE_URL` must be the **Keystone** origin (default `http://localhost:3001`), not `http://localhost:3000`.
 
-Copy `keystone/.env.example` to `keystone/.env` and fill in:
-
-```env
-DATABASE_URL=postgresql://postgres:password@localhost:5432/abroadkart
-REDIS_URL=redis://localhost:6379
-SESSION_SECRET=generate-a-random-32-char-string
-R2_ACCOUNT_ID=your_account_id
-R2_ACCESS_KEY_ID=your_access_key
-R2_SECRET_ACCESS_KEY=your_secret_key
-R2_BUCKET_NAME=abroadkart-docs
-R2_ENDPOINT=https://your-account-id.r2.cloudflarestorage.com
-FRONTEND_URL=http://localhost:3000
-# Optional; default is http://localhost:<PORT>
-# KEYSTONE_PUBLIC_URL=http://localhost:3001
-
-# Verify JWTs minted by Next.js better-auth (must match BETTER_AUTH_URL / issuer in the app)
-BETTER_AUTH_JWKS_URL=http://localhost:3000/api/auth/jwks
-BETTER_AUTH_ISSUER=http://localhost:3000
-BETTER_AUTH_AUDIENCE=http://localhost:3000
-```
-
-#### Frontend (`.env.local` at repo root)
-
-Use **`.env.local`** for local `yarn dev`. Copy `.env.local.example` to `.env.local` and fill in:
-
-```env
-NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001
-DATABASE_URL=postgresql://postgres:password@localhost:5432/abroadkart
-BETTER_AUTH_SECRET=<openssl rand -base64 32>
-BETTER_AUTH_URL=http://localhost:3000
-ABROADKART_BOOTSTRAP_SUPERADMIN_EMAIL=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-```
-
-`NEXT_PUBLIC_KEYSTONE_URL` must be the **Keystone** origin (default `http://localhost:3001`). It must **not** be `http://localhost:3000` (that creates a self-proxy loop and breaks `/api/graphql`).
+Optional: Next.js also loads **`.env.local`** if present; it overrides **`.env`** for the same keys—remove or align it so it does not conflict with **`.env`**.
 
 After Postgres is running: `CREATE SCHEMA IF NOT EXISTS auth;`, then `cd keystone && yarn db:push`, then from the repo root `yarn auth:migrate`.
 
 **Sign-in:** use **`/sign-in`** and **`/sign-up`**. For Keystone admin SSO, open **`http://localhost:3001/admin`** (redirects via **`/api/auth/keystone-sso`** when needed). Details: [crm_docs/APPENDIX_AUTH_SETUP.md](./crm_docs/APPENDIX_AUTH_SETUP.md).
 
-### 4. Set Up Cloudflare R2
+### 5. Set Up Cloudflare R2
 
 1. Create an R2 bucket in Cloudflare dashboard
 2. Generate API tokens with read/write permissions
 3. Update R2 environment variables in `keystone/.env`
 
-### 5. Start Development Servers
+### 6. Start Development Servers
 
 Start **Keystone first**, then Next.js, so GraphQL and admin assets are available when the app proxies to them.
 
@@ -141,7 +115,7 @@ npm run dev
 - **Keystone Admin (super-admin, canonical)**: **`http://localhost:3001/admin`** — unauthenticated visits redirect via Next **`/api/auth/keystone-sso`** using a better-auth session + JWT cookie flow. Sign in with better-auth first (`/sign-in`), then open admin. See [crm_docs/APPENDIX_AUTH_SETUP.md](./crm_docs/APPENDIX_AUTH_SETUP.md).
 - **`http://localhost:3000/admin`**: Proxies to Keystone; **super-admins** need a valid better-auth session + role in Keystone.
 
-If you change Keystone’s port in `keystone/.env` (`PORT=…`), set **`NEXT_PUBLIC_KEYSTONE_URL`** in `.env.local` to the same origin.
+If you change Keystone’s port in `keystone/.env` (`PORT=…`), set **`NEXT_PUBLIC_KEYSTONE_URL`** in **`.env`** to the same origin.
 
 **Smoke tests** (with Keystone running):
 
@@ -174,6 +148,8 @@ Full proxy architecture and troubleshooting: [crm_docs/ADMIN_PROXY.md](./crm_doc
 - ✅ Next.js App Router structure
 
 ## Deployment
+
+Full stack (Postgres, Redis, Keystone, Next.js) with Docker: copy **`.env.example`** → **`.env`** and **`keystone/.env.example`** → **`keystone/.env`**, fill secrets, then follow [**DEPLOY.md**](./DEPLOY.md).
 
 ### Backend (Railway)
 

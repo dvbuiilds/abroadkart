@@ -35,7 +35,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
 
 # vercel
@@ -48,7 +48,6 @@ next-env.d.ts
 # keystone
 keystone/.keystone/
 keystone/node_modules/
-keystone/.env*
 
 # docker
 .docker/

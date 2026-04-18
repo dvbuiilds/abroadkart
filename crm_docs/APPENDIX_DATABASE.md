@@ -1258,13 +1258,13 @@ CREATE INDEX idx_activity_date ON "ActivityLog"(created_at);
 
 ```bash
 # PostgreSQL
-DATABASE_URL=postgresql://user:password@localhost:5432/abroadkart
+DATABASE_URL=postgresql://<db_user>:<db_password>@localhost:5432/abroadkart
 
 # MongoDB
-DATABASE_URL=mongodb+srv://user:password@cluster.mongodb.net/abroadkart?retryWrites=true&w=majority
+DATABASE_URL=mongodb+srv://<db_user>:<db_password>@cluster.mongodb.net/abroadkart?retryWrites=true&w=majority
 
 # MySQL (via Prisma adapter)
-DATABASE_URL=mysql://user:password@localhost:3306/abroadkart
+DATABASE_URL=mysql://<db_user>:<db_password>@localhost:3306/abroadkart
 ```
 
 ---
