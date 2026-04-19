@@ -1,5 +1,6 @@
 import type { Express, Request as ExpressRequest } from "express";
 import { getKeystonePublicUrl } from "./keystonePublicUrl";
+import { getPublicAppUrl } from "./publicUrls";
 import { verifyBetterAuthJwt } from "./verifyBetterAuthJwt";
 import { isKeystoneAdminDebug } from "./adminDebug";
 
@@ -117,7 +118,7 @@ export function registerAdminBetterAuthMiddleware(app: Express) {
     // `path: "/admin"` would exclude GraphQL, so Admin UI metadata requests had no session.
     res.cookie(ADMIN_SESSION_COOKIE, token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: getKeystonePublicUrl().startsWith("https://"),
       sameSite: "lax",
       maxAge: 15 * 60 * 1000,
       path: "/",
@@ -145,10 +146,7 @@ export function registerAdminBetterAuthMiddleware(app: Express) {
     const keystonePublic = getKeystonePublicUrl();
     const path = (req as ExpressRequest).originalUrl || req.url || "/admin";
     const returnTo = encodeURIComponent(`${keystonePublic}${path}`);
-    const front = (process.env.FRONTEND_URL || "http://localhost:3000").replace(
-      /\/+$/,
-      "",
-    );
+    const front = getPublicAppUrl();
     return res.redirect(
       302,
       `${front}/api/auth/keystone-sso?redirect_url=${returnTo}`,

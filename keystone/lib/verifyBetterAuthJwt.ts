@@ -2,6 +2,7 @@
  * Verify better-auth JWTs using JWKS from the Next.js issuer (OIDC-style).
  */
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { getPublicAppUrl } from "./publicUrls";
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 
@@ -11,10 +12,9 @@ export function resetBetterAuthJwksCache(): void {
 }
 
 function getJwks() {
-  const url = process.env.BETTER_AUTH_JWKS_URL;
-  if (!url) {
-    throw new Error("BETTER_AUTH_JWKS_URL is not set");
-  }
+  const url =
+    process.env.BETTER_AUTH_JWKS_URL?.trim() ||
+    `${getPublicAppUrl()}/api/auth/jwks`;
   if (!jwks) {
     jwks = createRemoteJWKSet(new URL(url));
   }
@@ -24,14 +24,12 @@ function getJwks() {
 export async function verifyBetterAuthJwt(token: string): Promise<{
   sub: string;
 }> {
-  const issuer = process.env.BETTER_AUTH_ISSUER;
+  const base = getPublicAppUrl();
+  const issuer = process.env.BETTER_AUTH_ISSUER?.trim() || base;
   const audience =
-    process.env.BETTER_AUTH_AUDIENCE ?? process.env.BETTER_AUTH_ISSUER;
-  if (!issuer || !audience) {
-    throw new Error(
-      "BETTER_AUTH_ISSUER and BETTER_AUTH_AUDIENCE (or ISSUER) must be set",
-    );
-  }
+    process.env.BETTER_AUTH_AUDIENCE?.trim() ||
+    process.env.BETTER_AUTH_ISSUER?.trim() ||
+    base;
   const { payload } = await jwtVerify(token, getJwks(), {
     issuer,
     audience,

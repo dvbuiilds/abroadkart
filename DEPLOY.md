@@ -5,7 +5,7 @@
 1. Copy [`.env.example`](./.env.example) to **`.env`** in the repo root. It holds **Next.js** settings and **`POSTGRES_PASSWORD` / `REDIS_PASSWORD`** for Compose. Fill all values (see comments in the example).
 2. Copy [`keystone/.env.example`](./keystone/.env.example) to **`keystone/.env`**. Use the **same** passwords in `DATABASE_URL` / `REDIS_URL` as in root **`.env`**.
 
-For **`docker compose`**, [`docker-compose.yml`](./docker-compose.yml) **overrides** `DATABASE_URL` (and Keystone’s `REDIS_URL`) for the `keystone` and `nextjs` services so containers use Docker hostnames `postgres` and `redis`. You do not need separate `.env.docker` / `.env.nextjs` files.
+For **`docker compose`**, [`docker-compose.yml`](./docker-compose.yml) **overrides** `DATABASE_URL`, Keystone’s `REDIS_URL`, and **`BETTER_AUTH_JWKS_URL`** so containers use Docker hostnames (`postgres`, `redis`, `nextjs`). **`PUBLIC_APP_URL`** and **`PUBLIC_ADMIN_URL`** are injected the same in every app container from the root **`.env`** (see [`.env.example`](./.env.example)). Keep `DATABASE_URL` / `REDIS_URL` / `BETTER_AUTH_JWKS_URL` as `localhost` defaults in **`keystone/.env`** — you only change **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** per environment.
 
 Rotating only the Postgres password on an **existing** volume: updating **`.env`** does not change the password inside Postgres. Either run `ALTER ROLE postgres WITH PASSWORD '...'` via `psql` inside the container, or `docker compose down -v` (destructive, wipes data).
 
@@ -110,11 +110,11 @@ docker exec -it abroadkart-nextjs sh
 
 Create the droplet on DigitalOcean, note its public IP: `<DROPLET_IP>`.
 
-Enable the firewall:
+Enable the firewall (adjust after TLS — see **Step 8**):
 ```bash
 ufw allow OpenSSH
-ufw allow 3000    # Next.js
-ufw allow 3001    # Keystone
+ufw allow 3000    # Next.js (temporary; remove when using Caddy on 443)
+ufw allow 3001    # Keystone (temporary; remove when using Caddy on 443)
 ufw enable
 ```
 
@@ -141,39 +141,36 @@ rsync -avz --exclude node_modules --exclude .next --exclude .keystone \
   ./ root@<DROPLET_IP>:/opt/abroadkart/
 ```
 
-### Step 4 — Update env files for the droplet IP
+### Step 4 — Update public URLs (two variables per file)
 
-On the droplet, edit **`keystone/.env`** and **`.env`** to replace `localhost` with the real IP (or your domain):
+On the droplet, set the **browser-facing** origins only. Do **not** replace `localhost` in `DATABASE_URL`, `REDIS_URL`, or `BETTER_AUTH_JWKS_URL` inside **`keystone/.env`** — Compose overrides those at runtime.
 
 ```bash
 cd /opt/abroadkart
 
-# Keystone
-nano keystone/.env
-# Change:
-#   FRONTEND_URL=http://localhost:3000       →  http://<DROPLET_IP>:3000
-#   KEYSTONE_PUBLIC_URL=http://localhost:3001 →  http://<DROPLET_IP>:3001
-
-# Next.js (repo root)
+# Root `.env` — Next app origin + (for consistency) admin URL
 nano .env
-# Change:
-#   NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001  →  http://<DROPLET_IP>:3001
-#   (and any BETTER_AUTH_* / NEXT_PUBLIC_* URLs that still say localhost)
+# Set (example raw IP; prefer HTTPS domains after Step 8):
+#   PUBLIC_APP_URL=http://<DROPLET_IP>:3000
+#   PUBLIC_ADMIN_URL=http://<DROPLET_IP>:3001
+
+# Keystone — same two lines (must match root `.env`)
+nano keystone/.env
+#   PUBLIC_APP_URL=http://<DROPLET_IP>:3000
+#   PUBLIC_ADMIN_URL=http://<DROPLET_IP>:3001
 ```
 
-If you use **Google OAuth**, update the Google Cloud Console OAuth client:
-- **Authorized JavaScript origins** → include `http://<DROPLET_IP>:3000`
-- **Authorized redirect URIs** → include `http://<DROPLET_IP>:3000/api/auth/callback/google` (or your production domain equivalent)
-
-Align **`BETTER_AUTH_URL`**, **`BETTER_AUTH_ISSUER`**, **`BETTER_AUTH_AUDIENCE`**, and **`BETTER_AUTH_JWKS_URL`** in Next.js and Keystone env files with the public URL users use (not Docker internal hostnames, unless documented).
+If you use **Google OAuth**, update the Google Cloud Console OAuth client whenever **`PUBLIC_APP_URL`** changes:
+- **Authorized JavaScript origins** → your Next origin (e.g. `https://app.example.com` or `http://<DROPLET_IP>:3000`)
+- **Authorized redirect URIs** → `{PUBLIC_APP_URL}/api/auth/callback/google`
 
 ### Step 5 — Build images on the droplet
 
-Pass the droplet IP as a build arg so the Next.js client bundle points to the right Keystone host:
+Pass the public Keystone origin as a build arg so the Next.js **client** bundle embeds the correct admin host (`NEXT_PUBLIC_KEYSTONE_URL` is derived from **`PUBLIC_ADMIN_URL`** in the Dockerfile):
 
 ```bash
 docker compose build \
-  --build-arg NEXT_PUBLIC_KEYSTONE_URL=http://<DROPLET_IP>:3001
+  --build-arg PUBLIC_ADMIN_URL=http://<DROPLET_IP>:3001
 ```
 
 ### Step 6 — Start services in order
@@ -216,12 +213,73 @@ docker compose logs -f
 
 ---
 
+## Step 8 — TLS with Caddy (recommended for production)
+
+Terminating TLS on the host fixes **Secure** session cookies for Keystone admin SSO (browsers require HTTPS for `Secure` cookies) and lets you close public access to ports 3000/3001.
+
+1. **DNS** — Create A records for your app and admin hostnames (e.g. `app.example.com` → droplet IP, `admin.example.com` → droplet IP).
+
+2. **Firewall** — Allow HTTP/HTTPS; drop raw app ports from the internet once Caddy is up:
+   ```bash
+   ufw allow 80
+   ufw allow 443
+   ufw delete allow 3000   # if you added it earlier
+   ufw delete allow 3001
+   ufw reload
+   ```
+
+3. **Bind Compose ports to loopback** — Edit [`docker-compose.yml`](./docker-compose.yml) on the server so only Caddy (on the host) can reach the apps:
+   ```yaml
+   keystone:
+     ports:
+       - "127.0.0.1:3001:3001"
+   nextjs:
+     ports:
+       - "127.0.0.1:3000:3000"
+   ```
+   Local dev machines can keep `3000:3000` / `3001:3001` if you use a gitignored `docker-compose.override.yml` on the droplet only.
+
+4. **Install Caddy** (Ubuntu):
+   ```bash
+   apt install -y caddy
+   ```
+
+5. **`/etc/caddy/Caddyfile`** (replace hostnames):
+   ```
+   app.example.com {
+     encode zstd gzip
+     reverse_proxy 127.0.0.1:3000
+   }
+
+   admin.example.com {
+     encode zstd gzip
+     reverse_proxy 127.0.0.1:3001
+   }
+   ```
+   Then: `systemctl reload caddy` — Let’s Encrypt certificates are issued automatically.
+
+6. **Env** — Set HTTPS origins (same in **`.env`** and **`keystone/.env`**):
+   ```
+   PUBLIC_APP_URL=https://app.example.com
+   PUBLIC_ADMIN_URL=https://admin.example.com
+   ```
+
+7. **Rebuild Next.js** (client bundle must match **`PUBLIC_ADMIN_URL`**):
+   ```bash
+   docker compose build --build-arg PUBLIC_ADMIN_URL=https://admin.example.com nextjs nextjs-migrate
+   docker compose up -d
+   ```
+
+8. **Google OAuth** — Add `https://app.example.com/api/auth/callback/google` and the new origin under JavaScript origins.
+
+---
+
 ## Checklist — Before Going Live
 
 - [ ] **`POSTGRES_PASSWORD`** and **`REDIS_PASSWORD`** in root **`.env`** are strong; **`keystone/.env`** connection strings use the same passwords (no default passwords committed)
 - [ ] Rotate `SESSION_SECRET` to a fresh 64-char random hex string
 - [ ] On the public server, do **not** publish Postgres or Redis to the internet: **remove or comment out** the entire `ports:` blocks under **`postgres`** and **`redis`** in [`docker-compose.yml`](./docker-compose.yml) on that host (Compose merges override files in a way that does **not** reliably strip ports, so editing the published compose file or a **gitignored** `docker-compose.override.yml` with no `ports` key duplicated is safer than relying on an empty `ports: []` merge). App containers still reach `postgres:5432` and `redis:6379` on the internal network. Use UFW/host firewall as a second layer.
-- [ ] Set strong **`BETTER_AUTH_SECRET`** and verify **`BETTER_AUTH_*`** / JWKS URLs match production origins
-- [ ] Confirm Cloudflare R2 CORS allows the droplet origin
-- [ ] Set up a proper domain + Nginx/Caddy reverse proxy (so you can use port 80/443 instead of :3000 / :3001)
+- [ ] Set strong **`BETTER_AUTH_SECRET`** and verify **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** match the origins users type in the browser (and Google OAuth / R2 CORS if applicable)
+- [ ] Confirm Cloudflare R2 CORS allows the production app origin
+- [ ] Prefer **Step 8** (Caddy + HTTPS) on the public droplet; **`ab_admin_session`** uses `Secure` only when **`PUBLIC_ADMIN_URL`** is `https://…`
 - [ ] Use `prisma migrate deploy` instead of `db:push` for schema changes in production

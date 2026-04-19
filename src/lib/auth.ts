@@ -9,16 +9,13 @@ import { Kysely, PostgresDialect } from "kysely";
 import { syncKeystoneUserFromAuthUser } from "@app/lib/sync-keystone-user";
 import { touchLastLoginForAuthUser } from "@app/lib/touch-last-login";
 import { getPool } from "@app/lib/db-pool";
-
-const baseURL =
-  process.env.BETTER_AUTH_URL ??
-  process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
-  "http://localhost:3000";
+import { getPublicAdminUrl, getPublicAppUrl } from "@app/lib/public-urls";
 
 const googleConfigured =
   !!process.env.GOOGLE_CLIENT_ID && !!process.env.GOOGLE_CLIENT_SECRET;
 
 function createAuthInstance() {
+  const baseURL = getPublicAppUrl();
   const db = new Kysely({
     dialect: new PostgresDialect({ pool: getPool() }),
   }).withSchema("auth");
@@ -75,11 +72,7 @@ function createAuthInstance() {
         },
       },
     },
-    trustedOrigins: [
-      baseURL,
-      process.env.NEXT_PUBLIC_KEYSTONE_URL,
-      process.env.KEYSTONE_PUBLIC_URL,
-    ].filter((x): x is string => Boolean(x)),
+    trustedOrigins: Array.from(new Set([baseURL, getPublicAdminUrl()])),
   });
 }
 

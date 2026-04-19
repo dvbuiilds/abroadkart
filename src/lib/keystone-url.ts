@@ -3,13 +3,11 @@
  * See crm_docs/ADMIN_PROXY.md (resolution plan).
  */
 
-const DEFAULT_KEYSTONE_URL = "http://localhost:3001";
+import { getPublicAdminUrl } from "./public-urls";
 
 /** Browser-reachable Keystone origin (redirects, client bundle, trusted origins). */
 export function getKeystoneBaseUrl(): string {
-  const raw =
-    process.env.NEXT_PUBLIC_KEYSTONE_URL?.trim() || DEFAULT_KEYSTONE_URL;
-  return raw.replace(/\/+$/, "");
+  return getPublicAdminUrl();
 }
 
 /**
@@ -24,7 +22,7 @@ export function getKeystoneInternalUrl(): string {
 }
 
 /**
- * Prevents NEXT_PUBLIC_KEYSTONE_URL from pointing at this Next app (self-proxy loop).
+ * Prevents PUBLIC_ADMIN_URL (or legacy NEXT_PUBLIC_KEYSTONE_URL) from pointing at this Next app (self-proxy loop).
  * Returns a JSON error Response when misconfigured, otherwise null.
  */
 export function keystoneSelfProxyErrorResponse(
@@ -39,7 +37,7 @@ export function keystoneSelfProxyErrorResponse(
         errors: [
           {
             message:
-              "Invalid NEXT_PUBLIC_KEYSTONE_URL: must be an absolute URL (e.g. http://localhost:3001).",
+              "Invalid PUBLIC_ADMIN_URL / Keystone URL: must be an absolute URL (e.g. http://localhost:3001).",
           },
         ],
       }),
@@ -56,7 +54,7 @@ export function keystoneSelfProxyErrorResponse(
         errors: [
           {
             message:
-              "NEXT_PUBLIC_KEYSTONE_URL must not be the same origin as this Next app (that causes a self-proxy loop). Use the Keystone server origin, e.g. http://localhost:3001.",
+              "PUBLIC_ADMIN_URL must not be the same origin as this Next app (that causes a self-proxy loop). Use the Keystone server origin, e.g. http://localhost:3001.",
             extensions: { code: "KEYSTONE_SELF_PROXY" },
           },
         ],

@@ -107,4 +107,31 @@ describe("verifyBetterAuthJwt", () => {
     const { verifyBetterAuthJwt } = await import("../lib/verifyBetterAuthJwt");
     await assert.rejects(() => verifyBetterAuthJwt("not-a-jwt"));
   });
+
+  it("defaults issuer/audience to PUBLIC_APP_URL when BETTER_AUTH_ISSUER is unset", async () => {
+    const prevIssuer = process.env.BETTER_AUTH_ISSUER;
+    const prevAudience = process.env.BETTER_AUTH_AUDIENCE;
+    const prevPublic = process.env.PUBLIC_APP_URL;
+    try {
+      delete process.env.BETTER_AUTH_ISSUER;
+      delete process.env.BETTER_AUTH_AUDIENCE;
+      process.env.PUBLIC_APP_URL = "http://public-app.test";
+      resetBetterAuthJwksCache();
+      const { verifyBetterAuthJwt } = await import("../lib/verifyBetterAuthJwt");
+      const token = await mintToken({
+        iss: "http://public-app.test",
+        aud: "http://public-app.test",
+      });
+      const out = await verifyBetterAuthJwt(token);
+      assert.equal(out.sub, "user-123");
+    } finally {
+      if (prevIssuer === undefined) delete process.env.BETTER_AUTH_ISSUER;
+      else process.env.BETTER_AUTH_ISSUER = prevIssuer;
+      if (prevAudience === undefined) delete process.env.BETTER_AUTH_AUDIENCE;
+      else process.env.BETTER_AUTH_AUDIENCE = prevAudience;
+      if (prevPublic === undefined) delete process.env.PUBLIC_APP_URL;
+      else process.env.PUBLIC_APP_URL = prevPublic;
+      resetBetterAuthJwksCache();
+    }
+  });
 });

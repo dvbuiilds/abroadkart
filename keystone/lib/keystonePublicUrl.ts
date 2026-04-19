@@ -2,6 +2,8 @@
  * Public URL of this Keystone process (used in redirects and CORS).
  */
 
+import { getPublicAdminUrl } from "./publicUrls";
+
 export function getKeystonePort(): number {
   const p = process.env.PORT;
   if (p) {
@@ -12,7 +14,5 @@ export function getKeystonePort(): number {
 }
 
 export function getKeystonePublicUrl(): string {
-  const raw = process.env.KEYSTONE_PUBLIC_URL?.trim();
-  if (raw) return raw.replace(/\/+$/, "");
-  return `http://localhost:${getKeystonePort()}`;
+  return getPublicAdminUrl();
 }

@@ -6,6 +6,7 @@ import { config } from "@keystone-6/core";
 import { registerAdminBetterAuthMiddleware } from "./lib/adminBetterAuthMiddleware";
 import { betterAuthSession } from "./lib/betterAuthSession";
 import { getKeystonePublicUrl } from "./lib/keystonePublicUrl";
+import { getPublicAppUrl, getPublicAdminUrl } from "./lib/publicUrls";
 import { User } from "./schema/User";
 import { Consultant } from "./schema/Consultant";
 import { ActivityLog } from "./schema/ActivityLog";
@@ -82,10 +83,11 @@ export default config({
     cors: {
       origin: (() => {
         const origins = new Set<string>();
-        const front = process.env.FRONTEND_URL?.replace(/\/+$/, "");
-        if (front) origins.add(front);
+        origins.add(getPublicAppUrl());
+        origins.add(getPublicAdminUrl());
+        const legacyFront = process.env.FRONTEND_URL?.replace(/\/+$/, "");
+        if (legacyFront) origins.add(legacyFront);
         origins.add(getKeystonePublicUrl());
-        if (origins.size === 0) origins.add("http://localhost:3000");
         return Array.from(origins);
       })(),
       credentials: true,

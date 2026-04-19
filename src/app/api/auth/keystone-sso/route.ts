@@ -5,15 +5,13 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getAuth } from "@app/lib/auth";
+import { getPublicAppUrl, getPublicAdminUrl } from "@app/lib/public-urls";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const auth = getAuth();
-  const base =
-    process.env.BETTER_AUTH_URL ??
-    process.env.NEXT_PUBLIC_BETTER_AUTH_URL ??
-    request.nextUrl.origin;
+  const base = getPublicAppUrl();
 
   const redirectTarget =
     request.nextUrl.searchParams.get("redirect_url") ?? "/admin";
@@ -70,9 +68,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const keystone = (
-    process.env.NEXT_PUBLIC_KEYSTONE_URL ?? "http://localhost:3001"
-  ).replace(/\/+$/, "");
+  const keystone = getPublicAdminUrl();
   const dest = `${keystone}/admin/_sso_callback?token=${encodeURIComponent(token)}&redirect=${encodeURIComponent(redirectTarget)}`;
   return NextResponse.redirect(dest);
 }

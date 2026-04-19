@@ -4,23 +4,16 @@
 import { headers } from "next/headers";
 import type { NextRequest } from "next/server";
 import { getAuth } from "@app/lib/auth";
-
-function resolveBaseUrl(requestOrigin?: string): string {
-  const fromEnv =
-    process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_BETTER_AUTH_URL;
-  if (fromEnv) return fromEnv.replace(/\/+$/, "");
-  if (requestOrigin) return requestOrigin.replace(/\/+$/, "");
-  return "http://localhost:3000";
-}
+import { getPublicAppUrl } from "@app/lib/public-urls";
 
 /**
  * Mint a JWT for GraphQL / Keystone using the incoming request cookies.
  */
 export async function getBetterAuthJwtFromCookieHeader(
   cookieHeader: string,
-  requestOrigin: string,
+  _requestOrigin: string,
 ): Promise<string | null> {
-  const base = resolveBaseUrl(requestOrigin);
+  const base = getPublicAppUrl();
   const tokenRes = await getAuth().handler(
     new Request(new URL("/api/auth/token", base), {
       method: "GET",

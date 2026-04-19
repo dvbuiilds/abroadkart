@@ -1,24 +1,19 @@
 # ── Stage 1: Build ────────────────────────────────────────────────────────────
 # Installs all deps and runs `next build`.
 #
-# NEXT_PUBLIC_KEYSTONE_URL is needed at BUILD TIME because Next.js inlines
-# NEXT_PUBLIC_* variables into the client bundle during the build step.
-# It is also read at RUNTIME by server-side code (API routes / RSCs), but
-# those pick it up from the docker-compose env_file, so you get two chances:
-#   - Client bundle  → baked in via the ARG below at image build time
-#   - Server runtime → injected by docker-compose at container startup
+# PUBLIC_ADMIN_URL is the public Keystone origin. At build time it is copied into
+# NEXT_PUBLIC_KEYSTONE_URL so the Next.js client bundle has the correct admin/API host.
+# Server-side code reads PUBLIC_ADMIN_URL at runtime (see src/lib/public-urls.ts).
 #
-# For LOCAL docker-compose: leave the ARG default (http://localhost:3001).
-# For DROPLET deploy: pass --build-arg NEXT_PUBLIC_KEYSTONE_URL=http://<ip>:3001
+# For LOCAL docker-compose: leave the default (http://localhost:3001).
+# For production: pass --build-arg PUBLIC_ADMIN_URL=https://admin.example.com
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Build arguments — all NEXT_PUBLIC_* vars must be baked in at build time
-# because Next.js inlines them into the client bundle during `next build`.
-# env_file (runtime) is too late for these; they must come via ARG → ENV.
-ARG NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001
+# NEXT_PUBLIC_* must be set before `next build`.
+ARG PUBLIC_ADMIN_URL=http://localhost:3001
 
-ENV NEXT_PUBLIC_KEYSTONE_URL=$NEXT_PUBLIC_KEYSTONE_URL
+ENV NEXT_PUBLIC_KEYSTONE_URL=$PUBLIC_ADMIN_URL
 
 # Install dependencies first (better layer caching)
 COPY package.json yarn.lock ./

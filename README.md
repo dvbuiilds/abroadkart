@@ -84,9 +84,9 @@ Redis: `localhost:6379` — password: value you set in **`.env`** as `REDIS_PASS
 
 ### 4. Fill in `.env` and `keystone/.env`
 
-Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example`](./keystone/.env.example) → **`keystone/.env`**, then set secrets and R2 values. Root **`.env`** holds all Next.js and Compose variables (including `BETTER_AUTH_*`, `DATABASE_URL` for local dev, `NEXT_PUBLIC_*`). **`keystone/.env`** holds Keystone/R2/session/JWT settings.
+Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example`](./keystone/.env.example) → **`keystone/.env`**, then set secrets and R2 values. Root **`.env`** holds Compose passwords, **`BETTER_AUTH_SECRET`**, **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** (browser-facing origins), and `DATABASE_URL` for local dev. **`keystone/.env`** holds the same **`PUBLIC_*`** pair (must match), session secret, R2, and localhost-style `DATABASE_URL` / `REDIS_URL` / `BETTER_AUTH_JWKS_URL` — Docker Compose overrides those three with internal hostnames at runtime.
 
-`NEXT_PUBLIC_KEYSTONE_URL` must be the **Keystone** origin (default `http://localhost:3001`), not `http://localhost:3000`.
+**`PUBLIC_ADMIN_URL`** must be the **Keystone** origin (default `http://localhost:3001`), not the Next origin. Legacy: `NEXT_PUBLIC_KEYSTONE_URL` is still read if **`PUBLIC_ADMIN_URL`** is unset.
 
 Optional: Next.js also loads **`.env.local`** if present; it overrides **`.env`** for the same keys—remove or align it so it does not conflict with **`.env`**.
 
@@ -115,7 +115,7 @@ npm run dev
 - **Keystone Admin (super-admin, canonical)**: **`http://localhost:3001/admin`** — unauthenticated visits redirect via Next **`/api/auth/keystone-sso`** using a better-auth session + JWT cookie flow. Sign in with better-auth first (`/sign-in`), then open admin. See [crm_docs/APPENDIX_AUTH_SETUP.md](./crm_docs/APPENDIX_AUTH_SETUP.md).
 - **`http://localhost:3000/admin`**: Proxies to Keystone; **super-admins** need a valid better-auth session + role in Keystone.
 
-If you change Keystone’s port in `keystone/.env` (`PORT=…`), set **`NEXT_PUBLIC_KEYSTONE_URL`** in **`.env`** to the same origin.
+If you change Keystone’s port in `keystone/.env` (`PORT=…`), set **`PUBLIC_ADMIN_URL`** in **`.env`** (and **`keystone/.env`**) to the same origin, or rely on the default `http://localhost:<PORT>` when **`PUBLIC_ADMIN_URL`** is unset.
 
 **Smoke tests** (with Keystone running):
 

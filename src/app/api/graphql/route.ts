@@ -106,7 +106,7 @@ async function proxyGraphQL(req: NextRequest) {
       const hint =
         process.env.KEYSTONE_INTERNAL_URL?.trim() ?
           `KEYSTONE_INTERNAL_URL=${getKeystoneInternalUrl()}`
-          : `NEXT_PUBLIC_KEYSTONE_URL / Keystone (e.g. cd keystone && yarn dev): ${getKeystoneBaseUrl()}`;
+          : `PUBLIC_ADMIN_URL / Keystone (e.g. cd keystone && yarn dev): ${getKeystoneBaseUrl()}`;
       console.error(`[graphql proxy] Upstream unreachable. Check ${hint}`);
     }
 

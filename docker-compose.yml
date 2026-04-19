@@ -8,8 +8,9 @@
 # For keystone / nextjs services, DATABASE_URL (and Keystone REDIS_URL) are set below so
 # Docker uses hostnames `postgres` and `redis` — overrides URLs that point at localhost in those files.
 # Next.js server-side proxies use KEYSTONE_INTERNAL_URL=http://keystone:3001 (inside the Docker
-# network); browsers still use NEXT_PUBLIC_KEYSTONE_URL=http://localhost:3001 from `.env`.
-# Keystone fetches JWKS from Next.js via BETTER_AUTH_JWKS_URL=http://nextjs:3000/... (not localhost).
+# network). Browsers use PUBLIC_APP_URL / PUBLIC_ADMIN_URL (see `.env.example`); the Next.js image
+# bakes `NEXT_PUBLIC_KEYSTONE_URL` from the `PUBLIC_ADMIN_URL` build arg at build time.
+# Keystone fetches JWKS from Next.js via BETTER_AUTH_JWKS_URL=http://nextjs:3000/... (internal).
 #
 # Start order (enforced by depends_on + healthchecks):
 #   1. postgres  ──┐
@@ -88,6 +89,8 @@ services:
     env_file:
       - ./keystone/.env
     environment:
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
       REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       BETTER_AUTH_JWKS_URL: http://nextjs:3000/api/auth/jwks
@@ -109,11 +112,13 @@ services:
       dockerfile: Dockerfile
       target: builder
       args:
-        NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-http://localhost:3001}
+        PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
     container_name: abroadkart-nextjs-migrate
     env_file:
       - .env
     environment:
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
     command: ["sh", "scripts/docker-auth-migrate.sh"]
     networks:
@@ -129,11 +134,13 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
-        NEXT_PUBLIC_KEYSTONE_URL: ${NEXT_PUBLIC_KEYSTONE_URL:-http://localhost:3001}
+        PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
     container_name: abroadkart-nextjs
     env_file:
       - .env
     environment:
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
       KEYSTONE_INTERNAL_URL: http://keystone:3001
     ports:
