@@ -192,9 +192,11 @@ docker compose up -d keystone
 sleep 10
 docker exec -it abroadkart-keystone node_modules/.bin/prisma db push
 
-# Next.js
+# Next.js (starts `nextjs-migrate` first: auth schema + Better Auth tables, then the app)
 docker compose up -d nextjs
 ```
+
+Better Auth: Postgres gets `CREATE SCHEMA IF NOT EXISTS auth` from [`db/init/01-auth-schema.sql`](./db/init/01-auth-schema.sql) on a **new** volume, and the one-shot [`nextjs-migrate`](./docker-compose.yml) service runs [`scripts/docker-auth-migrate.sh`](./scripts/docker-auth-migrate.sh) before `nextjs` on every `up` (idempotent).
 
 ### Step 7 — Verify
 

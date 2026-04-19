@@ -90,7 +90,7 @@ Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example
 
 Optional: Next.js also loads **`.env.local`** if present; it overrides **`.env`** for the same keys—remove or align it so it does not conflict with **`.env`**.
 
-After Postgres is running: `CREATE SCHEMA IF NOT EXISTS auth;`, then `cd keystone && yarn db:push`, then from the repo root `yarn auth:migrate`.
+With **Docker Compose**, [`db/init`](./db/init) and the [`nextjs-migrate`](./docker-compose.yml) service create the `auth` schema and Better Auth tables before Next.js starts. Otherwise (local Postgres only): `CREATE SCHEMA IF NOT EXISTS auth;`, then `cd keystone && yarn db:push`, then from the repo root `yarn auth:migrate`.
 
 **Sign-in:** use **`/sign-in`** and **`/sign-up`**. For Keystone admin SSO, open **`http://localhost:3001/admin`** (redirects via **`/api/auth/keystone-sso`** when needed). Details: [crm_docs/APPENDIX_AUTH_SETUP.md](./crm_docs/APPENDIX_AUTH_SETUP.md).
 
