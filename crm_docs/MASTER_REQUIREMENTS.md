@@ -61,7 +61,7 @@ AbroadKart CRM is a **multi-tenant B2B2C SaaS platform** enabling study abroad c
 ### Deployment Stack
 
 - **Backend**: Railway / Render (Node.js + PostgreSQL)
-- **Frontend**: Vercel / Railway (Next.js)
+- **Frontend**: Railway / Docker / Node host (Next.js)
 - **Database**: Railway PostgreSQL / Supabase (managed)
 - **Cache**: Redis Cloud / Upstash (managed Redis)
 - **Storage**: Cloudflare R2

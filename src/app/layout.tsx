@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { ReactQueryProvider } from "@app/lib/react-query";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "@app/components/ui/sonner";
 import "@app/styles/globals.css";
 
@@ -21,8 +19,6 @@ export default function RootLayout({
         <ReactQueryProvider>
           {children}
           <Toaster />
-          <SpeedInsights />
-          <Analytics />
         </ReactQueryProvider>
       </body>
     </html>

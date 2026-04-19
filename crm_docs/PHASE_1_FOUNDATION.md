@@ -406,15 +406,13 @@ import { useMemo } from "react";
    BETTER_AUTH_ISSUER=...
    BETTER_AUTH_AUDIENCE=...
    R2_*=...
-   FRONTEND_URL=https://your-app.vercel.app
+   FRONTEND_URL=https://your-frontend-host.example
    ```
 
 #### Frontend (Next.js)
 
-1. Deploy to Vercel
-2. Connect GitHub repository
-3. **Root directory**: `app`
-4. Set environment variables:
+1. Deploy the Next.js app on your host (Docker, Railway, etc.); see `DEPLOY.md` at the repo root.
+2. Set environment variables:
    ```
    NEXT_PUBLIC_KEYSTONE_URL=https://your-api.railway.app
    BETTER_AUTH_SECRET=...
@@ -513,7 +511,7 @@ curl 'http://localhost:3001/api/graphql' \
 - [x] Cloudflare R2 bucket created
 - [x] Environment variables documented
 - [x] Backend deployment to Railway configured
-- [x] Frontend deployment to Vercel configured
+- [x] Frontend deployment configured
 - [x] README with local setup instructions
 - [x] All tests passing
 

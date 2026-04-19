@@ -145,7 +145,7 @@ A centralized, multi-tenant platform that:
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| **Framework** | Next.js 14+ | React SSR + Vercel deployment |
+| **Framework** | Next.js 14+ | React SSR + hosted deployment |
 | **UI Components** | ShadCN UI | Pre-built component library |
 | **Data Fetching** | TanStack React Query | Client state + caching |
 | **GraphQL Client** | Apollo Client 4 | GraphQL query management |

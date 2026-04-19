@@ -162,13 +162,9 @@ Full stack (Postgres, Redis, Keystone, Next.js) with Docker: copy **`.env.exampl
    - Start command: `npm run start`
 5. Set environment variables in Railway dashboard
 
-### Frontend (Vercel)
+### Frontend
 
-1. Push code to GitHub
-2. Connect repository to Vercel
-3. Root directory: `.` (project root)
-4. Framework: Next.js
-5. Set environment variables in Vercel dashboard
+Deploy the Next.js app on your host of choice (for example Docker or a Node host). See `DEPLOY.md` for environment variables and wiring.
 
 ## Testing Checklist
 
