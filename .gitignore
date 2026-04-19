@@ -38,9 +38,6 @@ yarn-error.log*
 # env files
 .env*
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
 next-env.d.ts
@@ -51,3 +48,4 @@ keystone/node_modules/
 
 # docker
 .docker/
+reset-dev-data.sh
