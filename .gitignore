@@ -48,4 +48,3 @@ keystone/node_modules/
 
 # docker
 .docker/
-reset-dev-data.sh
