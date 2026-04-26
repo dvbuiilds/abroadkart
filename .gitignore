@@ -23,6 +23,11 @@
 # misc
 .DS_Store
 *.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+serviceAccountKey.json
 
 # debug
 npm-debug.log*
@@ -30,12 +35,16 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files
 .env*
-
-# vercel
-.vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keystone
+keystone/.keystone/
+keystone/node_modules/
+
+# docker
+.docker/

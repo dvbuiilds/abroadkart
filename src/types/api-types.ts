@@ -1,5 +1,3 @@
-import { WithId } from "mongodb";
-
 // This type is for the User Data to be saved in DB or to be fetched from DB.
 export interface DBUser {
   id: string;
@@ -25,7 +23,7 @@ export interface User {
   nameAbbreviation: string;
 }
 
-export interface CredentialsProviderUser extends WithId<Document> {
+export interface CredentialsProviderUser {
   id: string;
   name: string;
   email: string;
