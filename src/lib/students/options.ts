@@ -10,11 +10,14 @@ export const TARGET_COUNTRY_OPTIONS = [
 
 export const STAGE_OPTIONS = [
   { value: "lead", label: "Lead" },
-  { value: "prospect", label: "Prospect" },
+  { value: "contacted", label: "Contacted" },
+  { value: "counsellingDone", label: "Counselling Done" },
+  { value: "docsCollection", label: "Docs Collection" },
   { value: "applied", label: "Applied" },
-  { value: "inLoanProcess", label: "In Loan Process" },
+  { value: "offerReceived", label: "Offer Received" },
+  { value: "visaFiled", label: "Visa Filed" },
   { value: "enrolled", label: "Enrolled" },
-  { value: "graduated", label: "Graduated" },
+  { value: "lost", label: "Lost" },
 ] as const;
 
 export const QUALIFICATION_OPTIONS = [
@@ -70,6 +73,55 @@ export const TEST_SCORE_FIELDS = [
   { key: "actScore", label: "ACT" },
 ] as const;
 
+export const PRIORITY_OPTIONS = [
+  { value: "hot", label: "Hot" },
+  { value: "warm", label: "Warm" },
+  { value: "cold", label: "Cold" },
+] as const;
+
+export const GENDER_OPTIONS = [
+  { value: "male", label: "Male" },
+  { value: "female", label: "Female" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const SOURCE_OPTIONS = [
+  { value: "google", label: "Google" },
+  { value: "instagram", label: "Instagram" },
+  { value: "facebook", label: "Facebook" },
+  { value: "linkedin", label: "LinkedIn" },
+  { value: "reddit", label: "Reddit" },
+  { value: "referral", label: "Referral" },
+  { value: "walkIn", label: "Walk-in" },
+  { value: "other", label: "Other" },
+] as const;
+
+export const STUDY_LEVEL_OPTIONS = [
+  { value: "undergraduate", label: "Undergraduate" },
+  { value: "postgraduate", label: "Postgraduate" },
+  { value: "phd", label: "PhD" },
+  { value: "diploma", label: "Diploma" },
+  { value: "certificate", label: "Certificate" },
+] as const;
+
+export const PREFERRED_INTAKE_OPTIONS = [
+  { value: "january", label: "January" },
+  { value: "may", label: "May" },
+  { value: "september", label: "September" },
+] as const;
+
+export const FUNDING_TYPE_OPTIONS = [
+  { value: "selfFunded", label: "Self-funded" },
+  { value: "educationLoan", label: "Education Loan" },
+  { value: "scholarship", label: "Scholarship" },
+  { value: "parents", label: "Parents" },
+] as const;
+
+export const ACADEMIC_SCORE_TYPE_OPTIONS = [
+  { value: "percentage", label: "Percentage" },
+  { value: "cgpa", label: "CGPA" },
+] as const;
+
 export const targetCountryLabelMap = Object.fromEntries(
   TARGET_COUNTRY_OPTIONS.map((o) => [o.value, o.label])
 ) as Record<string, string>;
@@ -92,4 +144,36 @@ export const workExperienceLabelMap = Object.fromEntries(
 
 export const programDisciplineLabelMap = Object.fromEntries(
   PROGRAM_DISCIPLINE_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const stageLabelMap = Object.fromEntries(
+  STAGE_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const priorityLabelMap = Object.fromEntries(
+  PRIORITY_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const genderLabelMap = Object.fromEntries(
+  GENDER_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const sourceLabelMap = Object.fromEntries(
+  SOURCE_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const studyLevelLabelMap = Object.fromEntries(
+  STUDY_LEVEL_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const preferredIntakeLabelMap = Object.fromEntries(
+  PREFERRED_INTAKE_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const fundingTypeLabelMap = Object.fromEntries(
+  FUNDING_TYPE_OPTIONS.map((o) => [o.value, o.label])
+) as Record<string, string>;
+
+export const academicScoreTypeLabelMap = Object.fromEntries(
+  ACADEMIC_SCORE_TYPE_OPTIONS.map((o) => [o.value, o.label])
 ) as Record<string, string>;

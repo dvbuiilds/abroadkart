@@ -20,6 +20,8 @@ import { AccommodationBooking } from "./schema/AccommodationBooking";
 import { Reimbursement } from "./schema/Reimbursement";
 import { PrepaidCard } from "./schema/PrepaidCard";
 import { Task } from "./schema/Task";
+import { Interaction } from "./schema/Interaction";
+import { Payment } from "./schema/Payment";
 import { ADMIN_HOME_PAGE_SRC } from "./lib/adminHomePageTemplate";
 
 const lists = {
@@ -36,6 +38,8 @@ const lists = {
   Reimbursement,
   PrepaidCard,
   Task,
+  Interaction,
+  Payment,
 };
 
 export default config({
@@ -78,6 +82,8 @@ export default config({
       student_documents: { ...r2Base, pathPrefix: "student-documents/" },
       receipts: { ...r2Base, pathPrefix: "receipts/" },
       university_logos: { ...r2Base, pathPrefix: "university-logos/" },
+      invoices: { ...r2Base, pathPrefix: "invoices/" },
+      offer_letters: { ...r2Base, pathPrefix: "offer-letters/" },
     };
   })(),
   server: {

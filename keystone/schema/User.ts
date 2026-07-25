@@ -9,6 +9,7 @@ import {
   checkbox,
   timestamp,
   select,
+  json,
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isSuperAdmin } from "../access/rules";
 import { logActivityHook } from "../hooks/logActivity";
@@ -78,6 +79,16 @@ export const User = list({
         update: ({ session }) => isSuperAdmin({ session }),
       },
     }),
+    staffTitle: select({
+      options: [
+        { label: "Admin", value: "admin" },
+        { label: "Senior Counsellor", value: "seniorCounsellor" },
+        { label: "Counsellor", value: "counsellor" },
+        { label: "Visa Specialist", value: "visaSpecialist" },
+        { label: "Document Executive", value: "documentExecutive" },
+      ],
+    }),
+    specializationCountries: json(),
     isActive: checkbox({ defaultValue: true }),
     lastLoginAt: timestamp(),
     createdAt: timestamp({ defaultValue: { kind: "now" } }),

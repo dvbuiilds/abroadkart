@@ -11,6 +11,7 @@ import {
   select,
   integer,
   decimal,
+  file,
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isConsultant, isSuperAdmin, isFulfilment, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
@@ -49,8 +50,11 @@ export const Application = list({
         { label: "Submitted", value: "submitted" },
         { label: "Under Review", value: "underReview" },
         { label: "Waitlisted", value: "waitlisted" },
+        { label: "Offer Received", value: "offerReceived" },
+        { label: "Conditional", value: "conditional" },
         { label: "Accepted", value: "accepted" },
         { label: "Rejected", value: "rejected" },
+        { label: "Deferred", value: "deferred" },
       ],
       defaultValue: "draft",
       isIndexed: true,
@@ -60,6 +64,14 @@ export const Application = list({
     gre: integer(),
     gmat: integer(),
     gpa: decimal(),
+    offerLetter: file({
+      storage: "offer_letters",
+    }),
+    conditionalRequirements: text({
+      ui: { displayMode: "textarea" },
+    }),
+    tuitionFeeOffered: integer(),
+    scholarshipAwarded: integer(),
     documents: relationship({ ref: "StudentDocument.application", many: true }),
     remarks: text({ ui: { displayMode: "textarea" } }),
     isDeleted: checkbox({ defaultValue: false }),

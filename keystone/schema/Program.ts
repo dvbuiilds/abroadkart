@@ -10,6 +10,7 @@ import {
   timestamp,
   select,
   checkbox,
+  decimal,
 } from "@keystone-6/core/fields";
 import { isSuperAdmin } from "../access/rules";
 
@@ -41,6 +42,10 @@ export const Program = list({
     currency: text({ defaultValue: "USD" }),
     duration: integer(),
     startDate: timestamp(),
+    minIeltsScore: decimal(),
+    minCgpa: decimal(),
+    applicationFee: integer(),
+    applicationPortalUrl: text(),
     applications: relationship({ ref: "Application.program", many: true }),
     isActive: checkbox({ defaultValue: true }),
     createdAt: timestamp({ defaultValue: { kind: "now" } }),

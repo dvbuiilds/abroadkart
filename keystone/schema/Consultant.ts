@@ -75,6 +75,8 @@ export const Consultant = list({
     reimbursements: relationship({ ref: "Reimbursement.tenant", many: true }),
     prepaidCards: relationship({ ref: "PrepaidCard.tenant", many: true }),
     tasks: relationship({ ref: "Task.tenant", many: true }),
+    interactions: relationship({ ref: "Interaction.tenant", many: true }),
+    payments: relationship({ ref: "Payment.tenant", many: true }),
     activityLogs: relationship({ ref: "ActivityLog.tenant", many: true }),
     createdAt: timestamp({ defaultValue: { kind: "now" } }),
     updatedAt: timestamp({ db: { updatedAt: true } }),

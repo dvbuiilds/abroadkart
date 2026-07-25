@@ -8,6 +8,8 @@ type User {
   name: String
   role: String
   tenant: Consultant
+  staffTitle: String
+  specializationCountries: JSON
   isActive: Boolean
   lastLoginAt: DateTime
   createdAt: DateTime
@@ -32,6 +34,7 @@ input UserWhereInput {
   name: StringFilter
   role: StringFilter
   tenant: ConsultantWhereInput
+  staffTitle: StringNullableFilter
   isActive: BooleanFilter
   lastLoginAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
@@ -83,6 +86,21 @@ input NestedStringFilter {
   not: NestedStringFilter
 }
 
+input StringNullableFilter {
+  equals: String
+  in: [String!]
+  notIn: [String!]
+  lt: String
+  lte: String
+  gt: String
+  gte: String
+  contains: String
+  startsWith: String
+  endsWith: String
+  mode: QueryMode
+  not: StringNullableFilter
+}
+
 input BooleanFilter {
   equals: Boolean
   not: BooleanFilter
@@ -105,6 +123,7 @@ input UserOrderByInput {
   email: OrderDirection
   name: OrderDirection
   role: OrderDirection
+  staffTitle: OrderDirection
   isActive: OrderDirection
   lastLoginAt: OrderDirection
   createdAt: OrderDirection
@@ -122,6 +141,8 @@ input UserUpdateInput {
   name: String
   role: String
   tenant: ConsultantRelateToOneForUpdateInput
+  staffTitle: String
+  specializationCountries: JSON
   isActive: Boolean
   lastLoginAt: DateTime
   createdAt: DateTime
@@ -145,6 +166,8 @@ input UserCreateInput {
   name: String
   role: String
   tenant: ConsultantRelateToOneForCreateInput
+  staffTitle: String
+  specializationCountries: JSON
   isActive: Boolean
   lastLoginAt: DateTime
   createdAt: DateTime
@@ -182,6 +205,10 @@ type Consultant {
   prepaidCardsCount(where: PrepaidCardWhereInput! = {}): Int
   tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
   tasksCount(where: TaskWhereInput! = {}): Int
+  interactions(where: InteractionWhereInput! = {}, orderBy: [InteractionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: InteractionWhereUniqueInput): [Interaction!]
+  interactionsCount(where: InteractionWhereInput! = {}): Int
+  payments(where: PaymentWhereInput! = {}, orderBy: [PaymentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PaymentWhereUniqueInput): [Payment!]
+  paymentsCount(where: PaymentWhereInput! = {}): Int
   activityLogs(where: ActivityLogWhereInput! = {}, orderBy: [ActivityLogOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ActivityLogWhereUniqueInput): [ActivityLog!]
   activityLogsCount(where: ActivityLogWhereInput! = {}): Int
   createdAt: DateTime
@@ -214,24 +241,11 @@ input ConsultantWhereInput {
   reimbursements: ReimbursementManyRelationFilter
   prepaidCards: PrepaidCardManyRelationFilter
   tasks: TaskManyRelationFilter
+  interactions: InteractionManyRelationFilter
+  payments: PaymentManyRelationFilter
   activityLogs: ActivityLogManyRelationFilter
   createdAt: DateTimeNullableFilter
   updatedAt: DateTimeNullableFilter
-}
-
-input StringNullableFilter {
-  equals: String
-  in: [String!]
-  notIn: [String!]
-  lt: String
-  lte: String
-  gt: String
-  gte: String
-  contains: String
-  startsWith: String
-  endsWith: String
-  mode: QueryMode
-  not: StringNullableFilter
 }
 
 input UserManyRelationFilter {
@@ -282,6 +296,18 @@ input TaskManyRelationFilter {
   none: TaskWhereInput
 }
 
+input InteractionManyRelationFilter {
+  every: InteractionWhereInput
+  some: InteractionWhereInput
+  none: InteractionWhereInput
+}
+
+input PaymentManyRelationFilter {
+  every: PaymentWhereInput
+  some: PaymentWhereInput
+  none: PaymentWhereInput
+}
+
 input ActivityLogManyRelationFilter {
   every: ActivityLogWhereInput
   some: ActivityLogWhereInput
@@ -319,6 +345,8 @@ input ConsultantUpdateInput {
   reimbursements: ReimbursementRelateToManyForUpdateInput
   prepaidCards: PrepaidCardRelateToManyForUpdateInput
   tasks: TaskRelateToManyForUpdateInput
+  interactions: InteractionRelateToManyForUpdateInput
+  payments: PaymentRelateToManyForUpdateInput
   activityLogs: ActivityLogRelateToManyForUpdateInput
   createdAt: DateTime
   updatedAt: DateTime
@@ -380,6 +408,20 @@ input TaskRelateToManyForUpdateInput {
   connect: [TaskWhereUniqueInput!]
 }
 
+input InteractionRelateToManyForUpdateInput {
+  disconnect: [InteractionWhereUniqueInput!]
+  set: [InteractionWhereUniqueInput!]
+  create: [InteractionCreateInput!]
+  connect: [InteractionWhereUniqueInput!]
+}
+
+input PaymentRelateToManyForUpdateInput {
+  disconnect: [PaymentWhereUniqueInput!]
+  set: [PaymentWhereUniqueInput!]
+  create: [PaymentCreateInput!]
+  connect: [PaymentWhereUniqueInput!]
+}
+
 input ActivityLogRelateToManyForUpdateInput {
   disconnect: [ActivityLogWhereUniqueInput!]
   set: [ActivityLogWhereUniqueInput!]
@@ -409,6 +451,8 @@ input ConsultantCreateInput {
   reimbursements: ReimbursementRelateToManyForCreateInput
   prepaidCards: PrepaidCardRelateToManyForCreateInput
   tasks: TaskRelateToManyForCreateInput
+  interactions: InteractionRelateToManyForCreateInput
+  payments: PaymentRelateToManyForCreateInput
   activityLogs: ActivityLogRelateToManyForCreateInput
   createdAt: DateTime
   updatedAt: DateTime
@@ -452,6 +496,16 @@ input PrepaidCardRelateToManyForCreateInput {
 input TaskRelateToManyForCreateInput {
   create: [TaskCreateInput!]
   connect: [TaskWhereUniqueInput!]
+}
+
+input InteractionRelateToManyForCreateInput {
+  create: [InteractionCreateInput!]
+  connect: [InteractionWhereUniqueInput!]
+}
+
+input PaymentRelateToManyForCreateInput {
+  create: [PaymentCreateInput!]
+  connect: [PaymentWhereUniqueInput!]
 }
 
 input ActivityLogRelateToManyForCreateInput {
@@ -680,6 +734,10 @@ type Program {
   currency: String
   duration: Int
   startDate: DateTime
+  minIeltsScore: Decimal
+  minCgpa: Decimal
+  applicationFee: Int
+  applicationPortalUrl: String
   applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
   applicationsCount(where: ApplicationWhereInput! = {}): Int
   isActive: Boolean
@@ -703,6 +761,10 @@ input ProgramWhereInput {
   currency: StringFilter
   duration: IntNullableFilter
   startDate: DateTimeNullableFilter
+  minIeltsScore: DecimalNullableFilter
+  minCgpa: DecimalNullableFilter
+  applicationFee: IntNullableFilter
+  applicationPortalUrl: StringFilter
   applications: ApplicationManyRelationFilter
   isActive: BooleanFilter
   createdAt: DateTimeNullableFilter
@@ -717,6 +779,10 @@ input ProgramOrderByInput {
   currency: OrderDirection
   duration: OrderDirection
   startDate: OrderDirection
+  minIeltsScore: OrderDirection
+  minCgpa: OrderDirection
+  applicationFee: OrderDirection
+  applicationPortalUrl: OrderDirection
   isActive: OrderDirection
   createdAt: OrderDirection
 }
@@ -730,6 +796,10 @@ input ProgramUpdateInput {
   currency: String
   duration: Int
   startDate: DateTime
+  minIeltsScore: Decimal
+  minCgpa: Decimal
+  applicationFee: Int
+  applicationPortalUrl: String
   applications: ApplicationRelateToManyForUpdateInput
   isActive: Boolean
   createdAt: DateTime
@@ -755,6 +825,10 @@ input ProgramCreateInput {
   currency: String
   duration: Int
   startDate: DateTime
+  minIeltsScore: Decimal
+  minCgpa: Decimal
+  applicationFee: Int
+  applicationPortalUrl: String
   applications: ApplicationRelateToManyForCreateInput
   isActive: Boolean
   createdAt: DateTime
@@ -772,24 +846,53 @@ type Student {
   email: String
   phone: String
   dateOfBirth: DateTime
+  gender: String
+  city: String
+  state: String
   countryOfResidence: String
-  targetCountry: String
-  currentStage: String
+  source: String
   qualification: String
-  workExperience: String
+  stream: String
+  subjects: JSON
+  academicScore: Decimal
+  academicScoreType: String
+  backlogCount: Int
+  yearOfPassing: Int
+  institutionName: String
   ieltsScore: Decimal
   toeflScore: Decimal
   pteScore: Decimal
+  duolingoScore: Decimal
   gmatScore: Decimal
   greScore: Decimal
   satScore: Decimal
   actScore: Decimal
   finalScore: Decimal
+  testAppearingDate: DateTime
+  workExperience: String
+  employer: String
+  designation: String
+  gapExplanation: String
+  targetCountries: JSON
+  targetCourses: JSON
+  studyLevel: String
+  preferredIntake: String
   targetYear: String
   programDisciplines: JSON
-  budgetPerYear: String
-  openForScholarshipsLoans: Boolean
-  parentMonthlyIncome: Int
+  budgetTuition: Int
+  budgetLiving: Int
+  budgetCurrency: String
+  fundingType: String
+  loanPreApproved: Boolean
+  priorVisaRefusals: Boolean
+  refusalCountries: JSON
+  refusalReason: String
+  passportAvailable: Boolean
+  passportExpiry: DateTime
+  currentStage: String
+  priority: String
+  lostReason: String
+  assignedCounsellor: User
   applications(where: ApplicationWhereInput! = {}, orderBy: [ApplicationOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: ApplicationWhereUniqueInput): [Application!]
   applicationsCount(where: ApplicationWhereInput! = {}): Int
   documents(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
@@ -803,6 +906,10 @@ type Student {
   prepaidCard: PrepaidCard
   tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
   tasksCount(where: TaskWhereInput! = {}): Int
+  interactions(where: InteractionWhereInput! = {}, orderBy: [InteractionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: InteractionWhereUniqueInput): [Interaction!]
+  interactionsCount(where: InteractionWhereInput! = {}): Int
+  payments(where: PaymentWhereInput! = {}, orderBy: [PaymentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PaymentWhereUniqueInput): [Payment!]
+  paymentsCount(where: PaymentWhereInput! = {}): Int
   notes: String
   isDeleted: Boolean
   createdAt: DateTime
@@ -824,23 +931,48 @@ input StudentWhereInput {
   email: StringFilter
   phone: StringFilter
   dateOfBirth: DateTimeNullableFilter
+  gender: StringNullableFilter
+  city: StringFilter
+  state: StringFilter
   countryOfResidence: StringFilter
-  targetCountry: StringFilter
-  currentStage: StringNullableFilter
+  source: StringNullableFilter
   qualification: StringNullableFilter
-  workExperience: StringNullableFilter
+  stream: StringFilter
+  academicScore: DecimalNullableFilter
+  academicScoreType: StringNullableFilter
+  backlogCount: IntNullableFilter
+  yearOfPassing: IntNullableFilter
+  institutionName: StringFilter
   ieltsScore: DecimalNullableFilter
   toeflScore: DecimalNullableFilter
   pteScore: DecimalNullableFilter
+  duolingoScore: DecimalNullableFilter
   gmatScore: DecimalNullableFilter
   greScore: DecimalNullableFilter
   satScore: DecimalNullableFilter
   actScore: DecimalNullableFilter
   finalScore: DecimalNullableFilter
+  testAppearingDate: DateTimeNullableFilter
+  workExperience: StringNullableFilter
+  employer: StringFilter
+  designation: StringFilter
+  gapExplanation: StringFilter
+  studyLevel: StringNullableFilter
+  preferredIntake: StringNullableFilter
   targetYear: StringNullableFilter
-  budgetPerYear: StringNullableFilter
-  openForScholarshipsLoans: BooleanFilter
-  parentMonthlyIncome: IntNullableFilter
+  budgetTuition: IntNullableFilter
+  budgetLiving: IntNullableFilter
+  budgetCurrency: StringFilter
+  fundingType: StringNullableFilter
+  loanPreApproved: BooleanFilter
+  priorVisaRefusals: BooleanFilter
+  refusalReason: StringFilter
+  passportAvailable: BooleanFilter
+  passportExpiry: DateTimeNullableFilter
+  currentStage: StringNullableFilter
+  priority: StringNullableFilter
+  lostReason: StringFilter
+  assignedCounsellor: UserWhereInput
   applications: ApplicationManyRelationFilter
   documents: StudentDocumentManyRelationFilter
   loanApplications: LoanApplicationManyRelationFilter
@@ -848,6 +980,8 @@ input StudentWhereInput {
   reimbursements: ReimbursementManyRelationFilter
   prepaidCard: PrepaidCardWhereInput
   tasks: TaskManyRelationFilter
+  interactions: InteractionManyRelationFilter
+  payments: PaymentManyRelationFilter
   notes: StringFilter
   isDeleted: BooleanFilter
   createdAt: DateTimeNullableFilter
@@ -866,23 +1000,47 @@ input StudentOrderByInput {
   email: OrderDirection
   phone: OrderDirection
   dateOfBirth: OrderDirection
+  gender: OrderDirection
+  city: OrderDirection
+  state: OrderDirection
   countryOfResidence: OrderDirection
-  targetCountry: OrderDirection
-  currentStage: OrderDirection
+  source: OrderDirection
   qualification: OrderDirection
-  workExperience: OrderDirection
+  stream: OrderDirection
+  academicScore: OrderDirection
+  academicScoreType: OrderDirection
+  backlogCount: OrderDirection
+  yearOfPassing: OrderDirection
+  institutionName: OrderDirection
   ieltsScore: OrderDirection
   toeflScore: OrderDirection
   pteScore: OrderDirection
+  duolingoScore: OrderDirection
   gmatScore: OrderDirection
   greScore: OrderDirection
   satScore: OrderDirection
   actScore: OrderDirection
   finalScore: OrderDirection
+  testAppearingDate: OrderDirection
+  workExperience: OrderDirection
+  employer: OrderDirection
+  designation: OrderDirection
+  gapExplanation: OrderDirection
+  studyLevel: OrderDirection
+  preferredIntake: OrderDirection
   targetYear: OrderDirection
-  budgetPerYear: OrderDirection
-  openForScholarshipsLoans: OrderDirection
-  parentMonthlyIncome: OrderDirection
+  budgetTuition: OrderDirection
+  budgetLiving: OrderDirection
+  budgetCurrency: OrderDirection
+  fundingType: OrderDirection
+  loanPreApproved: OrderDirection
+  priorVisaRefusals: OrderDirection
+  refusalReason: OrderDirection
+  passportAvailable: OrderDirection
+  passportExpiry: OrderDirection
+  currentStage: OrderDirection
+  priority: OrderDirection
+  lostReason: OrderDirection
   notes: OrderDirection
   isDeleted: OrderDirection
   createdAt: OrderDirection
@@ -895,24 +1053,53 @@ input StudentUpdateInput {
   email: String
   phone: String
   dateOfBirth: DateTime
+  gender: String
+  city: String
+  state: String
   countryOfResidence: String
-  targetCountry: String
-  currentStage: String
+  source: String
   qualification: String
-  workExperience: String
+  stream: String
+  subjects: JSON
+  academicScore: Decimal
+  academicScoreType: String
+  backlogCount: Int
+  yearOfPassing: Int
+  institutionName: String
   ieltsScore: Decimal
   toeflScore: Decimal
   pteScore: Decimal
+  duolingoScore: Decimal
   gmatScore: Decimal
   greScore: Decimal
   satScore: Decimal
   actScore: Decimal
   finalScore: Decimal
+  testAppearingDate: DateTime
+  workExperience: String
+  employer: String
+  designation: String
+  gapExplanation: String
+  targetCountries: JSON
+  targetCourses: JSON
+  studyLevel: String
+  preferredIntake: String
   targetYear: String
   programDisciplines: JSON
-  budgetPerYear: String
-  openForScholarshipsLoans: Boolean
-  parentMonthlyIncome: Int
+  budgetTuition: Int
+  budgetLiving: Int
+  budgetCurrency: String
+  fundingType: String
+  loanPreApproved: Boolean
+  priorVisaRefusals: Boolean
+  refusalCountries: JSON
+  refusalReason: String
+  passportAvailable: Boolean
+  passportExpiry: DateTime
+  currentStage: String
+  priority: String
+  lostReason: String
+  assignedCounsellor: UserRelateToOneForUpdateInput
   applications: ApplicationRelateToManyForUpdateInput
   documents: StudentDocumentRelateToManyForUpdateInput
   loanApplications: LoanApplicationRelateToManyForUpdateInput
@@ -920,6 +1107,8 @@ input StudentUpdateInput {
   reimbursements: ReimbursementRelateToManyForUpdateInput
   prepaidCard: PrepaidCardRelateToOneForUpdateInput
   tasks: TaskRelateToManyForUpdateInput
+  interactions: InteractionRelateToManyForUpdateInput
+  payments: PaymentRelateToManyForUpdateInput
   notes: String
   isDeleted: Boolean
   createdAt: DateTime
@@ -950,24 +1139,53 @@ input StudentCreateInput {
   email: String
   phone: String
   dateOfBirth: DateTime
+  gender: String
+  city: String
+  state: String
   countryOfResidence: String
-  targetCountry: String
-  currentStage: String
+  source: String
   qualification: String
-  workExperience: String
+  stream: String
+  subjects: JSON
+  academicScore: Decimal
+  academicScoreType: String
+  backlogCount: Int
+  yearOfPassing: Int
+  institutionName: String
   ieltsScore: Decimal
   toeflScore: Decimal
   pteScore: Decimal
+  duolingoScore: Decimal
   gmatScore: Decimal
   greScore: Decimal
   satScore: Decimal
   actScore: Decimal
   finalScore: Decimal
+  testAppearingDate: DateTime
+  workExperience: String
+  employer: String
+  designation: String
+  gapExplanation: String
+  targetCountries: JSON
+  targetCourses: JSON
+  studyLevel: String
+  preferredIntake: String
   targetYear: String
   programDisciplines: JSON
-  budgetPerYear: String
-  openForScholarshipsLoans: Boolean
-  parentMonthlyIncome: Int
+  budgetTuition: Int
+  budgetLiving: Int
+  budgetCurrency: String
+  fundingType: String
+  loanPreApproved: Boolean
+  priorVisaRefusals: Boolean
+  refusalCountries: JSON
+  refusalReason: String
+  passportAvailable: Boolean
+  passportExpiry: DateTime
+  currentStage: String
+  priority: String
+  lostReason: String
+  assignedCounsellor: UserRelateToOneForCreateInput
   applications: ApplicationRelateToManyForCreateInput
   documents: StudentDocumentRelateToManyForCreateInput
   loanApplications: LoanApplicationRelateToManyForCreateInput
@@ -975,6 +1193,8 @@ input StudentCreateInput {
   reimbursements: ReimbursementRelateToManyForCreateInput
   prepaidCard: PrepaidCardRelateToOneForCreateInput
   tasks: TaskRelateToManyForCreateInput
+  interactions: InteractionRelateToManyForCreateInput
+  payments: PaymentRelateToManyForCreateInput
   notes: String
   isDeleted: Boolean
   createdAt: DateTime
@@ -1000,6 +1220,7 @@ type StudentDocument {
   file: FileFieldOutput
   verificationStatus: String
   verificationRemarks: String
+  dueDate: DateTime
   uploadedAt: DateTime
   createdAt: DateTime
 }
@@ -1019,6 +1240,7 @@ input StudentDocumentWhereInput {
   documentType: StringFilter
   verificationStatus: StringNullableFilter
   verificationRemarks: StringFilter
+  dueDate: DateTimeNullableFilter
   uploadedAt: DateTimeNullableFilter
   createdAt: DateTimeNullableFilter
 }
@@ -1028,6 +1250,7 @@ input StudentDocumentOrderByInput {
   documentType: OrderDirection
   verificationStatus: OrderDirection
   verificationRemarks: OrderDirection
+  dueDate: OrderDirection
   uploadedAt: OrderDirection
   createdAt: OrderDirection
 }
@@ -1040,6 +1263,7 @@ input StudentDocumentUpdateInput {
   file: FileFieldInput
   verificationStatus: String
   verificationRemarks: String
+  dueDate: DateTime
   uploadedAt: DateTime
   createdAt: DateTime
 }
@@ -1075,6 +1299,7 @@ input StudentDocumentCreateInput {
   file: FileFieldInput
   verificationStatus: String
   verificationRemarks: String
+  dueDate: DateTime
   uploadedAt: DateTime
   createdAt: DateTime
 }
@@ -1105,6 +1330,10 @@ type Application {
   gre: Int
   gmat: Int
   gpa: Decimal
+  offerLetter: FileFieldOutput
+  conditionalRequirements: String
+  tuitionFeeOffered: Int
+  scholarshipAwarded: Int
   documents(where: StudentDocumentWhereInput! = {}, orderBy: [StudentDocumentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: StudentDocumentWhereUniqueInput): [StudentDocument!]
   documentsCount(where: StudentDocumentWhereInput! = {}): Int
   remarks: String
@@ -1131,6 +1360,9 @@ input ApplicationWhereInput {
   gre: IntNullableFilter
   gmat: IntNullableFilter
   gpa: DecimalNullableFilter
+  conditionalRequirements: StringFilter
+  tuitionFeeOffered: IntNullableFilter
+  scholarshipAwarded: IntNullableFilter
   documents: StudentDocumentManyRelationFilter
   remarks: StringFilter
   isDeleted: BooleanFilter
@@ -1146,6 +1378,9 @@ input ApplicationOrderByInput {
   gre: OrderDirection
   gmat: OrderDirection
   gpa: OrderDirection
+  conditionalRequirements: OrderDirection
+  tuitionFeeOffered: OrderDirection
+  scholarshipAwarded: OrderDirection
   remarks: OrderDirection
   isDeleted: OrderDirection
   createdAt: OrderDirection
@@ -1162,6 +1397,10 @@ input ApplicationUpdateInput {
   gre: Int
   gmat: Int
   gpa: Decimal
+  offerLetter: FileFieldInput
+  conditionalRequirements: String
+  tuitionFeeOffered: Int
+  scholarshipAwarded: Int
   documents: StudentDocumentRelateToManyForUpdateInput
   remarks: String
   isDeleted: Boolean
@@ -1190,6 +1429,10 @@ input ApplicationCreateInput {
   gre: Int
   gmat: Int
   gpa: Decimal
+  offerLetter: FileFieldInput
+  conditionalRequirements: String
+  tuitionFeeOffered: Int
+  scholarshipAwarded: Int
   documents: StudentDocumentRelateToManyForCreateInput
   remarks: String
   isDeleted: Boolean
@@ -1693,6 +1936,154 @@ input TaskCreateInput {
   updatedAt: DateTime
 }
 
+type Interaction {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  counsellor: User
+  type: String
+  direction: String
+  notes: String
+  nextAction: String
+  nextActionDate: DateTime
+  createdAt: DateTime
+}
+
+input InteractionWhereUniqueInput {
+  id: ID
+}
+
+input InteractionWhereInput {
+  AND: [InteractionWhereInput!]
+  OR: [InteractionWhereInput!]
+  NOT: [InteractionWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  counsellor: UserWhereInput
+  type: StringFilter
+  direction: StringFilter
+  notes: StringFilter
+  nextAction: StringFilter
+  nextActionDate: DateTimeNullableFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input InteractionOrderByInput {
+  id: OrderDirection
+  type: OrderDirection
+  direction: OrderDirection
+  notes: OrderDirection
+  nextAction: OrderDirection
+  nextActionDate: OrderDirection
+  createdAt: OrderDirection
+}
+
+input InteractionUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  counsellor: UserRelateToOneForUpdateInput
+  type: String
+  direction: String
+  notes: String
+  nextAction: String
+  nextActionDate: DateTime
+  createdAt: DateTime
+}
+
+input InteractionUpdateArgs {
+  where: InteractionWhereUniqueInput!
+  data: InteractionUpdateInput!
+}
+
+input InteractionCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  counsellor: UserRelateToOneForCreateInput
+  type: String
+  direction: String
+  notes: String
+  nextAction: String
+  nextActionDate: DateTime
+  createdAt: DateTime
+}
+
+type Payment {
+  id: ID!
+  tenant: Consultant
+  student: Student
+  feeType: String
+  amount: Int
+  currency: String
+  paymentStatus: String
+  paymentDate: DateTime
+  paymentMethod: String
+  invoice: FileFieldOutput
+  createdAt: DateTime
+}
+
+input PaymentWhereUniqueInput {
+  id: ID
+}
+
+input PaymentWhereInput {
+  AND: [PaymentWhereInput!]
+  OR: [PaymentWhereInput!]
+  NOT: [PaymentWhereInput!]
+  id: IDFilter
+  tenant: ConsultantWhereInput
+  student: StudentWhereInput
+  feeType: StringFilter
+  amount: IntFilter
+  currency: StringFilter
+  paymentStatus: StringNullableFilter
+  paymentDate: DateTimeNullableFilter
+  paymentMethod: StringNullableFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input PaymentOrderByInput {
+  id: OrderDirection
+  feeType: OrderDirection
+  amount: OrderDirection
+  currency: OrderDirection
+  paymentStatus: OrderDirection
+  paymentDate: OrderDirection
+  paymentMethod: OrderDirection
+  createdAt: OrderDirection
+}
+
+input PaymentUpdateInput {
+  tenant: ConsultantRelateToOneForUpdateInput
+  student: StudentRelateToOneForUpdateInput
+  feeType: String
+  amount: Int
+  currency: String
+  paymentStatus: String
+  paymentDate: DateTime
+  paymentMethod: String
+  invoice: FileFieldInput
+  createdAt: DateTime
+}
+
+input PaymentUpdateArgs {
+  where: PaymentWhereUniqueInput!
+  data: PaymentUpdateInput!
+}
+
+input PaymentCreateInput {
+  tenant: ConsultantRelateToOneForCreateInput
+  student: StudentRelateToOneForCreateInput
+  feeType: String
+  amount: Int
+  currency: String
+  paymentStatus: String
+  paymentDate: DateTime
+  paymentMethod: String
+  invoice: FileFieldInput
+  createdAt: DateTime
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -1777,6 +2168,18 @@ type Mutation {
   updateTasks(data: [TaskUpdateArgs!]!): [Task]
   deleteTask(where: TaskWhereUniqueInput!): Task
   deleteTasks(where: [TaskWhereUniqueInput!]!): [Task]
+  createInteraction(data: InteractionCreateInput!): Interaction
+  createInteractions(data: [InteractionCreateInput!]!): [Interaction]
+  updateInteraction(where: InteractionWhereUniqueInput!, data: InteractionUpdateInput!): Interaction
+  updateInteractions(data: [InteractionUpdateArgs!]!): [Interaction]
+  deleteInteraction(where: InteractionWhereUniqueInput!): Interaction
+  deleteInteractions(where: [InteractionWhereUniqueInput!]!): [Interaction]
+  createPayment(data: PaymentCreateInput!): Payment
+  createPayments(data: [PaymentCreateInput!]!): [Payment]
+  updatePayment(where: PaymentWhereUniqueInput!, data: PaymentUpdateInput!): Payment
+  updatePayments(data: [PaymentUpdateArgs!]!): [Payment]
+  deletePayment(where: PaymentWhereUniqueInput!): Payment
+  deletePayments(where: [PaymentWhereUniqueInput!]!): [Payment]
   endSession: Boolean!
 }
 
@@ -1820,6 +2223,12 @@ type Query {
   task(where: TaskWhereUniqueInput!): Task
   tasks(where: TaskWhereInput! = {}, orderBy: [TaskOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: TaskWhereUniqueInput): [Task!]
   tasksCount(where: TaskWhereInput! = {}): Int
+  interaction(where: InteractionWhereUniqueInput!): Interaction
+  interactions(where: InteractionWhereInput! = {}, orderBy: [InteractionOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: InteractionWhereUniqueInput): [Interaction!]
+  interactionsCount(where: InteractionWhereInput! = {}): Int
+  payment(where: PaymentWhereUniqueInput!): Payment
+  payments(where: PaymentWhereInput! = {}, orderBy: [PaymentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PaymentWhereUniqueInput): [Payment!]
+  paymentsCount(where: PaymentWhereInput! = {}): Int
   keystone: KeystoneMeta!
 }
 

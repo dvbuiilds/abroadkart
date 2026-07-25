@@ -19,14 +19,18 @@ model User {
   role                                        String            @default("pending")
   tenant                                      Consultant?       @relation("User_tenant", fields: [tenantId], references: [id])
   tenantId                                    String?           @map("tenant") @postgresql.Uuid
+  staffTitle                                  String?
+  specializationCountries                     Json?
   isActive                                    Boolean           @default(true)
   lastLoginAt                                 DateTime?
   createdAt                                   DateTime?         @default(now())
   updatedAt                                   DateTime?         @updatedAt
   from_ActivityLog_actor                      ActivityLog[]     @relation("ActivityLog_actor")
+  from_Student_assignedCounsellor             Student[]         @relation("Student_assignedCounsellor")
   from_LoanApplication_assignedFulfilmentExec LoanApplication[] @relation("LoanApplication_assignedFulfilmentExec")
   from_Task_assignedTo                        Task[]            @relation("Task_assignedTo")
   from_Task_createdBy                         Task[]            @relation("Task_createdBy")
+  from_Interaction_counsellor                 Interaction[]     @relation("Interaction_counsellor")
 
   @@index([tenantId])
 }
@@ -49,6 +53,8 @@ model Consultant {
   reimbursements   Reimbursement[]        @relation("Reimbursement_tenant")
   prepaidCards     PrepaidCard[]          @relation("PrepaidCard_tenant")
   tasks            Task[]                 @relation("Task_tenant")
+  interactions     Interaction[]          @relation("Interaction_tenant")
+  payments         Payment[]              @relation("Payment_tenant")
   activityLogs     ActivityLog[]          @relation("ActivityLog_tenant")
   createdAt        DateTime?              @default(now())
   updatedAt        DateTime?              @updatedAt
@@ -87,64 +93,101 @@ model University {
 }
 
 model Program {
-  id                String        @id @default(uuid()) @postgresql.Uuid
-  name              String        @default("")
-  university        University?   @relation("Program_university", fields: [universityId], references: [id])
-  universityId      String?       @map("university") @postgresql.Uuid
-  level             String
-  field             String        @default("")
-  tuitionFeePerYear Int?
-  currency          String        @default("USD")
-  duration          Int?
-  startDate         DateTime?
-  applications      Application[] @relation("Application_program")
-  isActive          Boolean       @default(true)
-  createdAt         DateTime?     @default(now())
+  id                   String        @id @default(uuid()) @postgresql.Uuid
+  name                 String        @default("")
+  university           University?   @relation("Program_university", fields: [universityId], references: [id])
+  universityId         String?       @map("university") @postgresql.Uuid
+  level                String
+  field                String        @default("")
+  tuitionFeePerYear    Int?
+  currency             String        @default("USD")
+  duration             Int?
+  startDate            DateTime?
+  minIeltsScore        Decimal?      @postgresql.Decimal(18, 4)
+  minCgpa              Decimal?      @postgresql.Decimal(18, 4)
+  applicationFee       Int?
+  applicationPortalUrl String        @default("")
+  applications         Application[] @relation("Application_program")
+  isActive             Boolean       @default(true)
+  createdAt            DateTime?     @default(now())
 
   @@index([universityId])
 }
 
 model Student {
-  id                       String                 @id @default(uuid()) @postgresql.Uuid
-  tenant                   Consultant?            @relation("Student_tenant", fields: [tenantId], references: [id])
-  tenantId                 String?                @map("tenant") @postgresql.Uuid
-  fullName                 String                 @default("")
-  email                    String                 @default("")
-  phone                    String                 @default("")
-  dateOfBirth              DateTime?
-  countryOfResidence       String                 @default("")
-  targetCountry            String
-  currentStage             String?                @default("lead")
-  qualification            String?
-  workExperience           String?
-  ieltsScore               Decimal?               @postgresql.Decimal(18, 4)
-  toeflScore               Decimal?               @postgresql.Decimal(18, 4)
-  pteScore                 Decimal?               @postgresql.Decimal(18, 4)
-  gmatScore                Decimal?               @postgresql.Decimal(18, 4)
-  greScore                 Decimal?               @postgresql.Decimal(18, 4)
-  satScore                 Decimal?               @postgresql.Decimal(18, 4)
-  actScore                 Decimal?               @postgresql.Decimal(18, 4)
-  finalScore               Decimal?               @postgresql.Decimal(18, 4)
-  targetYear               String?
-  programDisciplines       Json?
-  budgetPerYear            String?
-  openForScholarshipsLoans Boolean                @default(false)
-  parentMonthlyIncome      Int?
-  applications             Application[]          @relation("Application_student")
-  documents                StudentDocument[]      @relation("StudentDocument_student")
-  loanApplications         LoanApplication[]      @relation("LoanApplication_student")
-  accommodations           AccommodationBooking[] @relation("AccommodationBooking_student")
-  reimbursements           Reimbursement[]        @relation("Reimbursement_student")
-  prepaidCard              PrepaidCard?           @relation("PrepaidCard_student")
-  tasks                    Task[]                 @relation("Task_student")
-  notes                    String                 @default("")
-  isDeleted                Boolean                @default(false)
-  createdAt                DateTime?              @default(now())
-  updatedAt                DateTime?              @updatedAt
+  id                   String                 @id @default(uuid()) @postgresql.Uuid
+  tenant               Consultant?            @relation("Student_tenant", fields: [tenantId], references: [id])
+  tenantId             String?                @map("tenant") @postgresql.Uuid
+  fullName             String                 @default("")
+  email                String                 @default("")
+  phone                String                 @default("")
+  dateOfBirth          DateTime?
+  gender               String?
+  city                 String                 @default("")
+  state                String                 @default("")
+  countryOfResidence   String                 @default("")
+  source               String?
+  qualification        String?
+  stream               String                 @default("")
+  subjects             Json?
+  academicScore        Decimal?               @postgresql.Decimal(18, 4)
+  academicScoreType    String?
+  backlogCount         Int?
+  yearOfPassing        Int?
+  institutionName      String                 @default("")
+  ieltsScore           Decimal?               @postgresql.Decimal(18, 4)
+  toeflScore           Decimal?               @postgresql.Decimal(18, 4)
+  pteScore             Decimal?               @postgresql.Decimal(18, 4)
+  duolingoScore        Decimal?               @postgresql.Decimal(18, 4)
+  gmatScore            Decimal?               @postgresql.Decimal(18, 4)
+  greScore             Decimal?               @postgresql.Decimal(18, 4)
+  satScore             Decimal?               @postgresql.Decimal(18, 4)
+  actScore             Decimal?               @postgresql.Decimal(18, 4)
+  finalScore           Decimal?               @postgresql.Decimal(18, 4)
+  testAppearingDate    DateTime?
+  workExperience       String?
+  employer             String                 @default("")
+  designation          String                 @default("")
+  gapExplanation       String                 @default("")
+  targetCountries      Json?
+  targetCourses        Json?
+  studyLevel           String?
+  preferredIntake      String?
+  targetYear           String?
+  programDisciplines   Json?
+  budgetTuition        Int?
+  budgetLiving         Int?
+  budgetCurrency       String                 @default("USD")
+  fundingType          String?
+  loanPreApproved      Boolean                @default(false)
+  priorVisaRefusals    Boolean                @default(false)
+  refusalCountries     Json?
+  refusalReason        String                 @default("")
+  passportAvailable    Boolean                @default(false)
+  passportExpiry       DateTime?
+  currentStage         String?                @default("lead")
+  priority             String?
+  lostReason           String                 @default("")
+  assignedCounsellor   User?                  @relation("Student_assignedCounsellor", fields: [assignedCounsellorId], references: [id])
+  assignedCounsellorId String?                @map("assignedCounsellor") @postgresql.Uuid
+  applications         Application[]          @relation("Application_student")
+  documents            StudentDocument[]      @relation("StudentDocument_student")
+  loanApplications     LoanApplication[]      @relation("LoanApplication_student")
+  accommodations       AccommodationBooking[] @relation("AccommodationBooking_student")
+  reimbursements       Reimbursement[]        @relation("Reimbursement_student")
+  prepaidCard          PrepaidCard?           @relation("PrepaidCard_student")
+  tasks                Task[]                 @relation("Task_student")
+  interactions         Interaction[]          @relation("Interaction_student")
+  payments             Payment[]              @relation("Payment_student")
+  notes                String                 @default("")
+  isDeleted            Boolean                @default(false)
+  createdAt            DateTime?              @default(now())
+  updatedAt            DateTime?              @updatedAt
 
   @@index([tenantId])
   @@index([email])
   @@index([currentStage])
+  @@index([assignedCounsellorId])
 }
 
 model StudentDocument {
@@ -160,6 +203,7 @@ model StudentDocument {
   file_filename       String?
   verificationStatus  String?          @default("pending")
   verificationRemarks String           @default("")
+  dueDate             DateTime?
   uploadedAt          DateTime?        @default(now())
   createdAt           DateTime?        @default(now())
 
@@ -182,6 +226,11 @@ model Application {
   gre                              Int?
   gmat                             Int?
   gpa                              Decimal?          @postgresql.Decimal(18, 4)
+  offerLetter_filesize             Int?
+  offerLetter_filename             String?
+  conditionalRequirements          String            @default("")
+  tuitionFeeOffered                Int?
+  scholarshipAwarded               Int?
   documents                        StudentDocument[] @relation("StudentDocument_application")
   remarks                          String            @default("")
   isDeleted                        Boolean           @default(false)
@@ -316,4 +365,44 @@ model Task {
   @@index([studentId])
   @@index([assignedToId])
   @@index([createdById])
+}
+
+model Interaction {
+  id             String      @id @default(uuid()) @postgresql.Uuid
+  tenant         Consultant? @relation("Interaction_tenant", fields: [tenantId], references: [id])
+  tenantId       String?     @map("tenant") @postgresql.Uuid
+  student        Student?    @relation("Interaction_student", fields: [studentId], references: [id])
+  studentId      String?     @map("student") @postgresql.Uuid
+  counsellor     User?       @relation("Interaction_counsellor", fields: [counsellorId], references: [id])
+  counsellorId   String?     @map("counsellor") @postgresql.Uuid
+  type           String
+  direction      String
+  notes          String      @default("")
+  nextAction     String      @default("")
+  nextActionDate DateTime?
+  createdAt      DateTime?   @default(now())
+
+  @@index([tenantId])
+  @@index([studentId])
+  @@index([counsellorId])
+}
+
+model Payment {
+  id               String      @id @default(uuid()) @postgresql.Uuid
+  tenant           Consultant? @relation("Payment_tenant", fields: [tenantId], references: [id])
+  tenantId         String?     @map("tenant") @postgresql.Uuid
+  student          Student?    @relation("Payment_student", fields: [studentId], references: [id])
+  studentId        String?     @map("student") @postgresql.Uuid
+  feeType          String
+  amount           Int
+  currency         String      @default("INR")
+  paymentStatus    String?     @default("pending")
+  paymentDate      DateTime?
+  paymentMethod    String?
+  invoice_filesize Int?
+  invoice_filename String?
+  createdAt        DateTime?   @default(now())
+
+  @@index([tenantId])
+  @@index([studentId])
 }

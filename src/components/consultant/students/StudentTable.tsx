@@ -16,24 +16,43 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@app/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Pencil } from "lucide-react";
+import { MoreHorizontal, Eye, Pencil, Flame, Thermometer, Snowflake } from "lucide-react";
 import type { StudentListItem } from "@app/graphql/types";
 import { format } from "date-fns";
 import {
   qualificationLabelMap,
-  targetCountryLabelMap,
+  stageLabelMap,
+  priorityLabelMap,
 } from "@app/lib/students/options";
 
 const STAGE_VARIANTS: Record<
   string,
-  "default" | "secondary" | "outline" | "success" | "warning"
+  "default" | "secondary" | "outline" | "success" | "warning" | "destructive"
 > = {
   lead: "secondary",
-  prospect: "secondary",
+  contacted: "secondary",
+  counsellingDone: "secondary",
+  docsCollection: "outline",
   applied: "outline",
-  inLoanProcess: "warning",
+  offerReceived: "success",
+  visaFiled: "success",
   enrolled: "success",
-  graduated: "default",
+  lost: "destructive",
+};
+
+const PRIORITY_VARIANTS: Record<
+  string,
+  "default" | "secondary" | "outline" | "destructive" | "warning"
+> = {
+  hot: "destructive",
+  warm: "warning",
+  cold: "secondary",
+};
+
+const PRIORITY_ICONS: Record<string, React.ReactNode> = {
+  hot: <Flame className="h-3 w-3 mr-1" />,
+  warm: <Thermometer className="h-3 w-3 mr-1" />,
+  cold: <Snowflake className="h-3 w-3 mr-1" />,
 };
 
 export function StudentTable({
@@ -52,9 +71,9 @@ export function StudentTable({
           <TableHead>Name</TableHead>
           <TableHead>Email</TableHead>
           <TableHead>Country</TableHead>
-          <TableHead>Target Country</TableHead>
-          <TableHead>Qualification</TableHead>
           <TableHead>Stage</TableHead>
+          <TableHead>Priority</TableHead>
+          <TableHead>Counsellor</TableHead>
           <TableHead>Created</TableHead>
           <TableHead className="w-[70px]">Actions</TableHead>
         </TableRow>
@@ -69,30 +88,38 @@ export function StudentTable({
             <TableCell className="font-medium">
               {student.fullName ?? "—"}
             </TableCell>
-            <TableCell>{student.email ?? "—"}</TableCell>
+            <TableCell className="text-sm">{student.email ?? "—"}</TableCell>
             <TableCell>{student.countryOfResidence ?? "—"}</TableCell>
-            <TableCell>
-              {student.targetCountry
-                ? targetCountryLabelMap[student.targetCountry] ??
-                  student.targetCountry
-                : "—"}
-            </TableCell>
-            <TableCell>
-              {student.qualification
-                ? qualificationLabelMap[student.qualification] ??
-                  student.qualification
-                : "—"}
-            </TableCell>
             <TableCell>
               <Badge
                 variant={
                   STAGE_VARIANTS[student.currentStage ?? ""] ?? "secondary"
                 }
               >
-                {student.currentStage ?? "—"}
+                {stageLabelMap[student.currentStage ?? ""] ?? "—"}
               </Badge>
             </TableCell>
-            <TableCell className="text-muted-foreground">
+            <TableCell>
+              {student.priority ? (
+                <Badge
+                  variant={PRIORITY_VARIANTS[student.priority] ?? "secondary"}
+                  className="flex items-center w-fit"
+                >
+                  {PRIORITY_ICONS[student.priority]}
+                  {priorityLabelMap[student.priority] ?? student.priority}
+                </Badge>
+              ) : (
+                <span className="text-muted-foreground text-sm">—</span>
+              )}
+            </TableCell>
+            <TableCell>
+              {student.assignedCounsellor?.name ? (
+                <span className="text-sm">{student.assignedCounsellor.name}</span>
+              ) : (
+                <span className="text-muted-foreground text-sm">Unassigned</span>
+              )}
+            </TableCell>
+            <TableCell className="text-muted-foreground text-sm">
               {student.createdAt
                 ? format(new Date(student.createdAt), "MMM d, yyyy")
                 : "—"}
