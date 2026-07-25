@@ -7,27 +7,36 @@ import {
   SelectValue,
 } from "@app/components/ui/select";
 import { useEffect, useRef, useState } from "react";
+import { STAGE_OPTIONS, PRIORITY_OPTIONS } from "@app/lib/students/options";
 
-const STAGE_OPTIONS = [
+const STAGE_FILTER_OPTIONS = [
   { value: "all", label: "All stages" },
-  { value: "lead", label: "Lead" },
-  { value: "prospect", label: "Prospect" },
-  { value: "applied", label: "Applied" },
-  { value: "inLoanProcess", label: "In Loan Process" },
-  { value: "enrolled", label: "Enrolled" },
-  { value: "graduated", label: "Graduated" },
+  ...STAGE_OPTIONS,
+];
+
+const PRIORITY_FILTER_OPTIONS = [
+  { value: "all", label: "All priorities" },
+  ...PRIORITY_OPTIONS,
 ];
 
 export function StudentFilters({
   search,
   stage,
+  priority,
+  counsellor,
   onSearchChange,
   onStageChange,
+  onPriorityChange,
+  onCounselllorChange,
 }: {
   search: string;
   stage: string;
+  priority: string;
+  counsellor: string;
   onSearchChange: (v: string) => void;
   onStageChange: (v: string) => void;
+  onPriorityChange: (v: string) => void;
+  onCounselllorChange: (v: string) => void;
 }) {
   const [localSearch, setLocalSearch] = useState(search);
   const onSearchChangeRef = useRef(onSearchChange);
@@ -39,7 +48,7 @@ export function StudentFilters({
   }, [localSearch]);
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:flex-wrap">
       <Input
         placeholder="Search by name or email..."
         value={localSearch}
@@ -51,13 +60,31 @@ export function StudentFilters({
           <SelectValue placeholder="Stage" />
         </SelectTrigger>
         <SelectContent>
-          {STAGE_OPTIONS.map((opt) => (
+          {STAGE_FILTER_OPTIONS.map((opt) => (
             <SelectItem key={opt.value} value={opt.value}>
               {opt.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
+      <Select value={priority} onValueChange={onPriorityChange}>
+        <SelectTrigger className="w-[160px]">
+          <SelectValue placeholder="Priority" />
+        </SelectTrigger>
+        <SelectContent>
+          {PRIORITY_FILTER_OPTIONS.map((opt) => (
+            <SelectItem key={opt.value} value={opt.value}>
+              {opt.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Input
+        placeholder="Filter by counsellor name..."
+        value={counsellor}
+        onChange={(e) => onCounselllorChange(e.target.value)}
+        className="max-w-sm"
+      />
     </div>
   );
 }

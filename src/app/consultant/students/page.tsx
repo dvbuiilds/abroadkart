@@ -29,6 +29,8 @@ export default function StudentsPage() {
   const page = Math.max(0, parseInt(searchParams.get('page') ?? '1', 10) - 1);
   const search = searchParams.get('search') ?? '';
   const stage = searchParams.get('stage') ?? 'all';
+  const priority = searchParams.get('priority') ?? 'all';
+  const counsellor = searchParams.get('counsellor') ?? '';
 
   const variables = useMemo(() => {
     const where: Record<string, unknown> = {
@@ -43,8 +45,16 @@ export default function StudentsPage() {
     if (stage !== 'all') {
       where.currentStage = { equals: stage };
     }
+    if (priority !== 'all') {
+      where.priority = { equals: priority };
+    }
+    if (counsellor.trim()) {
+      where.assignedCounsellor = {
+        name: { contains: counsellor.trim(), mode: 'insensitive' },
+      };
+    }
     return { where, orderBy: [{ createdAt: 'desc' }], take: PAGE_SIZE, skip: page * PAGE_SIZE };
-  }, [search, stage, page]);
+  }, [search, stage, priority, counsellor, page]);
 
   const { data, isLoading, isError } = useStudents(variables);
   const { refetch: refetchAllStudents, isFetching: isExporting } = useAllStudents(
@@ -120,8 +130,12 @@ export default function StudentsPage() {
       <StudentFilters
         search={search}
         stage={stage}
+        priority={priority}
+        counsellor={counsellor}
         onSearchChange={(v) => updateParams({ search: v, page: '1' })}
         onStageChange={(v) => updateParams({ stage: v, page: '1' })}
+        onPriorityChange={(v) => updateParams({ priority: v, page: '1' })}
+        onCounselllorChange={(v) => updateParams({ counsellor: v, page: '1' })}
       />
 
       {isLoading ? (

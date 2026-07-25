@@ -64,6 +64,39 @@ export interface StudentListItem {
   createdAt: string | null;
   updatedAt: string | null;
   tenant?: ConsultantRef | null;
+  gender?: string | null;
+  city?: string | null;
+  state?: string | null;
+  source?: string | null;
+  stream?: string | null;
+  subjects?: string[] | null;
+  academicScore?: number | null;
+  academicScoreType?: string | null;
+  backlogCount?: number | null;
+  yearOfPassing?: number | null;
+  institutionName?: string | null;
+  duolingoScore?: string | null;
+  testAppearingDate?: string | null;
+  employer?: string | null;
+  designation?: string | null;
+  gapExplanation?: string | null;
+  targetCountries?: string[] | null;
+  targetCourses?: string[] | null;
+  studyLevel?: string | null;
+  preferredIntake?: string | null;
+  budgetTuition?: number | null;
+  budgetLiving?: number | null;
+  budgetCurrency?: string | null;
+  fundingType?: string | null;
+  loanPreApproved?: boolean | null;
+  priorVisaRefusals?: boolean | null;
+  refusalCountries?: string[] | null;
+  refusalReason?: string | null;
+  passportAvailable?: boolean | null;
+  passportExpiry?: string | null;
+  priority?: string | null;
+  lostReason?: string | null;
+  assignedCounsellor?: UserRef | null;
 }
 
 export interface Student {
@@ -98,6 +131,41 @@ export interface Student {
   loanApplications?: LoanListItem[];
   documents?: StudentDocumentListItem[];
   tasks?: TaskListItem[];
+  gender?: string | null;
+  city?: string | null;
+  state?: string | null;
+  source?: string | null;
+  stream?: string | null;
+  subjects?: string[] | null;
+  academicScore?: number | null;
+  academicScoreType?: string | null;
+  backlogCount?: number | null;
+  yearOfPassing?: number | null;
+  institutionName?: string | null;
+  duolingoScore?: string | null;
+  testAppearingDate?: string | null;
+  employer?: string | null;
+  designation?: string | null;
+  gapExplanation?: string | null;
+  targetCountries?: string[] | null;
+  targetCourses?: string[] | null;
+  studyLevel?: string | null;
+  preferredIntake?: string | null;
+  budgetTuition?: number | null;
+  budgetLiving?: number | null;
+  budgetCurrency?: string | null;
+  fundingType?: string | null;
+  loanPreApproved?: boolean | null;
+  priorVisaRefusals?: boolean | null;
+  refusalCountries?: string[] | null;
+  refusalReason?: string | null;
+  passportAvailable?: boolean | null;
+  passportExpiry?: string | null;
+  priority?: string | null;
+  lostReason?: string | null;
+  assignedCounsellor?: UserRef | null;
+  interactions?: InteractionListItem[];
+  payments?: PaymentListItem[];
 }
 
 export interface ApplicationListItem {
@@ -107,6 +175,10 @@ export interface ApplicationListItem {
   responseDate: string | null;
   program?: ProgramRef | null;
   student?: { id: string; fullName: string | null; email: string | null } | null;
+  tuitionFeeOffered?: number | null;
+  scholarshipAwarded?: number | null;
+  conditionalRequirements?: string | null;
+  offerLetter?: FileFieldOutput | null;
 }
 
 export interface Application {
@@ -121,6 +193,10 @@ export interface Application {
   student?: StudentListItem | null;
   program?: ProgramRef | null;
   documents?: StudentDocumentListItem[];
+  tuitionFeeOffered?: number | null;
+  scholarshipAwarded?: number | null;
+  conditionalRequirements?: string | null;
+  offerLetter?: FileFieldOutput | null;
 }
 
 export interface LoanListItem {
@@ -170,6 +246,7 @@ export interface StudentDocumentListItem {
   verificationRemarks?: string | null;
   uploadedAt: string | null;
   file?: FileFieldOutput | null;
+  dueDate?: string | null;
   student?: {
     id: string;
     fullName: string | null;
@@ -288,4 +365,59 @@ export interface FulfilmentDashboardKPIs {
   loansDisbursed: number;
   pendingDocuments: number;
   pendingReimbursements: number;
+}
+
+export interface InteractionListItem {
+  id: string;
+  type: string | null;
+  direction: string | null;
+  notes: string | null;
+  nextAction?: string | null;
+  nextActionDate?: string | null;
+  createdAt: string | null;
+  student?: { id: string; fullName: string | null } | null;
+  counsellor?: UserRef | null;
+  tenant?: ConsultantRef | null;
+}
+
+export interface Interaction {
+  id: string;
+  type: string | null;
+  direction: string | null;
+  notes: string | null;
+  nextAction?: string | null;
+  nextActionDate?: string | null;
+  createdAt: string | null;
+  updatedAt?: string | null;
+  student?: StudentListItem | null;
+  counsellor?: UserRef | null;
+  tenant?: ConsultantRef | null;
+}
+
+export interface PaymentListItem {
+  id: string;
+  feeType: string | null;
+  amount: number | null;
+  currency: string | null;
+  paymentStatus: string | null;
+  paymentDate: string | null;
+  paymentMethod?: string | null;
+  createdAt: string | null;
+  student?: { id: string; fullName: string | null; email: string | null } | null;
+  tenant?: ConsultantRef | null;
+}
+
+export interface Payment {
+  id: string;
+  feeType: string | null;
+  amount: number | null;
+  currency: string | null;
+  paymentStatus: string | null;
+  paymentDate: string | null;
+  paymentMethod?: string | null;
+  invoice?: FileFieldOutput | null;
+  createdAt: string | null;
+  updatedAt?: string | null;
+  student?: StudentListItem | null;
+  tenant?: ConsultantRef | null;
 }
