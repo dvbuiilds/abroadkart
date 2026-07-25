@@ -18,20 +18,25 @@ import { StudentApplicationsTab } from "@app/components/consultant/students/Stud
 import { StudentLoansTab } from "@app/components/consultant/students/StudentLoansTab";
 import { StudentDocumentsTab } from "@app/components/consultant/students/StudentDocumentsTab";
 import { StudentTasksTab } from "@app/components/consultant/students/StudentTasksTab";
+import { StudentInteractionsTab } from "@app/components/consultant/students/StudentInteractionsTab";
+import { StudentPaymentsTab } from "@app/components/consultant/students/StudentPaymentsTab";
 import { StudentEditSheet } from "@app/components/consultant/students/StudentEditSheet";
 import { Pencil } from "lucide-react";
 import type { Student } from "@app/graphql/types";
 
 const STAGE_VARIANTS: Record<
   string,
-  "default" | "secondary" | "outline" | "success" | "warning"
+  "default" | "secondary" | "outline" | "success" | "warning" | "destructive"
 > = {
   lead: "secondary",
-  prospect: "secondary",
+  contacted: "secondary",
+  counsellingDone: "secondary",
+  docsCollection: "outline",
   applied: "outline",
-  inLoanProcess: "warning",
+  offerReceived: "success",
+  visaFiled: "success",
   enrolled: "success",
-  graduated: "default",
+  lost: "destructive",
 };
 
 export default function StudentDetailPage() {
@@ -100,16 +105,22 @@ export default function StudentDetailPage() {
       />
 
       <Tabs defaultValue="overview" className="w-full">
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+        <TabsList className="grid w-full grid-cols-7 lg:w-auto lg:inline-grid gap-1">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="applications">
-            Applications ({student.applications?.length ?? 0})
+            Apps ({student.applications?.length ?? 0})
           </TabsTrigger>
           <TabsTrigger value="loans">
             Loans ({student.loanApplications?.length ?? 0})
           </TabsTrigger>
           <TabsTrigger value="documents">
-            Documents ({student.documents?.length ?? 0})
+            Docs ({student.documents?.length ?? 0})
+          </TabsTrigger>
+          <TabsTrigger value="interactions">
+            Interactions ({student.interactions?.length ?? 0})
+          </TabsTrigger>
+          <TabsTrigger value="payments">
+            Payments ({student.payments?.length ?? 0})
           </TabsTrigger>
           <TabsTrigger value="tasks">
             Tasks ({student.tasks?.length ?? 0})
@@ -141,6 +152,18 @@ export default function StudentDetailPage() {
             onUploadClick={() =>
               router.push(`/consultant/documents?upload=1&studentId=${id}`)
             }
+          />
+        </TabsContent>
+        <TabsContent value="interactions" className="mt-4">
+          <StudentInteractionsTab
+            studentId={id}
+            interactions={student.interactions}
+          />
+        </TabsContent>
+        <TabsContent value="payments" className="mt-4">
+          <StudentPaymentsTab
+            studentId={id}
+            payments={student.payments}
           />
         </TabsContent>
         <TabsContent value="tasks" className="mt-4">
