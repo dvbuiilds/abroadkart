@@ -36,7 +36,7 @@ function filterDocByTenant({ session }: { session?: SessionData | null }) {
   return false;
 }
 
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const StudentDocument = list({
   access: {
@@ -110,6 +110,6 @@ export const StudentDocument = list({
     createdAt: timestamp({ defaultValue: { kind: "now" } }),
   },
   hooks: {
-    afterOperation: afterOperationWithCache("studentDocuments"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

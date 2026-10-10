@@ -16,7 +16,7 @@ export const GET_STUDENTS = `
       phone
       dateOfBirth
       countryOfResidence
-      targetCountry
+      targetCountries
       currentStage
       qualification
       workExperience
@@ -54,7 +54,7 @@ export const GET_STUDENT = `
       phone
       dateOfBirth
       countryOfResidence
-      targetCountry
+      targetCountries
       currentStage
       qualification
       workExperience
@@ -142,7 +142,7 @@ export const GET_ALL_STUDENTS = `
       email
       phone
       countryOfResidence
-      targetCountry
+      targetCountries
       currentStage
       qualification
       workExperience

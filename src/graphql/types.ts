@@ -44,7 +44,7 @@ export interface StudentListItem {
   dateOfBirth: string | null;
   currentStage: string | null;
   countryOfResidence: string | null;
-  targetCountry: string | null;
+  targetCountries: string[] | null;
   qualification: string | null;
   workExperience: string | null;
   targetYear: string | null;
@@ -80,7 +80,6 @@ export interface StudentListItem {
   employer?: string | null;
   designation?: string | null;
   gapExplanation?: string | null;
-  targetCountries?: string[] | null;
   targetCourses?: string[] | null;
   studyLevel?: string | null;
   preferredIntake?: string | null;
@@ -106,7 +105,7 @@ export interface Student {
   phone: string | null;
   dateOfBirth: string | null;
   countryOfResidence: string | null;
-  targetCountry: string | null;
+  targetCountries: string[] | null;
   currentStage: string | null;
   qualification: string | null;
   workExperience: string | null;
@@ -147,7 +146,6 @@ export interface Student {
   employer?: string | null;
   designation?: string | null;
   gapExplanation?: string | null;
-  targetCountries?: string[] | null;
   targetCourses?: string[] | null;
   studyLevel?: string | null;
   preferredIntake?: string | null;

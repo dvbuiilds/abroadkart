@@ -19,7 +19,7 @@ import {
   filterByTenant,
 } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const Reimbursement = list({
   access: {
@@ -85,6 +85,6 @@ export const Reimbursement = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("reimbursements"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

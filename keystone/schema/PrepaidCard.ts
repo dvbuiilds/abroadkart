@@ -12,7 +12,7 @@ import {
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isFulfilment, isSuperAdmin, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const PrepaidCard = list({
   access: {
@@ -55,6 +55,6 @@ export const PrepaidCard = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("prepaidCards"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

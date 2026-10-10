@@ -13,7 +13,7 @@ import {
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isSuperAdmin, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const Interaction = list({
   access: {
@@ -72,7 +72,7 @@ export const Interaction = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("interactions"),
+    afterOperation: logActivityHook.afterOperation,
   },
   graphql: {
     plural: "Interactions",

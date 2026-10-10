@@ -5,18 +5,17 @@
 # Docker Compose loads .env for variable substitution in this file only.
 #
 # Root `.env` is the single Next.js env file; `keystone/.env` is the single Keystone file.
-# For keystone / nextjs services, DATABASE_URL (and Keystone REDIS_URL) are set below so
-# Docker uses hostnames `postgres` and `redis` — overrides URLs that point at localhost in those files.
+# For keystone / nextjs services, DATABASE_URL is set below so Docker uses the hostname `postgres`
+# instead of the localhost URL in those files.
 # Next.js server-side proxies use KEYSTONE_INTERNAL_URL=http://keystone:3001 (inside the Docker
 # network). Browsers use PUBLIC_APP_URL / PUBLIC_ADMIN_URL (see `.env.example`); the Next.js image
 # bakes `NEXT_PUBLIC_KEYSTONE_URL` from the `PUBLIC_ADMIN_URL` build arg at build time.
 # Keystone fetches JWKS from Next.js via BETTER_AUTH_JWKS_URL=http://nextjs:3000/... (internal).
 #
 # Start order (enforced by depends_on + healthchecks):
-#   1. postgres  ──┐
-#   2. redis     ──┴──▶  3. keystone
-#   4. nextjs-migrate (one-shot: CREATE SCHEMA auth if needed + yarn auth:migrate)
-#   5. nextjs (waits for keystone + successful migrate)
+#   1. postgres  ──▶  2. keystone
+#   3. nextjs-migrate (one-shot: CREATE SCHEMA auth if needed + yarn auth:migrate)
+#   4. nextjs (waits for keystone + successful migrate)
 #
 # Postgres `db/init/` runs on first volume init. `nextjs-migrate` is idempotent on every `up`.
 #
@@ -57,30 +56,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  # ── 2. Redis ──────────────────────────────────────────────────────────────────
-  redis:
-    image: redis:7-alpine
-    container_name: abroadkart-redis
-    command:
-      - redis-server
-      - --requirepass
-      - ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    networks:
-      - abroadkart
-    # Keep port mapping for connecting with a local Redis client (RedisInsight, etc.)
-    # Remove in production if you don't need external Redis access (see DEPLOY.md).
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-
-  # ── 3. KeystoneJS ─────────────────────────────────────────────────────────────
+  # ── 2. KeystoneJS ─────────────────────────────────────────────────────────────
   keystone:
     build:
       context: ./keystone
@@ -92,7 +68,6 @@ services:
       PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
       PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
-      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
       BETTER_AUTH_JWKS_URL: http://nextjs:3000/api/auth/jwks
     ports:
       - "3001:3001"
@@ -101,11 +76,9 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_healthy
     restart: unless-stopped
 
-  # ── 4. Better Auth DB migrations (one-shot; Next.js waits on completion) ─────
+  # ── 3. Better Auth DB migrations (one-shot; Next.js waits on completion) ─────
   nextjs-migrate:
     build:
       context: .
@@ -128,7 +101,7 @@ services:
         condition: service_healthy
     restart: "no"
 
-  # ── 5. Next.js ────────────────────────────────────────────────────────────────
+  # ── 4. Next.js ────────────────────────────────────────────────────────────────
   nextjs:
     build:
       context: .
@@ -156,7 +129,6 @@ services:
 
 volumes:
   postgres_data:
-  redis_data:
 
 networks:
   abroadkart:

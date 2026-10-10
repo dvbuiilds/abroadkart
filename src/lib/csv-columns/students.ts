@@ -22,10 +22,12 @@ export const STUDENT_CSV_COLUMNS: CsvColumn<Student>[] = [
   { key: "phone", header: "Phone" },
   { key: "countryOfResidence", header: "Country Of Residence" },
   {
-    key: "targetCountry",
-    header: "Target Country",
+    key: "targetCountries",
+    header: "Target Countries",
     transform: (value) =>
-      value ? (targetCountryLabelMap[String(value)] ?? String(value)) : "",
+      Array.isArray(value)
+        ? value.map((v) => targetCountryLabelMap[String(v)] ?? String(v)).join(", ")
+        : "",
   },
   { key: "currentStage", header: "Current Stage" },
   {

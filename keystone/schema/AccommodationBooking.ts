@@ -13,7 +13,7 @@ import {
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isConsultant, isSuperAdmin, isFulfilment, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const AccommodationBooking = list({
   access: {
@@ -72,6 +72,6 @@ export const AccommodationBooking = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("accommodationBookings"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

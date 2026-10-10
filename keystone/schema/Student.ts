@@ -16,7 +16,7 @@ import {
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isConsultant, filterByTenant, isSuperAdmin, isFulfilment } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const Student = list({
   access: {
@@ -217,6 +217,6 @@ export const Student = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("students"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

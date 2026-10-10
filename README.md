@@ -24,7 +24,6 @@ abroadkart/
 
 - **KeystoneJS 6** - Headless CMS and GraphQL API
 - **PostgreSQL 16** - Primary database
-- **Redis 7** - Caching layer
 - **better-auth** - Authentication (Postgres `auth` schema, JWT for Keystone GraphQL)
 
 ### Frontend
@@ -63,15 +62,15 @@ There are **two** env files:
 
 | File | Purpose |
 |------|--------|
-| **`.env`** (repo root) | Next.js (`yarn dev` / Docker `nextjs` service) **and** Compose secrets (`POSTGRES_PASSWORD`, `REDIS_PASSWORD`). Copy from [`.env.example`](./.env.example). |
-| **`keystone/.env`** | Keystone only. Copy from [`keystone/.env.example`](./keystone/.env.example). Use the **same** `POSTGRES_PASSWORD` / `REDIS_PASSWORD` as in root `.env` inside `DATABASE_URL` / `REDIS_URL`. |
+| **`.env`** (repo root) | Next.js (`yarn dev` / Docker `nextjs` service) **and** Compose secrets (`POSTGRES_PASSWORD`). Copy from [`.env.example`](./.env.example). |
+| **`keystone/.env`** | Keystone only. Copy from [`keystone/.env.example`](./keystone/.env.example). Use the **same** `POSTGRES_PASSWORD` as in root `.env` inside `DATABASE_URL`. |
 
-When you run **`docker compose`**, `DATABASE_URL` for Keystone and Next is **overridden** in [`docker-compose.yml`](./docker-compose.yml) so containers use the `postgres` and `redis` hostnames; your files can keep `localhost` URLs for local dev.
+When you run **`docker compose`**, `DATABASE_URL` for Keystone and Next is **overridden** in [`docker-compose.yml`](./docker-compose.yml) so containers use the `postgres` hostname; your files can keep `localhost` URLs for local dev.
 
 ### 3. Start Docker Services
 
 ```bash
-# Start PostgreSQL and Redis
+# Start PostgreSQL
 docker compose up -d
 
 # Verify services are running
@@ -80,11 +79,9 @@ docker compose ps
 
 PostgreSQL: `localhost:5432` — user `postgres`, database `abroadkart`, password: value you set in **`.env`** as `POSTGRES_PASSWORD`.
 
-Redis: `localhost:6379` — password: value you set in **`.env`** as `REDIS_PASSWORD` (required; Redis is started with `--requirepass`).
-
 ### 4. Fill in `.env` and `keystone/.env`
 
-Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example`](./keystone/.env.example) → **`keystone/.env`**, then set secrets and R2 values. Root **`.env`** holds Compose passwords, **`BETTER_AUTH_SECRET`**, **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** (browser-facing origins), and `DATABASE_URL` for local dev. **`keystone/.env`** holds the same **`PUBLIC_*`** pair (must match), session secret, R2, and localhost-style `DATABASE_URL` / `REDIS_URL` / `BETTER_AUTH_JWKS_URL` — Docker Compose overrides those three with internal hostnames at runtime.
+Copy [`.env.example`](./.env.example) → **`.env`** and [`keystone/.env.example`](./keystone/.env.example) → **`keystone/.env`**, then set secrets and R2 values. Root **`.env`** holds Compose passwords, **`BETTER_AUTH_SECRET`**, **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** (browser-facing origins), and `DATABASE_URL` for local dev. **`keystone/.env`** holds the same **`PUBLIC_*`** pair (must match), session secret, R2, and localhost-style `DATABASE_URL` / `BETTER_AUTH_JWKS_URL` — Docker Compose overrides those two with internal hostnames at runtime.
 
 **`PUBLIC_ADMIN_URL`** must be the **Keystone** origin (default `http://localhost:3001`), not the Next origin. Legacy: `NEXT_PUBLIC_KEYSTONE_URL` is still read if **`PUBLIC_ADMIN_URL`** is unset.
 
@@ -149,7 +146,7 @@ Full proxy architecture and troubleshooting: [crm_docs/ADMIN_PROXY.md](./crm_doc
 
 ## Deployment
 
-Full stack (Postgres, Redis, Keystone, Next.js) with Docker: copy **`.env.example`** → **`.env`** and **`keystone/.env.example`** → **`keystone/.env`**, fill secrets, then follow [**DEPLOY.md**](./DEPLOY.md).
+Full stack (Postgres, Keystone, Next.js) with Docker: copy **`.env.example`** → **`.env`** and **`keystone/.env.example`** → **`keystone/.env`**, fill secrets, then follow [**DEPLOY.md**](./DEPLOY.md).
 
 ### Backend (Railway)
 

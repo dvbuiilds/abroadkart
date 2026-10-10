@@ -24,7 +24,7 @@ fi
 : "${BETTER_AUTH_SECRET:?Set BETTER_AUTH_SECRET in .env}"
 
 docker compose down -v
-docker compose up -d postgres redis
+docker compose up -d postgres
 
 echo "Waiting for Postgres..."
 until docker exec abroadkart-postgres pg_isready -U postgres >/dev/null 2>&1; do sleep 1; done

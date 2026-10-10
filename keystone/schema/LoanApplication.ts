@@ -20,7 +20,7 @@ import {
   filterByTenant,
 } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const LoanApplication = list({
   access: {
@@ -119,6 +119,6 @@ export const LoanApplication = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("loanApplications"),
+    afterOperation: logActivityHook.afterOperation,
   },
 });

@@ -15,7 +15,7 @@ import {
 } from "@keystone-6/core/fields";
 import { isAuthenticated, isSuperAdmin, filterByTenant } from "../access/rules";
 import { autoSetTenantHook } from "../hooks/autoSetTenant";
-import { afterOperationWithCache } from "../hooks/cacheInvalidation";
+import { logActivityHook } from "../hooks/logActivity";
 
 export const Payment = list({
   access: {
@@ -82,7 +82,7 @@ export const Payment = list({
   },
   hooks: {
     resolveInput: autoSetTenantHook("create"),
-    afterOperation: afterOperationWithCache("payments"),
+    afterOperation: logActivityHook.afterOperation,
   },
   graphql: {
     plural: "Payments",

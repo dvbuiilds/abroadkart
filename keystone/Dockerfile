@@ -63,6 +63,6 @@ COPY --from=builder /app/schema.prisma  ./schema.prisma
 EXPOSE 3001
 
 # Call keystone directly — no dotenv-cli wrapper needed.
-# Real env vars (DATABASE_URL, REDIS_URL, BETTER_AUTH_*, etc.) come from
+# Real env vars (DATABASE_URL, BETTER_AUTH_*, etc.) come from
 # docker-compose env_file at container startup.
 CMD ["node_modules/.bin/keystone", "start"]

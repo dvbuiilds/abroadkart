@@ -2,10 +2,10 @@
 
 ## Environment files (before `docker compose`)
 
-1. Copy [`.env.example`](./.env.example) to **`.env`** in the repo root. It holds **Next.js** settings and **`POSTGRES_PASSWORD` / `REDIS_PASSWORD`** for Compose. Fill all values (see comments in the example).
-2. Copy [`keystone/.env.example`](./keystone/.env.example) to **`keystone/.env`**. Use the **same** passwords in `DATABASE_URL` / `REDIS_URL` as in root **`.env`**.
+1. Copy [`.env.example`](./.env.example) to **`.env`** in the repo root. It holds **Next.js** settings and **`POSTGRES_PASSWORD`** for Compose. Fill all values (see comments in the example).
+2. Copy [`keystone/.env.example`](./keystone/.env.example) to **`keystone/.env`**. Use the **same** Postgres password in `DATABASE_URL` as in root **`.env`**.
 
-For **`docker compose`**, [`docker-compose.yml`](./docker-compose.yml) **overrides** `DATABASE_URL`, Keystone’s `REDIS_URL`, and **`BETTER_AUTH_JWKS_URL`** so containers use Docker hostnames (`postgres`, `redis`, `nextjs`). **`PUBLIC_APP_URL`** and **`PUBLIC_ADMIN_URL`** are injected the same in every app container from the root **`.env`** (see [`.env.example`](./.env.example)). Keep `DATABASE_URL` / `REDIS_URL` / `BETTER_AUTH_JWKS_URL` as `localhost` defaults in **`keystone/.env`** — you only change **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** per environment.
+For **`docker compose`**, [`docker-compose.yml`](./docker-compose.yml) **overrides** `DATABASE_URL` and **`BETTER_AUTH_JWKS_URL`** so containers use Docker hostnames (`postgres`, `nextjs`). **`PUBLIC_APP_URL`** and **`PUBLIC_ADMIN_URL`** are injected the same in every app container from the root **`.env`** (see [`.env.example`](./.env.example)). Keep `DATABASE_URL` / `BETTER_AUTH_JWKS_URL` as `localhost` defaults in **`keystone/.env`** — you only change **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** per environment.
 
 Rotating only the Postgres password on an **existing** volume: updating **`.env`** does not change the password inside Postgres. Either run `ALTER ROLE postgres WITH PASSWORD '...'` via `psql` inside the container, or `docker compose down -v` (destructive, wipes data).
 
@@ -14,9 +14,8 @@ Rotating only the Postgres password on an **existing** volume: updating **`.env`
 | Service    | Image / Source        | Port | Start order |
 |------------|-----------------------|------|-------------|
 | postgres   | `postgres:16-alpine`  | 5432 | 1st         |
-| redis      | `redis:7-alpine`      | 6379 | 2nd         |
-| keystone   | `./keystone/`         | 3001 | 3rd         |
-| nextjs     | `.` (root)            | 3000 | 4th         |
+| keystone   | `./keystone/`         | 3001 | 2nd         |
+| nextjs     | `.` (root)            | 3000 | 3rd         |
 
 ---
 
@@ -31,10 +30,10 @@ Rotating only the Postgres password on an **existing** volume: updating **`.env`
 ### Step 1 — Start infra only
 
 ```bash
-docker compose up -d postgres redis
+docker compose up -d postgres
 ```
 
-Wait a few seconds, then confirm both are healthy:
+Wait a few seconds, then confirm it is healthy:
 
 ```bash
 docker compose ps
@@ -143,7 +142,7 @@ rsync -avz --exclude node_modules --exclude .next --exclude .keystone \
 
 ### Step 4 — Update public URLs (two variables per file)
 
-On the droplet, set the **browser-facing** origins only. Do **not** replace `localhost` in `DATABASE_URL`, `REDIS_URL`, or `BETTER_AUTH_JWKS_URL` inside **`keystone/.env`** — Compose overrides those at runtime.
+On the droplet, set the **browser-facing** origins only. Do **not** replace `localhost` in `DATABASE_URL` or `BETTER_AUTH_JWKS_URL` inside **`keystone/.env`** — Compose overrides those at runtime.
 
 ```bash
 cd /opt/abroadkart
@@ -177,7 +176,7 @@ docker compose build \
 
 ```bash
 # Infra first
-docker compose up -d postgres redis
+docker compose up -d postgres
 
 # Wait ~10 s for health checks to pass
 sleep 10 && docker compose ps
@@ -276,9 +275,9 @@ Terminating TLS on the host fixes **Secure** session cookies for Keystone admin 
 
 ## Checklist — Before Going Live
 
-- [ ] **`POSTGRES_PASSWORD`** and **`REDIS_PASSWORD`** in root **`.env`** are strong; **`keystone/.env`** connection strings use the same passwords (no default passwords committed)
+- [ ] **`POSTGRES_PASSWORD`** in root **`.env`** is strong; **`keystone/.env`** connection string uses the same password (no default passwords committed)
 - [ ] Rotate `SESSION_SECRET` to a fresh 64-char random hex string
-- [ ] On the public server, do **not** publish Postgres or Redis to the internet: **remove or comment out** the entire `ports:` blocks under **`postgres`** and **`redis`** in [`docker-compose.yml`](./docker-compose.yml) on that host (Compose merges override files in a way that does **not** reliably strip ports, so editing the published compose file or a **gitignored** `docker-compose.override.yml` with no `ports` key duplicated is safer than relying on an empty `ports: []` merge). App containers still reach `postgres:5432` and `redis:6379` on the internal network. Use UFW/host firewall as a second layer.
+- [ ] On the public server, do **not** publish Postgres to the internet: **remove or comment out** the entire `ports:` blocks under **`postgres`** in [`docker-compose.yml`](./docker-compose.yml) on that host (Compose merges override files in a way that does **not** reliably strip ports, so editing the published compose file or a **gitignored** `docker-compose.override.yml` with no `ports` key duplicated is safer than relying on an empty `ports: []` merge). App containers still reach `postgres:5432` on the internal network. Use UFW/host firewall as a second layer.
 - [ ] Set strong **`BETTER_AUTH_SECRET`** and verify **`PUBLIC_APP_URL`** / **`PUBLIC_ADMIN_URL`** match the origins users type in the browser (and Google OAuth / R2 CORS if applicable)
 - [ ] Confirm Cloudflare R2 CORS allows the production app origin
 - [ ] Prefer **Step 8** (Caddy + HTTPS) on the public droplet; **`ab_admin_session`** uses `Secure` only when **`PUBLIC_ADMIN_URL`** is `https://…`

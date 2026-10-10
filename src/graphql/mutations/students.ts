@@ -9,7 +9,7 @@ export const CREATE_STUDENT = `
       fullName
       email
       phone
-      targetCountry
+      targetCountries
       currentStage
       qualification
       targetYear
@@ -26,7 +26,7 @@ export const UPDATE_STUDENT = `
       fullName
       email
       phone
-      targetCountry
+      targetCountries
       currentStage
       qualification
       targetYear
