@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Youtube, Linkedin, MapPin, Mail } from "lucide-react";
+import { Linkedin, MapPin, Mail } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
 import Image from "next/image";
 

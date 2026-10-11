@@ -1,6 +1,6 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { studentUpdateSchema, type StudentUpdateInput } from '@app/lib/validations/student';
+import { studentCreateSchema, type StudentCreateInput } from '@app/lib/validations/student';
 import {
   Sheet,
   SheetContent,
@@ -39,22 +39,22 @@ export function StudentEditSheet({
 }) {
   const updateStudent = useUpdateStudent();
 
-  const form = useForm<StudentUpdateInput>({
-    resolver: zodResolver(studentUpdateSchema),
+  const form = useForm<StudentCreateInput>({
+    resolver: zodResolver(studentCreateSchema),
     defaultValues: {
       fullName: student.fullName ?? '',
       email: student.email ?? '',
       phone: student.phone ?? '',
       countryOfResidence: student.countryOfResidence ?? '',
-      gender: (student.gender as StudentUpdateInput['gender']) || undefined,
+      gender: (student.gender as StudentCreateInput['gender']) || undefined,
       city: student.city ?? '',
       state: student.state ?? '',
-      source: (student.source as StudentUpdateInput['source']) || undefined,
-      qualification: (student.qualification as StudentUpdateInput['qualification']) || undefined,
+      source: (student.source as StudentCreateInput['source']) || undefined,
+      qualification: (student.qualification as StudentCreateInput['qualification']) || undefined,
       stream: student.stream ?? '',
       subjects: (student.subjects as string[]) || [],
       academicScore: student.academicScore != null ? Number(student.academicScore) : undefined,
-      academicScoreType: (student.academicScoreType as StudentUpdateInput['academicScoreType']) || undefined,
+      academicScoreType: (student.academicScoreType as StudentCreateInput['academicScoreType']) || undefined,
       backlogCount: student.backlogCount != null ? Number(student.backlogCount) : undefined,
       yearOfPassing: student.yearOfPassing != null ? Number(student.yearOfPassing) : undefined,
       institutionName: student.institutionName ?? '',
@@ -68,27 +68,27 @@ export function StudentEditSheet({
       satScore: student.satScore != null ? Number(student.satScore) : undefined,
       actScore: student.actScore != null ? Number(student.actScore) : undefined,
       finalScore: student.finalScore != null ? Number(student.finalScore) : undefined,
-      workExperience: (student.workExperience as StudentUpdateInput['workExperience']) || undefined,
+      workExperience: (student.workExperience as StudentCreateInput['workExperience']) || undefined,
       employer: student.employer ?? '',
       designation: student.designation ?? '',
       gapExplanation: student.gapExplanation ?? '',
       targetCountries: (student.targetCountries as string[]) || [],
       targetCourses: (student.targetCourses as string[]) || [],
-      studyLevel: (student.studyLevel as StudentUpdateInput['studyLevel']) || undefined,
-      preferredIntake: (student.preferredIntake as StudentUpdateInput['preferredIntake']) || undefined,
-      targetYear: (student.targetYear as StudentUpdateInput['targetYear']) || undefined,
+      studyLevel: (student.studyLevel as StudentCreateInput['studyLevel']) || undefined,
+      preferredIntake: (student.preferredIntake as StudentCreateInput['preferredIntake']) || undefined,
+      targetYear: (student.targetYear as StudentCreateInput['targetYear']) || undefined,
       budgetTuition: student.budgetTuition != null ? Number(student.budgetTuition) : undefined,
       budgetLiving: student.budgetLiving != null ? Number(student.budgetLiving) : undefined,
       budgetCurrency: student.budgetCurrency ?? 'USD',
-      fundingType: (student.fundingType as StudentUpdateInput['fundingType']) || undefined,
+      fundingType: (student.fundingType as StudentCreateInput['fundingType']) || undefined,
       loanPreApproved: student.loanPreApproved ?? false,
       priorVisaRefusals: student.priorVisaRefusals ?? false,
       refusalCountries: (student.refusalCountries as string[]) || [],
       refusalReason: student.refusalReason ?? '',
       passportAvailable: student.passportAvailable ?? false,
       passportExpiry: student.passportExpiry ? new Date(student.passportExpiry) : undefined,
-      currentStage: (student.currentStage as StudentUpdateInput['currentStage']) ?? 'lead',
-      priority: (student.priority as StudentUpdateInput['priority']) || undefined,
+      currentStage: (student.currentStage as StudentCreateInput['currentStage']) ?? 'lead',
+      priority: (student.priority as StudentCreateInput['priority']) || undefined,
       lostReason: student.lostReason ?? '',
       assignedCounsellor: student.assignedCounsellor?.id,
       parentMonthlyIncome: student.parentMonthlyIncome ?? undefined,
@@ -96,7 +96,7 @@ export function StudentEditSheet({
     },
   });
 
-  const onSubmit = async (data: StudentUpdateInput) => {
+  const onSubmit = async (data: StudentCreateInput) => {
     try {
       await updateStudent.mutateAsync({
         id: student.id,

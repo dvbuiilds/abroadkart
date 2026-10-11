@@ -30,7 +30,7 @@ import {
 import { Input } from "@app/components/ui/input";
 import type { InteractionListItem } from "@app/graphql/types";
 import { format } from "date-fns";
-import { Phone, MessageSquare, Mail, Users, Plus, ChevronDown } from "lucide-react";
+import { Phone, MessageSquare, Mail, Users, Plus } from "lucide-react";
 
 const INTERACTION_ICONS: Record<string, React.ReactNode> = {
   call: <Phone className="h-4 w-4" />,

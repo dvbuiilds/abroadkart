@@ -26,7 +26,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>IELTS</FormLabel>
               <FormControl>
-                <Input type="number" step="0.5" placeholder="7.0" {...field} />
+                <Input type="number" step="0.5" placeholder="7.0" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -40,7 +40,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>TOEFL</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="100" {...field} />
+                <Input type="number" placeholder="100" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -54,7 +54,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>PTE</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="70" {...field} />
+                <Input type="number" placeholder="70" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -68,7 +68,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>Duolingo</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="110" {...field} />
+                <Input type="number" placeholder="110" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,7 +82,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>GRE</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="320" {...field} />
+                <Input type="number" placeholder="320" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -96,7 +96,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>GMAT</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="700" {...field} />
+                <Input type="number" placeholder="700" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -110,7 +110,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>SAT</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="1500" {...field} />
+                <Input type="number" placeholder="1500" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -124,7 +124,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>ACT</FormLabel>
               <FormControl>
-                <Input type="number" placeholder="36" {...field} />
+                <Input type="number" placeholder="36" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -154,7 +154,7 @@ export function StudentTestScoresSection({ form }: StudentTestScoresSectionProps
             <FormItem>
               <FormLabel>Final Score</FormLabel>
               <FormControl>
-                <Input type="number" step="0.1" placeholder="8.5" {...field} />
+                <Input type="number" step="0.1" placeholder="8.5" {...field} value={field.value ?? ''} />
               </FormControl>
               <FormMessage />
             </FormItem>

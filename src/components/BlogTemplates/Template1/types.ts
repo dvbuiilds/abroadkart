@@ -76,26 +76,6 @@ interface HeadingSection {
   content: string;
 }
 
-interface H1Section {
-  sectionType: typeof PageSectionKeysMap.h1;
-  content: string;
-}
-
-interface H2Section {
-  sectionType: typeof PageSectionKeysMap.h2;
-  content: string;
-}
-
-interface H3Section {
-  sectionType: typeof PageSectionKeysMap.h3;
-  content: string;
-}
-
-interface H4Section {
-  sectionType: typeof PageSectionKeysMap.h4;
-  content: string;
-}
-
 interface PSection {
   sectionType: typeof PageSectionKeysMap.p;
   content: string;

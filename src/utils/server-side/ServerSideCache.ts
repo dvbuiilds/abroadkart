@@ -3,8 +3,8 @@
  * Supports various key types: string, number, array of strings/numbers
  * Uses Map for O(1) lookup performance
  */
-export class ServerSideCache {
-  private cache: Map<string, any>;
+export class ServerSideCache<T = unknown> {
+  private cache: Map<string, T>;
   private maxSize: number;
   private ttl: number; // Time to live in milliseconds
   private timestamps: Map<string, number>;
@@ -109,7 +109,7 @@ export class ServerSideCache {
    * @param value - The value to cache
    * @returns true if successfully set, false otherwise
    */
-  set(key: string | number | (string | number)[], value: any): boolean {
+  set(key: string | number | (string | number)[], value: T): boolean {
     try {
       const stringKey = this.stringifyKey(key);
 
@@ -135,7 +135,7 @@ export class ServerSideCache {
    * @param key - The cache key (string, number, or array of strings/numbers)
    * @returns The cached value or undefined if not found/expired
    */
-  get(key: string | number | (string | number)[]): any {
+  get(key: string | number | (string | number)[]): T | undefined {
     try {
       const stringKey = this.stringifyKey(key);
 

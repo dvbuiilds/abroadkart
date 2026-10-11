@@ -1,0 +1,891 @@
+# AbroadKart
+## Student Lifecycle — System Design
+**Implementation reference for engineering**
+
+---
+
+### 1. Overview
+Fourteen-stage state machine for a study-abroad student pipeline[cite: 2]. Each stage defines the minimum data captured, the consultant actions, the automations, and a hard exit gate[cite: 2]. The design favors incremental data capture (avoid over-collection at lead stage), per-application fan-out from Shortlisting onwards, and country-specific document engines from Financial Planning onwards[cite: 2]. Audit-worthy append-only entities: activities, payments, decisions, documents (versioned)[cite: 2].
+
+---
+
+### 2. Lifecycle Stages
+
+#### S01 - Lead Captured
+* **Objective:** Establish identifiability + attribution; trigger first-touch SLA[cite: 2].
+* **Required Data:**
+  * `full_name`[cite: 2]
+  * `phone_e164`[cite: 2]
+  * `email`[cite: 2]
+  * `source_channel`[cite: 2]
+  * `source_campaign_id`[cite: 2]
+  * `consent_to_contact_bool`[cite: 2]
+  * `created_at`[cite: 2]
+* **Optional / Enrichment:**
+  * `city`[cite: 2]
+  * `intended_country_freeform`[cite: 2]
+  * `intake_year_rough`[cite: 2]
+  * `how_heard`[cite: 2]
+* **Consultant Actions:**
+  * `auto_assign_acknowledge`[cite: 2]
+  * `first_outbound_touch` (call/WA)[cite: 2]
+* **System Automations:**
+  * `round_robin_assign_by_territory/language`[cite: 2]
+  * `dedupe(phone_hash + email_hash)`[cite: 2]
+  * `enrichment(ip_geo, phone_country)`[cite: 2]
+  * `welcome_template_dispatch` (WA/SMS)[cite: 2]
+  * `sla_timer_first_contact` = 15 min[cite: 2]
+* **Exit Criteria:** `two_way_contact_established == true` AND `qualification_call_scheduled == true`[cite: 2]
+
+#### S02 - Qualified Lead
+* **Objective:** Confirm intent, basic eligibility, financial viability (BANT for edu)[cite: 2].
+* **Required Data:**
+  * `highest_qualification`[cite: 2]
+  * `pass_year_or_current_year`[cite: 2]
+  * `target_intake_term`[cite: 2]
+  * `target_intake_year`[cite: 2]
+  * `target_countries_ranked[]`[cite: 2]
+  * `budget_range_inr`[cite: 2]
+  * `funding_source_enum` `{self|loan|scholarship_dep|sponsor}`[cite: 2]
+  * `english_test_type`[cite: 2]
+  * `english_test_score` \| `null`[cite: 2]
+* **Optional / Enrichment:**
+  * `gap_years`[cite: 2]
+  * `work_ex_months`[cite: 2]
+  * `family_abroad_bool`[cite: 2]
+  * `prior_visa_history`[cite: 2]
+* **Consultant Actions:**
+  * `qualification_script_run`[cite: 2]
+  * `set_mql_sql_tag`[cite: 2]
+  * `book_counselling_slot`[cite: 2]
+* **System Automations:**
+  * `lead_score_compute` (see Derived Logic)[cite: 2]
+  * `country_budget_eligibility_precheck`[cite: 2]
+  * `hard_disqualify` -> junk if no viable path[cite: 2]
+  * `nurture_sequence` if intake > 12 mo away[cite: 2]
+* **Exit Criteria:** `lead_score >= threshold` AND `counselling_slot_booked`[cite: 2]
+
+#### S03 - Counselling
+* **Objective:** Build full profile, sign engagement, collect onboarding fee[cite: 2].
+* **Required Data:**
+  * `academic_history` `{class10, class12, ug_degree, board, scoring_scheme, score, year}`[cite: 2]
+  * `preferred_course_field`[cite: 2]
+  * `preferred_specialization`[cite: 2]
+  * `work_ex_details[]`[cite: 2]
+  * `career_goal_freeform`[cite: 2]
+  * `geographic_preference` `{tier, climate, diaspora}`[cite: 2]
+  * `risk_appetite_enum` `{ambitious|moderate|safe}`[cite: 2]
+* **Optional / Enrichment:**
+  * `extracurriculars`[cite: 2]
+  * `publications`[cite: 2]
+  * `certifications`[cite: 2]
+  * `gap_year_reason`[cite: 2]
+* **Consultant Actions:**
+  * `profile_builder_session`[cite: 2]
+  * share country/uni compare + fee estimate[cite: 2]
+  * `issue_service_agreement_esign`[cite: 2]
+  * collect onboarding fee[cite: 2]
+* **System Automations:**
+  * `profile_strength_score`[cite: 2]
+  * `match_engine_recommend(country x course)`[cite: 2]
+  * `esign_workflow` (DocuSign/Leegality)[cite: 2]
+  * `payment_link_generation`[cite: 2]
+  * `create shortlist_workspace`[cite: 2]
+* **Exit Criteria:** `agreement.status == SIGNED` AND `onboarding_fee.status == CAPTURED`[cite: 2]
+
+#### S04 - Shortlisting
+* **Objective:** Lock signed shortlist (ambitious/target/safe mix) + confirmed intake[cite: 2].
+* **Required Data:**
+  * `shortlist[]` `{university_id, course_id, intake_term, category, app_fee, deadline, req_snapshot}`[cite: 2]
+  * `confirmed_intake_term_year`[cite: 2]
+  * `decision_timeline_days`[cite: 2]
+* **Optional / Enrichment:**
+  * `alt_courses[]`[cite: 2]
+  * `scholarship_targets[]`[cite: 2]
+* **Consultant Actions:**
+  * `comparison_sheet_build`[cite: 2]
+  * `parent_signoff_capture`[cite: 2]
+  * `lock_shortlist`[cite: 2]
+* **System Automations:**
+  * `pull_live_uni_data(tuition, deadlines, reqs)`[cite: 2]
+  * `deadline_conflict_flag`[cite: 2]
+  * `admit_probability_compute(profile vs historical)`[cite: 2]
+  * `document_checklist` union across shortlist[cite: 2]
+* **Exit Criteria:** `shortlist.status == SIGNED_OFF` AND `document_checklist.generated == true`[cite: 2]
+
+#### S05 - Application Started
+* **Objective:** Open per-university applications; assemble drafts and artifacts[cite: 2].
+* **Required Data:**
+  * `per_application` `{portal_creds_encrypted, ext_application_id, draft_status, doc_collection_state, sop_draft_v1, lor_requestees[], transcript_request_status}`[cite: 2]
+* **Optional / Enrichment:**
+  * `video_essay_status`[cite: 2]
+  * `portfolio_links[]`[cite: 2]
+* **Consultant Actions:**
+  * open portals[cite: 2]
+  * `sop_brief_kickoff`[cite: 2]
+  * `lor_request_send`[cite: 2]
+  * `transcript_request_send`[cite: 2]
+  * vault uploads[cite: 2]
+* **System Automations:**
+  * kanban per application[cite: 2]
+  * `deadline_countdown`[cite: 2]
+  * `sop_plagiarism_check`[cite: 2]
+  * `lor_request_tracking` (email opens + reply)[cite: 2]
+  * `doc_expiry_check(passport, tests)`[cite: 2]
+  * daily missing-doc digest to student (WA)[cite: 2]
+* **Exit Criteria:** `for_each(application).status >= IN_PROGRESS`[cite: 2]
+
+#### S06 - Application Submitted
+* **Objective:** Confirm portal submission and fee paid per application[cite: 2].
+* **Required Data:**
+  * `per_application` `{submitted_at, app_fee_txn_ref, submission_confirmation_uri, final_sop_uri, final_lor_uris[], transcripts_uri, test_score_report_uri}`[cite: 2]
+* **Optional / Enrichment:**
+  * `writing_sample_uri`[cite: 2]
+  * `interview_slot`[cite: 2]
+* **Consultant Actions:**
+  * fee_payment[cite: 2]
+  * confirmation_capture[cite: 2]
+  * submission_log_entry[cite: 2]
+* **System Automations:**
+  * `state` -> `AWAITING_DECISION`[cite: 2]
+  * follow-up cadence per uni (4-16 wks)[cite: 2]
+  * `interview_prep_nudge` if required[cite: 2]
+  * `portal_status_poll` (where permitted)[cite: 2]
+* **Exit Criteria:** `for_each(application).status == SUBMITTED` AND `confirmation_artifact.present`[cite: 2]
+
+#### S07 - Offer Received
+* **Objective:** Capture every decision per application (offer / conditional / reject / waitlist)[cite: 2].
+* **Required Data:**
+  * `per_application` `{decision_type, decision_date, offer_letter_uri, conditions[], tuition_payable, scholarship_amount, accept_deadline, deposit_required}`[cite: 2]
+* **Optional / Enrichment:**
+  * `interview_feedback`[cite: 2]
+  * `alt_course_offered`[cite: 2]
+* **Consultant Actions:**
+  * `log_decision`[cite: 2]
+  * `share_with_student_parent`[cite: 2]
+  * `advise_best_fit`[cite: 2]
+* **System Automations:**
+  * `offer_comparator(cost, scholarship, ranking, roi_proxy)`[cite: 2]
+  * `deposit_deadline_alerts`[cite: 2]
+  * escalate if `zero_offers` past expected window[cite: 2]
+* **Exit Criteria:** `count(decisions) == count(applications)` AND `comparator_generated == true`[cite: 2]
+
+#### S08 - Offer Accepted
+* **Objective:** Lock chosen program, decline others, pay deposit[cite: 2].
+* **Required Data:**
+  * `chosen_application_id`[cite: 2]
+  * `acceptance_letter_uri`[cite: 2]
+  * `deposit` `{amount, date, txn_ref, receipt_uri}`[cite: 2]
+  * `declined_universities[]` `{notified_at}`[cite: 2]
+* **Optional / Enrichment:**
+  * `deferral_request`[cite: 2]
+  * `accommodation_preference`[cite: 2]
+* **Consultant Actions:**
+  * pay deposit[cite: 2]
+  * send acceptance[cite: 2]
+  * send polite declines[cite: 2]
+  * request immigration_doc (CAS/I-20/COE/LOA)[cite: 2]
+* **System Automations:**
+  * trigger `financial_planning` module[cite: 2]
+  * auto-close other application records[cite: 2]
+  * lock `chosen_program` in student record[cite: 2]
+* **Exit Criteria:** `deposit.status == CAPTURED` AND `uni_acknowledged_acceptance == true`[cite: 2]
+
+#### S09 - Financial Planning
+* **Objective:** Prove full funding covers tuition + living + visa + travel + buffer[cite: 2].
+* **Required Data:**
+  * `total_cost_estimate` `{tuition, living, visa, insurance, travel, buffer}`[cite: 2]
+  * `funding_breakdown` `{self, loan, scholarship, sponsor}`[cite: 2]
+  * `loan` `{lender, status, sanctioned_amount, sanction_letter_uri}`[cite: 2]
+  * `bank_statement_uri[6mo]`[cite: 2]
+  * `itr_uri[3y_sponsor]`[cite: 2]
+  * `sponsor_affidavit_uri` \| `null`[cite: 2]
+  * `forex_plan`[cite: 2]
+* **Optional / Enrichment:**
+  * `gic_account(CA)`[cite: 2]
+  * `blocked_account(DE)`[cite: 2]
+  * `tuition_payment_receipts[]`[cite: 2]
+* **Consultant Actions:**
+  * loan facilitation via partner bank/NBFC[cite: 2]
+  * forex partner referral[cite: 2]
+  * `doc_compilation`[cite: 2]
+* **System Automations:**
+  * `build_financial_dossier` per visa country[cite: 2]
+  * `loan_status_webhook` ingest[cite: 2]
+  * `gap_alert` if `(cost - proven_funds) > tolerance`[cite: 2]
+* **Exit Criteria:** `financial_proof_complete == true` AND `country_specific_compliance == true`[cite: 2]
+
+#### S10 - Visa Documentation
+* **Objective:** Compile country-specific visa file + book biometrics/interview appointment[cite: 2].
+* **Required Data:**
+  * `visa_country`[cite: 2]
+  * `visa_category` (F1/Tier4/study/etc.)[cite: 2]
+  * `passport` `{number, expiry, scan_uri, validity_check}`[cite: 2]
+  * `immigration_doc_uri` (CAS/I-20/COE/LOA)[cite: 2]
+  * `sevis_ihs_biometric_fee_paid`[cite: 2]
+  * `visa_form_draft`[cite: 2]
+  * `photographs_per_spec`[cite: 2]
+  * `academic_docs_set`[cite: 2]
+  * `financial_docs_set`[cite: 2]
+  * `english_proficiency_doc`[cite: 2]
+  * `sop_visa_version`[cite: 2]
+  * `medical_cert` \| `null`[cite: 2]
+  * `police_clearance` \| `null`[cite: 2]
+  * `tb_test` \| `null`[cite: 2]
+* **Optional / Enrichment:**
+  * `previous_passports`[cite: 2]
+  * `prior_refusal_disclosure`[cite: 2]
+  * `ties_to_home_country_docs`[cite: 2]
+* **Consultant Actions:**
+  * `country_checklist_run`[cite: 2]
+  * mock interview prep (US/UK)[cite: 2]
+  * `appointment_booking`[cite: 2]
+* **System Automations:**
+  * `country_checklist_engine`[cite: 2]
+  * `doc_validity_checker`[cite: 2]
+  * `appointment_slot_notifier` (where allowed)[cite: 2]
+  * `form_autopopulate` (DS-160-shape JSON)[cite: 2]
+  * `rejection_pattern_risk_score`[cite: 2]
+* **Exit Criteria:** `checklist.completion == 100` AND `appointment.booked == true`[cite: 2]
+
+#### S11 - Visa Filed
+* **Objective:** File application; capture proof and case reference[cite: 2].
+* **Required Data:**
+  * `filing_date`[cite: 2]
+  * `application_reference_no`[cite: 2]
+  * `biometrics_completed_date`[cite: 2]
+  * `interview_date` \| `null`[cite: 2]
+  * `visa_fee_paid`[cite: 2]
+  * `courier_tracking_no` \| `null`[cite: 2]
+* **Optional / Enrichment:**
+  * `interview_questions_log`[cite: 2]
+  * `additional_docs_requested`[cite: 2]
+* **Consultant Actions:**
+  * submit at VFS/embassy[cite: 2]
+  * T-3 interview prep[cite: 2]
+  * `log_interview_questions` post-fact[cite: 2]
+* **System Automations:**
+  * `embassy_status_tracker` (where permitted)[cite: 2]
+  * `additional_doc_request` alert[cite: 2]
+  * P1/P2 (221g) workflow for US[cite: 2]
+  * `sla_breach_escalation`[cite: 2]
+* **Exit Criteria:** `case_status == AWAITING_DECISION` AND `reference_no.present`[cite: 2]
+
+#### S12 - Visa Approved / Rejected
+* **Objective:** Capture outcome and branch[cite: 2].
+* **Required Data:**
+  * `visa_decision_enum` `{approved|rejected|admin_processing}`[cite: 2]
+  * `decision_date`[cite: 2]
+  * `visa_uri` \| `null`[cite: 2]
+  * `visa_validity` `{from, to}`[cite: 2]
+  * `visa_category`[cite: 2]
+  * `rejection_reason_code` \| `null`[cite: 2]
+  * `rejection_letter_uri` \| `null`[cite: 2]
+* **Optional / Enrichment:**
+  * `appeal_eligibility`[cite: 2]
+  * `reapplication_plan`[cite: 2]
+* **Consultant Actions:**
+  * approved -> pre-departure[cite: 2]
+  * rejected -> RCA + decide(reapply|appeal|alt_country|close_lost)[cite: 2]
+* **System Automations:**
+  * branch workflow[cite: 2]
+  * open reapplication sub-process (if rejected) linked to original case[cite: 2]
+  * anonymized `rejection_pattern_db` update[cite: 2]
+  * refund/credit logic per partner SLA[cite: 2]
+* **Exit Criteria:** approved -> S13; rejected -> loop(S10|S04) or terminal(CLOSED_LOST)[cite: 2]
+
+#### S13 - Pre-Departure
+* **Objective:** Operational readiness to land safely[cite: 2].
+* **Required Data:**
+  * `flight` `{pnr, airline, dep_dt, arr_dt}`[cite: 2]
+  * `accommodation` `{type, address, lease_start, lease_end}`[cite: 2]
+  * `forex_loaded` `{amount, currency, provider}`[cite: 2]
+  * `travel_insurance` `{policy_no, validity}`[cite: 2]
+  * `sim_plan`[cite: 2]
+  * `airport_pickup_arranged_bool`[cite: 2]
+  * `final_tuition_payment_receipt_uri`[cite: 2]
+* **Optional / Enrichment:**
+  * `briefing_attendance`[cite: 2]
+  * `alumni_connect_done`[cite: 2]
+  * `packing_checklist_done`[cite: 2]
+* **Consultant Actions:**
+  * pre-departure session[cite: 2]
+  * accommodation partner tie-up[cite: 2]
+  * forex partner referral[cite: 2]
+  * insurance issuance[cite: 2]
+* **System Automations:**
+  * T-30 / T-15 / T-7 / T-1 countdown checklist[cite: 2]
+  * weather/customs/landing brief dispatch (WA)[cite: 2]
+  * alumni group invite[cite: 2]
+  * partner revenue attribution[cite: 2]
+* **Exit Criteria:** `departure_ready_score == 100` AND `flight T-1 reached`[cite: 2]
+
+#### S14 - Student Landed
+* **Objective:** Confirm arrival; trigger NPS + referral loops; close case[cite: 2].
+* **Required Data:**
+  * `arrival_confirmed_at`[cite: 2]
+  * `on_ground_contact_made`[cite: 2]
+  * `uni_registration_done_dt`[cite: 2]
+  * `local_bank_account_opened_bool`[cite: 2]
+  * `accommodation_check_in_done`[cite: 2]
+* **Optional / Enrichment:**
+  * `photo_consent_uri`[cite: 2]
+  * `testimonial_text`[cite: 2]
+  * `nps_score`[cite: 2]
+* **Consultant Actions:**
+  * landing call/message[cite: 2]
+  * feedback request[cite: 2]
+  * referral request[cite: 2]
+  * log to success pipeline[cite: 2]
+* **System Automations:**
+  * NPS survey at T+7[cite: 2]
+  * referral campaign at T+30[cite: 2]
+  * consultant revenue recognition (final tranche)[cite: 2]
+  * case close at T+90[cite: 2]
+* **Exit Criteria:** `arrival_confirmed == true` -> `status = COMPLETED`[cite: 2]
+
+---
+
+### 3. Data Evolution
+* **Lead payload:** $\le 8$ fields (identity, source, consent, coarse intake)[cite: 2]
+* **Qualified payload:** $+\sim 12$ fields (BANT-edu: qualification, budget, test, target countries)[cite: 2]
+* **Counselling payload:** $+30$ fields (full academic history, goals, work-ex, preferences)[cite: 2]
+* **Fan-out at S04:** $1:N$ applications, $1:N$ documents, $1:N$ decisions per student[cite: 2]
+* **Field lifecycle:** `captured_once` (dob, initial passport), `mutable_with_audit` (targets, shortlist, budget, funding), `append_only` (activities, payments, decisions, documents)[cite: 2]
+* **Revalidation triggers:**
+  * `passport_expiry` $< \text{stay\_duration} + 6 \text{ months}$[cite: 2]
+  * IELTS/TOEFL expiry (2y), GRE/GMAT expiry (5y)[cite: 2]
+  * bank statements freshness $\le 90$ days at visa filing[cite: 2]
+  * academic doc attestation freshness $\le 6$ months if required by country[cite: 2]
+
+---
+
+### 4. Documents by Stage
+
+| Stage | Documents |
+| :--- | :--- |
+| **S03 Counselling** | `service_agreement_signed`, `onboarding_fee_receipt`, `self_declaration_form`[cite: 2] |
+| **S04 Shortlisting** | `shortlist_signoff`[cite: 2] |
+| **S05 Application Started** | `draft_sop`, `lor_drafts`, `transcript_request_receipts`, `passport_scan`, `id_proofs`[cite: 2] |
+| **S06 Application Submitted** | `final_sop_per_uni`, `final_lor_per_uni`, `transcripts_official`, `test_score_reports`, `application_fee_receipts`, `submission_confirmations`[cite: 2] |
+| **S07 Offer** | `offer_letters_per_uni`, `scholarship_letters`[cite: 2] |
+| **S08 Offer Accepted** | `acceptance_letter`, `deposit_receipt`, `decline_acknowledgements`[cite: 2] |
+| **S09 Financial Planning** | `bank_statements_6mo`, `itr_3y`, `salary_slips_3mo`, `loan_sanction_letter`, `fd_statements`, `sponsor_affidavit`, `property_valuation` (opt), `scholarship_proof`[cite: 2] |
+| **S10 Visa Documentation** | `passport_full_scan`, `immigration_doc`, `visa_app_form`, `photographs_spec`, `academic_docs_set`, `financial_docs_set`, `english_proficiency_doc`, `sop_visa_version`, `medical`/`police`/`tb` (if req'd), `sevis`/`ihs`/`biometric` receipts[cite: 2] |
+| **S11 Visa Filed** | `visa_fee_receipt`, `appointment_letter`, `biometric_acknowledgement`, `courier_receipt`[cite: 2] |
+| **S12 Visa Outcome** | `visa_stamped_scan`, `rejection_letter` (if any)[cite: 2] |
+| **S13 Pre-Departure** | `flight_ticket`, `lease_agreement`, `forex_card_proof`, `travel_insurance_policy`, `final_tuition_receipt`, `briefing_cert`[cite: 2] |
+
+---
+
+### 5. Derived Logic
+
+#### 5.1 Lead Score
+$$\text{lead\_score} = 0.30 \times \text{intent\_signals} + 0.20 \times \text{budget\_fit} + 0.20 \times \text{test\_score\_fit} + 0.15 \times \text{timeline\_proximity} + 0.15 \times \text{source\_quality}$$[cite: 2]
+
+* $\text{intent\_signals} = \text{engagement\_count} + \text{counselling\_response\_rate} + \text{clarity\_of\_target}$[cite: 2]
+* $\text{budget\_fit} = \min(1, \frac{\text{declared\_budget}}{\text{median\_country\_cost}})$[cite: 2]
+* $\text{test\_score\_fit} = \text{score\_percentile\_for\_target\_country\_band}$[cite: 2]
+* $\text{timeline\_proximity} = \frac{1}{\max(\text{months\_to\_intake} - 1, 1)}$[cite: 2]
+* $\text{source\_quality} = \text{lookup}(\text{source\_channel})$[cite: 2]
+* **Thresholds:** Hot $\ge 0.75$, Warm $0.50\text{–}0.74$, Cold $< 0.50$[cite: 2]
+
+#### 5.2 Eligibility Rules
+* `country.min_score` $\le$ `student.test_score`[cite: 2]
+* `country.min_academic_pct` $\le$ `student.aggregate`[cite: 2]
+* `course.prereqs` $\subseteq$ `student.subjects_taken`[cite: 2]
+* `budget_range_inr` $\ge$ `country.min_funds_proof`[cite: 2]
+* `english_test_validity` at intended intake[cite: 2]
+* **Override path:** Senior Counsellor with `reason_code`[cite: 2]
+
+#### 5.3 Risk Flags
+* $\text{budget\_gap\_pct} = \max(0, \frac{\text{cost\_estimate} - \text{proven\_funds}}{\text{cost\_estimate}})$[cite: 2]
+* `weak_score_flag` = $\text{test\_score} < \text{country\_band\_p25}$[cite: 2]
+* `visa_history_flag` = `prior_refusal == true`[cite: 2]
+* `deadline_at_risk` = $\text{days\_to\_deadline} < 14 \text{ AND } \text{completion\_pct} < 75$[cite: 2]
+* `doc_expiry_imminent` = $\text{any}(\text{doc.expiry} - \text{today} < 90\text{d})$[cite: 2]
+* `shortlist_mismatch` = $\text{uni\_count\_in\_safe\_band} == 0$[cite: 2]
+* `rejection_pattern_match` = $\text{profile\_similarity}(\text{historical\_rejections}) > 0.7$[cite: 2]
+
+---
+
+### 6. Entity Model
+
+| Entity | PK | FK | Key Relations | Lifecycle / Notes |
+| :--- | :--- | :--- | :--- | :--- |
+| **student** | `student_id` | `assigned_counsellor_id`, `org_id` | applications 1:N, documents 1:N, activities 1:N, payments 1:N, visa_case 1:1 active, financial_plan 1:1 | Root entity[cite: 2] |
+| **application** | `application_id` | `student_id`, `university_id`, `course_id`, `intake_id` | decisions 1:N, documents M:N (`application_documents`), payments 1:N | `DRAFT` -> `IN_PROGRESS` -> `SUBMITTED` -> `AWAITING_DECISION` -> `{OFFER\|REJECTED\|WAITLIST}` -> `{ACCEPTED\|DECLINED}`[cite: 2] |
+| **document** | `document_id` | `student_id` (owner) | M:N with application via `application_documents` | Typed + versioned; expiry required for typed docs[cite: 2] |
+| **visa_case** | `visa_case_id` | `student_id`, `country_id` | 1:N documents | `DOC_PREP` -> `BOOKED` -> `FILED` -> `AWAITING_DECISION` -> `{APPROVED\|REJECTED\|ADMIN_PROCESSING}`[cite: 2] |
+| **payment** | `payment_id` | `student_id`, `stage_id`, `to_party_id` | 1:1 with txn source | Types: onboarding_fee, application_fee, deposit, tuition, visa_fee, partner_service[cite: 2] |
+| **activity** | `activity_id` | `student_id`, `counsellor_id` | Append-only log | Channels: call, whatsapp, email, meeting, sms[cite: 2] |
+| **financial_plan** | `financial_plan_id` | `student_id` | 1:N loans, 1:N funding_sources | Snapshot + audit trail[cite: 2] |
+
+---
+
+### 7. Bottlenecks & Failure Points
+
+| Transition | Failure Cause | Signal |
+| :--- | :--- | :--- |
+| **S01 -> S02** | First-contact SLA breach | `first_contact_latency > 24h`[cite: 2] |
+| **S02 -> S03** | Pricing shock / shopping | `agreement_unsigned > 7d` AND `counselling_no_show >= 1`[cite: 2] |
+| **S03 -> S04** | Indecision / parent override | `shortlist_revisions > 3` OR `decision_age > 14d`[cite: 2] |
+| **S04 -> S05** | Doc-collection drag | `doc_completion_pct < 60` for 14d[cite: 2] |
+| **S05 -> S06** | Deadline miss / unpaid app fee | `days_to_deadline < 7` AND `status != SUBMITTED`[cite: 2] |
+| **S06 -> S07** | All-reject / profile mismatch | `reject_count == total_apps`[cite: 2] |
+| **S07 -> S08** | Better offer elsewhere / finance gap | `deposit_unpaid_past_deadline`[cite: 2] |
+| **S09** | Loan rejection / forex short | `loan_status == REJECTED` OR `funds_gap > 0`[cite: 2] |
+| **S10** | Doc gap / attestation delay | `checklist_completion < 100` AND `days_to_appointment < 7`[cite: 2] |
+| **S11 -> S12** | Refusal / 221g | `decision == REJECTED` OR `admin_processing > sla`[cite: 2] |
+| **S13** | Last-minute pull-out | `departure_ready < 100` at T-7[cite: 2] |
+
+---
+
+### 8. Compact Stage x Data x Action Table
+
+| # | Stage | Required Data (min) | Key Consultant Action | Exit Gate |
+| :--- | :--- | :--- | :--- | :--- |
+| **S01** | Lead Captured | name, phone, email, source, consent | First-touch within SLA | Two-way contact + counselling slot booked[cite: 2] |
+| **S02** | Qualified Lead | qualification, intake, target_countries, budget, test_status | Qualification call, MQL/SQL tag | `lead_score >= threshold`[cite: 2] |
+| **S03** | Counselling | full academic history, course pref, career goal | Service agreement + onboarding fee | Agreement `SIGNED` + fee `CAPTURED`[cite: 2] |
+| **S04** | Shortlisting | shortlist[uni, course, intake, deadline], intake | Build comparison sheet, lock list | Shortlist signed off[cite: 2] |
+| **S05** | Application Started | per-app: portal creds, draft, SOP v1, LOR requestees | Open portals, brief SOP, request LOR/transcripts | All apps `IN_PROGRESS`[cite: 2] |
+| **S06** | Application Submitted | per-app: submitted_at, fee_txn, final SOP/LOR/transcripts | Submit + pay fee + log | All apps `SUBMITTED`[cite: 2] |
+| **S07** | Offer Received | per-app: decision_type, offer_uri, conditions, deadline | Log + share + advise | Decisions captured for all apps[cite: 2] |
+| **S08** | Offer Accepted | chosen_app_id, acceptance_letter, deposit_receipt, declines | Pay deposit, request CAS/I-20/COE/LOA | Deposit `CAPTURED` + uni ack[cite: 2] |
+| **S09** | Financial Planning | cost_estimate, funding_breakdown, loan, bank stmts, ITR | Loan facilitation, dossier build | `financial_proof_complete`[cite: 2] |
+| **S10** | Visa Documentation | passport, immigration doc, fees, photos, doc sets | Country checklist + appointment | Checklist 100% + appointment booked[cite: 2] |
+| **S11** | Visa Filed | filing_date, ref_no, biometrics, interview, fee | File at VFS/embassy + interview prep | Case = `AWAITING_DECISION`[cite: 2] |
+| **S12** | Visa Approved/Rejected | decision, decision_date, visa_uri OR rejection_code | RCA + branch (proceed / rework / close) | Branch executed[cite: 2] |
+| **S13** | Pre-Departure | flight, accommodation, forex, insurance, final tuition | Pre-departure session, partner tie-ups | `departure_ready == 100` at T-1[cite: 2] |
+| **S14** | Student Landed | arrival_at, on_ground_contact, uni_registration | Confirm + feedback + referral | `arrival_confirmed` -> `COMPLETED`[cite: 2] |
+
+---
+
+### Appendix A - Machine-readable Lifecycle JSON
+Structured JSON mirror of Sections 2-7 for direct ingestion into a workflow engine or schema-first ORM[cite: 2].
+
+```json
+{
+  "lifecycle_version": "1.0",
+  "entity_root": "student",
+  "stages": [
+    {
+      "stage_id": "S01",
+      "stage_name": "Lead Captured",
+      "objective": "Establish identifiability + attribution; trigger first-touch SLA.",
+      "required_data": [
+        "full_name",
+        "phone_e164",
+        "email",
+        "source_channel",
+        "source_campaign_id",
+        "consent_to_contact_bool",
+        "created_at"
+      ],
+      "optional_data": [
+        "city",
+        "intended_country_freeform",
+        "intake_year_rough",
+        "how_heard"
+      ],
+      "consultant_actions": [
+        "auto_assign_acknowledge",
+        "first_outbound_touch (call/WA)"
+      ],
+      "system_automations": [
+        "round_robin_assign_by_territory/language",
+        "dedupe(phone_hash + email_hash)",
+        "enrichment(ip_geo, phone_country)",
+        "welcome_template_dispatch (WA/SMS)",
+        "sla_timer_first_contact = 15 min"
+      ],
+      "exit_criteria": "two_way_contact_established == true AND qualification_call_scheduled == true"
+    },
+    {
+      "stage_id": "S02",
+      "stage_name": "Qualified Lead",
+      "objective": "Confirm intent, basic eligibility, financial viability (BANT for edu).",
+      "required_data": [
+        "highest_qualification",
+        "pass_year_or_current_year",
+        "target_intake_term",
+        "target_intake_year",
+        "target_countries_ranked[]",
+        "budget_range_inr",
+        "funding_source_enum {self|loan|scholarship_dep|sponsor}",
+        "english_test_type",
+        "english_test_score | null"
+      ],
+      "optional_data": [
+        "gap_years",
+        "work_ex_months",
+        "family_abroad_bool",
+        "prior_visa_history"
+      ],
+      "consultant_actions": [
+        "qualification_script_run",
+        "set_mql_sql_tag",
+        "book_counselling_slot"
+      ],
+      "system_automations": [
+        "lead_score_compute (see Derived Logic)",
+        "country_budget_eligibility_precheck",
+        "hard_disqualify -> junk if no viable path",
+        "nurture_sequence if intake > 12 mo away"
+      ],
+      "exit_criteria": "lead_score >= threshold AND counselling_slot_booked"
+    },
+    {
+      "stage_id": "S03",
+      "stage_name": "Counselling",
+      "objective": "Build full profile, sign engagement, collect onboarding fee.",
+      "required_data": [
+        "academic_history{class10, class12, ug_degree, board, scoring_scheme, score, year}",
+        "preferred_course_field",
+        "preferred_specialization",
+        "work_ex_details[]",
+        "career_goal_freeform",
+        "geographic_preference{tier, climate, diaspora}",
+        "risk_appetite_enum {ambitious|moderate|safe}"
+      ],
+      "optional_data": [
+        "extracurriculars",
+        "publications",
+        "certifications",
+        "gap_year_reason"
+      ],
+      "consultant_actions": [
+        "profile_builder_session",
+        "share country/uni compare + fee estimate",
+        "issue_service_agreement_esign",
+        "collect onboarding fee"
+      ],
+      "system_automations": [
+        "profile_strength_score",
+        "match_engine_recommend(country x course)",
+        "esign_workflow (DocuSign/Leegality)",
+        "payment_link_generation",
+        "create shortlist_workspace"
+      ],
+      "exit_criteria": "agreement.status == SIGNED AND onboarding_fee.status == CAPTURED"
+    },
+    {
+      "stage_id": "S04",
+      "stage_name": "Shortlisting",
+      "objective": "Lock signed shortlist (ambitious/target/safe mix) + confirmed intake.",
+      "required_data": [
+        "shortlist[]{university_id, course_id, intake_term, category, app_fee, deadline, req_snapshot}",
+        "confirmed_intake_term_year",
+        "decision_timeline_days"
+      ],
+      "optional_data": [
+        "alt_courses[]",
+        "scholarship_targets[]"
+      ],
+      "consultant_actions": [
+        "comparison_sheet_build",
+        "parent_signoff_capture",
+        "lock_shortlist"
+      ],
+      "system_automations": [
+        "pull_live_uni_data(tuition, deadlines, reqs)",
+        "deadline_conflict_flag",
+        "admit_probability_compute(profile vs historical)",
+        "document_checklist union across shortlist"
+      ],
+      "exit_criteria": "shortlist.status == SIGNED_OFF AND document_checklist.generated == true"
+    },
+    {
+      "stage_id": "S05",
+      "stage_name": "Application Started",
+      "objective": "Open per-university applications; assemble drafts and artifacts.",
+      "required_data": [
+        "per_application{portal_creds_encrypted, ext_application_id, draft_status, doc_collection_state, sop_draft_v1, lor_requestees[], transcript_request_status}"
+      ],
+      "optional_data": [
+        "video_essay_status",
+        "portfolio_links[]"
+      ],
+      "consultant_actions": [
+        "open portals",
+        "sop_brief_kickoff",
+        "lor_request_send",
+        "transcript_request_send",
+        "vault uploads"
+      ],
+      "system_automations": [
+        "kanban per application",
+        "deadline_countdown",
+        "sop_plagiarism_check",
+        "lor_request_tracking (email opens + reply)",
+        "doc_expiry_check(passport, tests)",
+        "daily missing-doc digest to student (WA)"
+      ],
+      "exit_criteria": "for_each(application).status >= IN_PROGRESS"
+    },
+    {
+      "stage_id": "S06",
+      "stage_name": "Application Submitted",
+      "objective": "Confirm portal submission and fee paid per application.",
+      "required_data": [
+        "per_application{submitted_at, app_fee_txn_ref, submission_confirmation_uri, final_sop_uri, final_lor_uris[], transcripts_uri, test_score_report_uri}"
+      ],
+      "optional_data": [
+        "writing_sample_uri",
+        "interview_slot"
+      ],
+      "consultant_actions": [
+        "fee_payment",
+        "confirmation_capture",
+        "submission_log_entry"
+      ],
+      "system_automations": [
+        "state -> AWAITING_DECISION",
+        "follow-up cadence per uni (4-16 wks)",
+        "interview_prep_nudge if required",
+        "portal_status_poll (where permitted)"
+      ],
+      "exit_criteria": "for_each(application).status == SUBMITTED AND confirmation_artifact.present"
+    },
+    {
+      "stage_id": "S07",
+      "stage_name": "Offer Received",
+      "objective": "Capture every decision per application (offer / conditional / reject / waitlist).",
+      "required_data": [
+        "per_application{decision_type, decision_date, offer_letter_uri, conditions[], tuition_payable, scholarship_amount, accept_deadline, deposit_required}"
+      ],
+      "optional_data": [
+        "interview_feedback",
+        "alt_course_offered"
+      ],
+      "consultant_actions": [
+        "log_decision",
+        "share_with_student_parent",
+        "advise_best_fit"
+      ],
+      "system_automations": [
+        "offer_comparator(cost, scholarship, ranking, roi_proxy)",
+        "deposit_deadline_alerts",
+        "escalate if zero_offers past expected window"
+      ],
+      "exit_criteria": "count(decisions) == count(applications) AND comparator_generated == true"
+    },
+    {
+      "stage_id": "S08",
+      "stage_name": "Offer Accepted",
+      "objective": "Lock chosen program, decline others, pay deposit.",
+      "required_data": [
+        "chosen_application_id",
+        "acceptance_letter_uri",
+        "deposit{amount, date, txn_ref, receipt_uri}",
+        "declined_universities[]{notified_at}"
+      ],
+      "optional_data": [
+        "deferral_request",
+        "accommodation_preference"
+      ],
+      "consultant_actions": [
+        "pay deposit",
+        "send acceptance",
+        "send polite declines",
+        "request immigration_doc (CAS/I-20/COE/LOA)"
+      ],
+      "system_automations": [
+        "trigger financial_planning module",
+        "auto-close other application records",
+        "lock chosen_program in student record"
+      ],
+      "exit_criteria": "deposit.status == CAPTURED AND uni_acknowledged_acceptance == true"
+    },
+    {
+      "stage_id": "S09",
+      "stage_name": "Financial Planning",
+      "objective": "Prove full funding covers tuition + living + visa + travel + buffer.",
+      "required_data": [
+        "total_cost_estimate{tuition, living, visa, insurance, travel, buffer}",
+        "funding_breakdown{self, loan, scholarship, sponsor}",
+        "loan{lender, status, sanctioned_amount, sanction_letter_uri}",
+        "bank_statement_uri[6mo]",
+        "itr_uri[3y_sponsor]",
+        "sponsor_affidavit_uri | null",
+        "forex_plan"
+      ],
+      "optional_data": [
+        "gic_account(CA)",
+        "blocked_account(DE)",
+        "tuition_payment_receipts[]"
+      ],
+      "consultant_actions": [
+        "loan_facilitation via partner bank/NBFC",
+        "forex_partner referral",
+        "doc_compilation"
+      ],
+      "system_automations": [
+        "build_financial_dossier per visa country",
+        "loan_status_webhook ingest",
+        "gap_alert if (cost - proven_funds) > tolerance"
+      ],
+      "exit_criteria": "financial_proof_complete == true AND country_specific_compliance == true"
+    },
+    {
+      "stage_id": "S10",
+      "stage_name": "Visa Documentation",
+      "objective": "Compile country-specific visa file + book biometrics/interview appointment.",
+      "required_data": [
+        "visa_country",
+        "visa_category (F1/Tier4/study/etc.)",
+        "passport{number, expiry, scan_uri, validity_check}",
+        "immigration_doc_uri (CAS/I-20/COE/LOA)",
+        "sevis_ihs_biometric_fee_paid",
+        "visa_form_draft",
+        "photographs_per_spec",
+        "academic_docs_set",
+        "financial_docs_set",
+        "english_proficiency_doc",
+        "sop_visa_version",
+        "medical_cert | null",
+        "police_clearance | null",
+        "tb_test | null"
+      ],
+      "optional_data": [
+        "previous_passports",
+        "prior_refusal_disclosure",
+        "ties_to_home_country_docs"
+      ],
+      "consultant_actions": [
+        "country_checklist_run",
+        "mock_interview_prep (US/UK)",
+        "appointment_booking"
+      ],
+      "system_automations": [
+        "country_checklist_engine",
+        "doc_validity_checker",
+        "appointment_slot_notifier (where allowed)",
+        "form_autopopulate (DS-160-shape JSON)",
+        "rejection_pattern_risk_score"
+      ],
+      "exit_criteria": "checklist.completion == 100 AND appointment.booked == true"
+    },
+    {
+      "stage_id": "S11",
+      "stage_name": "Visa Filed",
+      "objective": "File application; capture proof and case reference.",
+      "required_data": [
+        "filing_date",
+        "application_reference_no",
+        "biometrics_completed_date",
+        "interview_date | null",
+        "visa_fee_paid",
+        "courier_tracking_no | null"
+      ],
+      "optional_data": [
+        "interview_questions_log",
+        "additional_docs_requested"
+      ],
+      "consultant_actions": [
+        "submit at VFS/embassy",
+        "T-3 interview prep",
+        "log_interview_questions post-fact"
+      ],
+      "system_automations": [
+        "embassy_status_tracker (where permitted)",
+        "additional_doc_request alert",
+        "P1/P2 (221g) workflow for US",
+        "sla_breach_escalation"
+      ],
+      "exit_criteria": "case_status == AWAITING_DECISION AND reference_no.present"
+    },
+    {
+      "stage_id": "S12",
+      "stage_name": "Visa Approved / Rejected",
+      "objective": "Capture outcome and branch.",
+      "required_data": [
+        "visa_decision_enum {approved|rejected|admin_processing}",
+        "decision_date",
+        "visa_uri | null",
+        "visa_validity{from, to}",
+        "visa_category",
+        "rejection_reason_code | null",
+        "rejection_letter_uri | null"
+      ],
+      "optional_data": [
+        "appeal_eligibility",
+        "reapplication_plan"
+      ],
+      "consultant_actions": [
+        "approved -> pre-departure",
+        "rejected -> RCA + decide(reapply|appeal|alt_country|close_lost)"
+      ],
+      "system_automations": [
+        "branch workflow",
+        "open reapplication sub-process (if rejected) linked to original case",
+        "anonymized rejection_pattern_db update",
+        "refund/credit logic per partner SLA"
+      ],
+      "exit_criteria": "approved -> S13; rejected -> loop(S10|S04) or terminal(CLOSED_LOST)"
+    },
+    {
+      "stage_id": "S13",
+      "stage_name": "Pre-Departure",
+      "objective": "Operational readiness to land safely.",
+      "required_data": [
+        "flight{pnr, airline, dep_dt, arr_dt}",
+        "accommodation{type, address, lease_start, lease_end}",
+        "forex_loaded{amount, currency, provider}",
+        "travel_insurance{policy_no, validity}",
+        "sim_plan",
+        "airport_pickup_arranged_bool",
+        "final_tuition_payment_receipt_uri"
+      ],
+      "optional_data": [
+        "briefing_attendance",
+        "alumni_connect_done",
+        "packing_checklist_done"
+      ],
+      "consultant_actions": [
+        "pre-departure session",
+        "accommodation partner tie-up",
+        "forex partner referral",
+        "insurance issuance"
+      ],
+      "system_automations": [
+        "T-30 / T-15 / T-7 / T-1 countdown checklist",
+        "weather/customs/landing brief dispatch (WA)",
+        "alumni group invite",
+        "partner revenue attribution"
+      ],
+      "exit_criteria": "departure_ready_score == 100 AND flight T-1 reached"
+    },
+    {
+      "stage_id": "S14",
+      "stage_name": "Student Landed",
+      "objective": "Confirm arrival; trigger NPS + referral loops; close case.",
+      "required_data": [
+        "arrival_confirmed_at",
+        "on_ground_contact_made",
+        "uni_registration_done_dt",
+        "local_bank_account_opened_bool",
+        "accommodation_check_in_done"
+      ],
+      "optional_data": [
+        "photo_consent_uri",
+        "testimonial_text",
+        "nps_score"
+      ],
+      "consultant_actions": [
+        "landing call/message",
+        "feedback request",
+        "referral request",
+        "log to success pipeline"
+      ],
+      "system_automations": [
+        "NPS survey at T+7",
+        "referral campaign at T+30",
+        "consultant revenue recognition (final tranche)",
+        "case close at T+90"
+      ],
+      "exit_criteria": "arrival_confirmed == true -> status = COMPLETED"
+    }
+  ]
+}

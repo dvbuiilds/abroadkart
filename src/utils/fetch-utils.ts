@@ -8,7 +8,7 @@ import { ResponseType } from "@app/types/api-types";
  * @returns Promise<ResponseType<any>>
  * This method will abort the fetch call if it is taking more time to complete than the provided timeout.
  */
-export const fetchWithTimeout = async (
+export const fetchWithTimeout = async <T = unknown>(
   url: string,
   options?: {
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -20,7 +20,7 @@ export const fetchWithTimeout = async (
     body?: string;
   },
   timeout: number = 10000
-): Promise<ResponseType<any>> => {
+): Promise<ResponseType<T>> => {
   const controller = new AbortController();
   const signal = controller.signal;
 

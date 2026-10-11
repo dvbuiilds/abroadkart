@@ -38,12 +38,6 @@ import type { PaymentListItem } from "@app/graphql/types";
 import { format } from "date-fns";
 import { Plus, DollarSign } from "lucide-react";
 
-const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  pending: "bg-yellow-100 text-yellow-900 dark:bg-yellow-900 dark:text-yellow-100",
-  partial: "bg-orange-100 text-orange-900 dark:bg-orange-900 dark:text-orange-100",
-  paid: "bg-green-100 text-green-900 dark:bg-green-900 dark:text-green-100",
-};
-
 const PAYMENT_STATUS_VARIANTS: Record<
   string,
   "default" | "secondary" | "outline" | "success" | "warning" | "destructive"

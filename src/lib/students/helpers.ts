@@ -1,8 +1,7 @@
-import type { StudentDetail } from '@app/graphql/types';
+import type { Student } from '@app/graphql/types';
 import {
   stageLabelMap,
   priorityLabelMap,
-  targetCountryLabelMap,
 } from './options';
 
 export function formatTargetCountries(countries: string[] | null | undefined): string {
@@ -37,7 +36,7 @@ export function formatStudentName(fullName?: string | null): string {
   return fullName || 'Unknown';
 }
 
-export function calculateProfileStrength(student: Partial<StudentDetail>): number {
+export function calculateProfileStrength(student: Partial<Student>): number {
   const totalFields = 20;
   let filledFields = 0;
 
@@ -84,7 +83,7 @@ export function formatDate(date: Date | string | null | undefined): string {
   });
 }
 
-export function isStudentReadyForApplication(student: Partial<StudentDetail>): boolean {
+export function isStudentReadyForApplication(student: Partial<Student>): boolean {
   const requiredFields = [
     student.fullName,
     student.email,

@@ -65,6 +65,7 @@ const renderSection = (section: BlogSectionType) => {
           <div className="flex flex-row gap-2 flex-wrap">
             {section.blogs.map((blog, index) => (
               <BlogCard
+                key={index}
                 data={{
                   date: blog.blogMetaData.publishedDate,
                   imgUrl: blog.featuredImg.src,

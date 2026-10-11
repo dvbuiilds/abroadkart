@@ -20,7 +20,6 @@ import { MoreHorizontal, Eye, Pencil, Flame, Thermometer, Snowflake } from "luci
 import type { StudentListItem } from "@app/graphql/types";
 import { format } from "date-fns";
 import {
-  qualificationLabelMap,
   stageLabelMap,
   priorityLabelMap,
 } from "@app/lib/students/options";

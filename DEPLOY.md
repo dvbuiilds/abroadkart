@@ -273,6 +273,21 @@ Terminating TLS on the host fixes **Secure** session cookies for Keystone admin 
 
 ---
 
+## Pre-Deploy Gate
+
+Before deploying, run the following command to ensure the build is ready:
+
+```bash
+yarn test && yarn build
+```
+
+- **`yarn test`** runs type checking and linting:
+  - `yarn typecheck`: `tsc --noEmit` — catches TypeScript errors before build
+  - `yarn lint`: `eslint src` — catches ESLint violations
+- **`yarn build`**: compiles the Next.js app. This step will fail if either type-check or lint fails, so no code leaves the dev machine with unaddressed errors.
+
+---
+
 ## Checklist — Before Going Live
 
 - [ ] **`POSTGRES_PASSWORD`** in root **`.env`** is strong; **`keystone/.env`** connection string uses the same password (no default passwords committed)
