@@ -4,3 +4,7 @@ node_modules
 .env
 .env.*
 keystone
+e2e
+test-results
+playwright-report
+coverage

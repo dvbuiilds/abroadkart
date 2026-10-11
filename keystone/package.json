@@ -10,7 +10,7 @@
     "postinstall": "keystone postinstall",
     "seed": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed.ts",
     "seed:students": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed-students.ts",
-    "test": "node -r ts-node/register/transpile-only --test __tests__/access.test.ts __tests__/verifyBetterAuthJwt.test.ts __tests__/betterAuthSession.test.ts",
+    "test": "node -r ts-node/register/transpile-only --test __tests__/*.test.ts",
     "generate": "rm -rf .keystone && keystone build && prisma db push",
     "db:push": "prisma db push",
     "db:validate": "keystone postinstall"

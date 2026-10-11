@@ -278,13 +278,16 @@ Terminating TLS on the host fixes **Secure** session cookies for Keystone admin 
 Before deploying, run the following command to ensure the build is ready:
 
 ```bash
-yarn test && yarn build
+yarn test && yarn build && (cd keystone && yarn test)
 ```
 
-- **`yarn test`** runs type checking and linting:
+- **`yarn test`** runs type checking, linting and unit tests:
   - `yarn typecheck`: `tsc --noEmit` — catches TypeScript errors before build
   - `yarn lint`: `eslint src` — catches ESLint violations
+  - `yarn test:unit`: `vitest run` — Next.js unit and component tests
 - **`yarn build`**: compiles the Next.js app. This step will fail if either type-check or lint fails, so no code leaves the dev machine with unaddressed errors.
+- **`cd keystone && yarn test`**: runs the Keystone `node:test` suite (access rules and auth JWT checks).
+- **`yarn test:e2e`** (Playwright, run after `yarn build`): runs the browser suite against `next start`. It is not part of the gate above, because it needs a built app. Run it before cutover, or set `E2E_BASE_URL` to test a deployed host. The first run needs `npx playwright install chromium`.
 
 ---
 
