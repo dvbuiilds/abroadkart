@@ -11,8 +11,12 @@ export function buildRedirectMap(redirects: WpRedirect[]): Record<string, string
 }
 
 /**
- * Next.js redirects() rules for the WordPress URLs. Every rule is a single hop and
- * permanent. Sources are the no-trailing-slash form; Next matches /slug/ as well.
+ * Next.js redirects() rules for the WordPress URLs. Every rule is permanent and
+ * a single hop.
+ *
+ * Page rules are emitted in both forms, /x and /x/. Next redirects /x/ to /x
+ * before custom rules run, so a rule for /x alone would make /x/ two hops. Image
+ * rules are emitted once, since WordPress upload paths have no trailing slash.
  */
 export function buildLegacyRedirects(
   posts: WpPost[],
@@ -23,25 +27,29 @@ export function buildLegacyRedirects(
   const rules: NextRedirect[] = [];
   const add = (source: string, destination: string) =>
     rules.push({ source, destination, permanent: true });
+  const addPage = (source: string, destination: string) => {
+    add(source, destination);
+    add(`${source}/`, destination);
+  };
 
   const published = posts.filter((p) => p.status === "published");
   const slugs = new Set(published.map((p) => p.slug));
   const redirectMap = buildRedirectMap(redirects);
 
-  for (const slug of [...slugs].sort()) add(`/${slug}`, `/blogs/${slug}`);
+  for (const slug of [...slugs].sort()) addPage(`/${slug}`, `/blogs/${slug}`);
 
   for (const r of redirects) {
     const from = trim(r.source);
     const to = redirectMap[from];
     if (slugs.has(from) || !slugs.has(to)) continue;
-    add(`/${from}`, `/blogs/${to}`);
+    addPage(`/${from}`, `/blogs/${to}`);
   }
 
-  add("/category/:c", "/blogs/category/:c");
-  add("/author/:a*", "/blogs");
-  add("/tag/:t*", "/blogs");
-  add("/feed", "/blogs");
-  add("/blog/:path*", "/blogs");
+  addPage("/category/:c", "/blogs/category/:c");
+  addPage("/author/:a*", "/blogs");
+  addPage("/tag/:t*", "/blogs");
+  addPage("/feed", "/blogs");
+  addPage("/blog/:path*", "/blogs");
 
   // Featured images and their resized variants -> the one image on the CDN.
   const renditions = new Map(

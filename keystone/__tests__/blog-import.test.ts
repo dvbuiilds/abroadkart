@@ -258,6 +258,24 @@ describe("buildLegacyRedirects", () => {
     }
   });
 
+  it("matches the trailing-slash form of every page rule, to the same destination", () => {
+    // Next redirects /x/ to /x before custom rules run, so /x/ needs its own rule
+    // to stay one hop.
+    const exact = new Map(rules.map((r) => [r.source, r.destination]));
+    for (const s of slugSet) {
+      assert.strictEqual(exact.get(`/${s}/`), `/blogs/${s}`, `/${s}/`);
+    }
+    assert.strictEqual(exact.get("/category/:c/"), "/blogs/category/:c");
+    assert.strictEqual(exact.get("/author/:a*/"), "/blogs");
+    assert.strictEqual(exact.get("/tag/:t*/"), "/blogs");
+    assert.strictEqual(exact.get("/feed/"), "/blogs");
+    assert.strictEqual(exact.get("/blog/:path*/"), "/blogs");
+  });
+
+  it("keeps the total under Next's comfortable size for redirects()", () => {
+    assert.ok(rules.length < 1000, `got ${rules.length}`);
+  });
+
   it("sends the 9 legacy redirects straight to the final /blogs URL", () => {
     assert.strictEqual(redirects.length, 9);
     for (const r of redirects) {
