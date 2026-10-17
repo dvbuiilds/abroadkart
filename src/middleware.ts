@@ -2,30 +2,28 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 
-function isPublicPath(pathname: string): boolean {
-  if (pathname === "/") return true;
-  if (
-    pathname === "/about" ||
-    pathname === "/contact" ||
-    pathname === "/login" ||
-    pathname === "/privacy-policy" ||
-    pathname === "/terms"
-  ) {
-    return true;
-  }
-  if (pathname.startsWith("/blogs")) return true;
-  if (pathname.startsWith("/sign-in")) return true;
-  if (pathname.startsWith("/sign-up")) return true;
-  if (pathname.startsWith("/forgot-password")) return true;
-  if (pathname.startsWith("/api/auth")) return true;
-  if (pathname.startsWith("/api/revalidate")) return true;
-  if (pathname.startsWith("/api/blog-leads")) return true;
-  if (pathname.startsWith("/ba")) return true;
-  return false;
+/**
+ * Only CRM areas need a session. Every other path falls through to Next's
+ * normal routing, so unknown URLs (including legacy WordPress URLs) return 404
+ * instead of redirecting to sign-in. A new CRM route must be added here.
+ */
+const PROTECTED_PREFIXES = [
+  "/consultant",
+  "/fulfilment",
+  "/admin",
+  "/dashboard",
+  "/api/consultant",
+  "/api/graphql",
+];
+
+function isProtectedPath(pathname: string): boolean {
+  return PROTECTED_PREFIXES.some(
+    (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`),
+  );
 }
 
 export default function middleware(request: NextRequest) {
-  if (isPublicPath(request.nextUrl.pathname)) {
+  if (!isProtectedPath(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
