@@ -54,6 +54,24 @@ describe("ArticleBody", () => {
     expect(wrapper).toHaveAttribute("tabindex", "0");
   });
 
+  it("makes the first row of a header-less table into column headers, keeping its text", () => {
+    const { container } = render(<ArticleBody html={articleHtml} />);
+    const headers = container.querySelectorAll("table th");
+    expect(headers).toHaveLength(2);
+    expect(headers[0]).toHaveTextContent("City");
+    expect(headers[0]).toHaveAttribute("scope", "col");
+    // Body rows keep their data cells.
+    expect(container.querySelectorAll("table td")).toHaveLength(2);
+  });
+
+  it("leaves a table that already has a thead alone", () => {
+    const html =
+      "<table><thead><tr><td>Name</td></tr></thead><tbody><tr><td>Asha</td></tr></tbody></table>";
+    const { container } = render(<ArticleBody html={html} />);
+    expect(container.querySelectorAll("table th")).toHaveLength(0);
+    expect(container.querySelectorAll("table td")).toHaveLength(2);
+  });
+
   it("keeps every heading id from the source", () => {
     const { container } = render(<ArticleBody html={articleHtml} />);
     for (const id of ["decoding-the-terminologies", "beyond-the-label", "small-print"]) {

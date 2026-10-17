@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { Fragment, createElement } from "react";
 import parse, {
   domToReact,
   type DOMNode,
@@ -11,6 +11,26 @@ import { classifyHref } from "@app/lib/blog/links";
 
 const HEADING_TAGS = new Set(["h2", "h3", "h4", "h5", "h6"]);
 
+const isTag = (node: DOMNode): node is Element => node.type === "tag";
+
+/**
+ * The first row of a table that has no <thead>. Many legacy tables use a bold
+ * first row as their header, so that row becomes column headers.
+ */
+function headerLessFirstRow(table: Element): Element | undefined {
+  const sections = (table.children as DOMNode[]).filter(isTag);
+  if (sections.some((section) => section.name === "thead")) return undefined;
+
+  const rows = sections.flatMap((section) => {
+    if (section.name === "tr") return [section];
+    if (section.name === "tbody") {
+      return (section.children as DOMNode[]).filter(isTag).filter((row) => row.name === "tr");
+    }
+    return [];
+  });
+  return rows[0];
+}
+
 /**
  * Renders a post's stored HTML.
  *
@@ -19,6 +39,8 @@ const HEADING_TAGS = new Set(["h2", "h3", "h4", "h5", "h6"]);
  * "#" on headings is drawn with CSS, and the arrow on external links is an SVG).
  */
 export function ArticleBody({ html }: { html: string }) {
+  const headerRows = new Set<Element>();
+
   const options: HTMLReactParserOptions = {
     replace(node: DOMNode) {
       if (node.type !== "tag") return undefined;
@@ -49,7 +71,25 @@ export function ArticleBody({ html }: { html: string }) {
         }
       }
 
+      if (name === "tr" && headerRows.has(element)) {
+        return (
+          <tr>
+            {(element.children as DOMNode[]).map((cell, index) => (
+              <Fragment key={index}>
+                {isTag(cell) && cell.name === "td" ? (
+                  <th scope="col">{domToReact(cell.children as DOMNode[], options)}</th>
+                ) : (
+                  domToReact([cell], options)
+                )}
+              </Fragment>
+            ))}
+          </tr>
+        );
+      }
+
       if (name === "table") {
+        const firstRow = headerLessFirstRow(element);
+        if (firstRow) headerRows.add(firstRow);
         return (
           <div
             className="table-wrap"

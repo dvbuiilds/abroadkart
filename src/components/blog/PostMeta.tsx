@@ -1,8 +1,9 @@
 import { Clock } from "lucide-react";
 import { formatPostDate, isSameIstDay } from "@app/lib/blog/format";
 
+/** Separator between items. Hidden on small screens, where wrapped lines would leave it dangling. */
 const Dot = () => (
-  <span aria-hidden="true" className="text-gray-300">
+  <span aria-hidden="true" className="hidden text-gray-300 sm:inline">
     ·
   </span>
 );

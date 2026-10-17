@@ -112,8 +112,7 @@
   border-bottom: 1px solid #f3f4f6;
 }
 
-.table-wrap thead th,
-.table-wrap table:not(:has(thead)) tr:first-child td {
+.table-wrap th {
   background: #f9fafb;
   color: #111827;
   font-weight: 600;

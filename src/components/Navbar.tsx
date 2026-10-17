@@ -117,6 +117,7 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label={isOpen ? "Close menu" : "Open menu"}
                     className={
                       isHome
                         ? "nav-icon-animate hover:bg-white/10"
