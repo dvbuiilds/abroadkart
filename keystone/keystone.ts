@@ -22,6 +22,9 @@ import { PrepaidCard } from "./schema/PrepaidCard";
 import { Task } from "./schema/Task";
 import { Interaction } from "./schema/Interaction";
 import { Payment } from "./schema/Payment";
+import { BlogPost } from "./schema/BlogPost";
+import { BlogCategory } from "./schema/BlogCategory";
+import { BlogLead } from "./schema/BlogLead";
 import { ADMIN_HOME_PAGE_SRC } from "./lib/adminHomePageTemplate";
 
 const lists = {
@@ -40,6 +43,9 @@ const lists = {
   Task,
   Interaction,
   Payment,
+  BlogPost,
+  BlogCategory,
+  BlogLead,
 };
 
 export default config({
