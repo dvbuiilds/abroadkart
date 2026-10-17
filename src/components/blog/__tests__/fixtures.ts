@@ -57,3 +57,25 @@ export const fullPost: BlogPost = {
   metaDescription: undefined,
   tags: [],
 };
+
+/**
+ * Article HTML covering the cases ArticleBody must handle: internal and
+ * absolute-own-host links, external links, a table without a thead, a legacy
+ * _Toc anchor with no href, an H5, and a leftover wrapper element.
+ */
+export const articleHtml = `
+<h2 id="decoding-the-terminologies">Decoding the Terminologies: MBA vs PGDM</h2>
+<p>The core differences lie in the type of qualification. Read the <a href="/blogs/visa-tips">visa guide</a> first.</p>
+<p>See also <a href="https://abroadkart.com/blogs/gre-or-gmat-which-to-take">GRE or GMAT</a>.</p>
+<p>Approved by <a href="https://www.aicte-india.org/">AICTE</a>.</p>
+<h3 id="beyond-the-label">Beyond the Label</h3>
+<table><tbody><tr><td><strong>City</strong></td><td><strong>Cost</strong></td></tr><tr><td>Boston</td><td>$77,000</td></tr></tbody></table>
+<h5 id="small-print">Small print</h5>
+<div class="chatgpt-wrapper"><p>Wrapped paragraph.</p></div>
+<p><a name="_Toc174731195">Anchor text</a></p>
+`;
+
+export const faqs = [
+  { order: 0, question: "What is the difference between an MBA and a PGDM?", answer: "An MBA is a degree. A PGDM is a diploma." },
+  { order: 1, question: "Is a PGDM valid for jobs abroad?", answer: "It depends on the country and the employer." },
+];
