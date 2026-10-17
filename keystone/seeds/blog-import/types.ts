@@ -49,8 +49,6 @@ export type ImageManifestRow = {
   mimeType: string;
 };
 
-export type NextRedirect = { source: string; destination: string; permanent: true };
-
 export type BlogPostInput = {
   postId: number;
   slug: string;

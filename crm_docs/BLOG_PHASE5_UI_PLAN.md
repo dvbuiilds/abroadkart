@@ -5,7 +5,7 @@
 
 ## 1. Context
 
-Phases 0–4 are on `fb_wp_blog_migration`. They delivered the Keystone lists, the import script, the repository, SEO helpers, redirects, robots/sitemap and revalidation. No blog UI exists yet:
+Phases 0–4 are on `fb_wp_blog_migration`. They delivered the Keystone lists, the import script, the repository, SEO helpers, robots/sitemap and revalidation. No blog UI exists yet:
 - there is no `src/app/(public)/blogs/` route;
 - there is no `src/components/blog/`;
 - there is no `/api/blog-leads`.

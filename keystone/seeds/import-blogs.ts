@@ -1,24 +1,18 @@
 /**
- * Imports the WordPress export in ../output into BlogCategory / BlogPost and writes
- * the legacy redirect rules for the Next.js app.
+ * Imports the WordPress export in ../output into BlogCategory / BlogPost.
  *
- * Run (from keystone/):  yarn import:blogs [--dry-run] [--skip-images] [--verify] [--redirects-only]
- *   --dry-run         map and report only; writes nothing (no DB, no R2, no redirects file)
+ * Run (from keystone/):  yarn import:blogs [--dry-run] [--skip-images] [--verify]
+ *   --dry-run         map and report only; writes nothing (no DB, no R2)
  *   --skip-images     do not upload featured images to the public R2 bucket
  *   --verify          compare the database with the export and exit non-zero on any difference
- *   --redirects-only  generate and write redirects only (no DB, no R2); useful before full import
  *
  * Safe to run repeatedly: categories upsert on slug, posts on postId.
  */
 
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import {
-  toBlogPostInput,
-  buildRedirectMap,
-  buildLegacyRedirects,
-} from "./blog-import";
+import { toBlogPostInput, buildRedirectMap } from "./blog-import";
 import type {
   BlogPostInput,
   ImageManifestRow,
@@ -29,13 +23,11 @@ import type {
 
 const ROOT = path.join(__dirname, "..", "..");
 const OUTPUT = path.join(ROOT, "output");
-const REDIRECTS_OUT = path.join(ROOT, "src", "lib", "blog", "legacy-redirects.json");
 
 const args = new Set(process.argv.slice(2));
 const DRY_RUN = args.has("--dry-run");
 const SKIP_IMAGES = args.has("--skip-images");
 const VERIFY = args.has("--verify");
-const REDIRECTS_ONLY = args.has("--redirects-only");
 
 const load = <T>(file: string): T =>
   JSON.parse(readFileSync(path.join(OUTPUT, file), "utf8")) as T;
@@ -145,31 +137,17 @@ async function main() {
   const unknownLinks = mapped.flatMap((m, i) =>
     m.unknownLinks.map((href) => `${posts[i].slug}: ${href}`),
   );
-  const rules = buildLegacyRedirects(posts, redirects, manifest, cdnUrl);
-
   const report: Record<string, unknown> = {
-    mode: DRY_RUN ? "dry-run" : REDIRECTS_ONLY ? "redirects-only" : VERIFY ? "verify" : "import",
+    mode: DRY_RUN ? "dry-run" : VERIFY ? "verify" : "import",
     posts: posts.length,
     published: published.length,
     drafts: posts.length - published.length,
     categories: categories.length,
-    redirectRules: rules.length,
     unknownInternalLinks: unknownLinks,
   };
 
   if (DRY_RUN) {
     console.log(JSON.stringify(report, null, 2));
-    return;
-  }
-
-  // Write redirects and exit if --redirects-only
-  if (REDIRECTS_ONLY) {
-    const json = JSON.stringify(rules, null, 2) + "\n";
-    if (!existsSync(REDIRECTS_OUT) || readFileSync(REDIRECTS_OUT, "utf8") !== json) {
-      writeFileSync(REDIRECTS_OUT, json);
-      report.redirectsFile = "written";
-    } else report.redirectsFile = "unchanged";
-    console.log(JSON.stringify({ ...report }, null, 2));
     return;
   }
 
@@ -259,13 +237,6 @@ async function main() {
       counts.updated++;
     }
   }
-
-  // 4. Redirect rules for next.config.ts (stable output: no diff on re-run)
-  const json = JSON.stringify(rules, null, 2) + "\n";
-  if (!existsSync(REDIRECTS_OUT) || readFileSync(REDIRECTS_OUT, "utf8") !== json) {
-    writeFileSync(REDIRECTS_OUT, json);
-    report.redirectsFile = "written";
-  } else report.redirectsFile = "unchanged";
 
   console.log(JSON.stringify({ ...report, categoriesResult: cat, postsResult: counts }, null, 2));
 }

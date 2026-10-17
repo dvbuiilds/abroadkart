@@ -13,14 +13,9 @@ import {
   rewriteInternalLinks,
   toBlogPostInput,
   buildRedirectMap,
-  buildLegacyRedirects,
 } from "../seeds/blog-import";
 import { parseBody } from "../seeds/blog-import/dom";
-import type {
-  WpPost,
-  WpRedirect,
-  ImageManifestRow,
-} from "../seeds/blog-import/types";
+import type { WpPost, WpRedirect } from "../seeds/blog-import/types";
 
 const OUTPUT = path.join(__dirname, "..", "..", "output");
 const load = <T>(file: string): T =>
@@ -28,7 +23,6 @@ const load = <T>(file: string): T =>
 
 const posts = load<WpPost[]>("blogs.json");
 const redirects = load<WpRedirect[]>("redirects.json");
-const manifest = load<ImageManifestRow[]>("images-manifest.json");
 
 const published = posts.filter((p) => p.status === "published");
 const slugSet = new Set(published.map((p) => p.slug));
@@ -233,98 +227,5 @@ describe("toBlogPostInput", () => {
     const { input } = map(first);
     assert.strictEqual(input.wordCount, first.stats.wordCount);
     assert.strictEqual(input.readingTimeMinutes, first.stats.readingTimeMinutes);
-  });
-});
-
-describe("buildLegacyRedirects", () => {
-  const rules = buildLegacyRedirects(posts, redirects, manifest, CDN);
-  const stripSlash = (s: string) => (s.length > 1 ? s.replace(/\/$/, "") : s);
-  const sources = new Set(rules.map((r) => stripSlash(r.source)));
-
-  it("has no chains: no destination is another rule's source", () => {
-    for (const r of rules) {
-      assert.ok(!sources.has(stripSlash(r.destination)), `${r.source} -> ${r.destination}`);
-    }
-  });
-
-  it("covers every published slug and excludes drafts", () => {
-    for (const s of slugSet) {
-      const rule = rules.find((r) => stripSlash(r.source) === `/${s}`);
-      assert.ok(rule, `missing ${s}`);
-      assert.strictEqual(rule!.destination, `/blogs/${s}`);
-    }
-    for (const d of posts.filter((p) => p.status === "draft")) {
-      assert.ok(!sources.has(`/${d.slug}`), "draft must not be redirected");
-    }
-  });
-
-  it("matches the trailing-slash form of every page rule, to the same destination", () => {
-    // Next redirects /x/ to /x before custom rules run, so /x/ needs its own rule
-    // to stay one hop.
-    const exact = new Map(rules.map((r) => [r.source, r.destination]));
-    for (const s of slugSet) {
-      assert.strictEqual(exact.get(`/${s}/`), `/blogs/${s}`, `/${s}/`);
-    }
-    assert.strictEqual(exact.get("/category/:c/"), "/blogs/category/:c");
-    assert.strictEqual(exact.get("/author/:a*/"), "/blogs");
-    assert.strictEqual(exact.get("/tag/:t*/"), "/blogs");
-    assert.strictEqual(exact.get("/feed/"), "/blogs");
-    assert.strictEqual(exact.get("/blog/:path*/"), "/blogs");
-  });
-
-  it("keeps the total under Next's comfortable size for redirects()", () => {
-    assert.ok(rules.length < 1000, `got ${rules.length}`);
-  });
-
-  it("sends the 9 legacy redirects straight to the final /blogs URL", () => {
-    assert.strictEqual(redirects.length, 9);
-    for (const r of redirects) {
-      const rule = rules.find((x) => stripSlash(x.source) === stripSlash(r.source));
-      assert.ok(rule, r.source);
-      assert.strictEqual(rule!.destination, `/blogs/${r.destination.replace(/^\/|\/$/g, "")}`);
-    }
-  });
-
-  it("includes the taxonomy, feed and blog rules", () => {
-    const get = (s: string) => rules.find((r) => r.source === s)?.destination;
-    assert.strictEqual(get("/category/:c"), "/blogs/category/:c");
-    assert.strictEqual(get("/author/:a*"), "/blogs");
-    assert.strictEqual(get("/tag/:t*"), "/blogs");
-    assert.strictEqual(get("/feed"), "/blogs");
-    assert.strictEqual(get("/blog/:path*"), "/blogs");
-  });
-
-  it("maps each uploaded image and its renditions to the CDN, with a catch-all last", () => {
-    const row = manifest[0];
-    const ext = path.extname(row.stagedPath);
-    const orig = rules.find((r) => r.source === `/${row.sourcePath}`);
-    assert.strictEqual(orig?.destination, `${CDN}/blog/${row.slug}${ext}`);
-    const withRenditions = posts.find((p) => p.slug === row.slug)!.featuredImage!.renditions;
-    assert.ok(withRenditions.length > 0);
-    for (const r of withRenditions) {
-      const rule = rules.find((x) => x.source === `/${r.sourcePath}`);
-      assert.strictEqual(rule?.destination, `${CDN}/blog/${row.slug}${ext}`, r.sourcePath);
-    }
-    const last = rules[rules.length - 1];
-    assert.strictEqual(last.source, "/wp-content/uploads/:path*");
-    assert.strictEqual(last.destination, "/blogs");
-  });
-
-  it("is valid for next.config redirects()", () => {
-    const seen = new Set<string>();
-    for (const r of rules) {
-      assert.ok(r.source.startsWith("/"), r.source);
-      assert.strictEqual(r.permanent, true);
-      assert.ok(!seen.has(r.source), `duplicate ${r.source}`);
-      seen.add(r.source);
-      if (!r.source.includes(":")) {
-        assert.ok(!/[()*?{}]/.test(r.source), `unescaped pattern chars in ${r.source}`);
-      }
-    }
-    assert.ok(rules.length < 1000, `${rules.length} rules`);
-  });
-
-  it("is deterministic", () => {
-    assert.deepStrictEqual(buildLegacyRedirects(posts, redirects, manifest, CDN), rules);
   });
 });
