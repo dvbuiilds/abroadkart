@@ -179,3 +179,40 @@ export function buildPostJsonLd(post: BlogPost): SchemaOrgEntity {
 export function serializeJsonLd(obj: unknown): string {
   return JSON.stringify(obj).replace(/</g, "\\u003c");
 }
+
+/**
+ * Metadata for the blog index and category archives.
+ * Later pages canonicalise to themselves (`?page=N`), so each page can be indexed.
+ */
+export function buildListingMetadata({
+  path,
+  title,
+  description,
+  page = 1,
+}: {
+  /** Path without query, e.g. "/blogs" or "/blogs/category/visa". */
+  path: string;
+  title: string;
+  description: string;
+  page?: number;
+}): Metadata {
+  const baseUrl = getPublicAppUrl();
+  const pagePath = page > 1 ? `${path}?page=${page}` : path;
+  const url = `${baseUrl}${pagePath}`;
+  const pageTitle = page > 1 ? `${title} — Page ${page}` : title;
+
+  return {
+    title: pageTitle,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: "AbroadKart",
+      locale: "en_IN",
+      title: pageTitle,
+      description,
+    },
+    robots: "index, follow",
+  };
+}
