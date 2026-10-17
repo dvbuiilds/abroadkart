@@ -16,6 +16,11 @@ export function comparableText(html: string): string {
   return (doc.body.textContent ?? "").replace(/\s+/g, "");
 }
 
+/** Parses a full page's HTML. Scripts are not run. */
+export function parseDocument(html: string): Document {
+  return new JSDOM(html).window.document;
+}
+
 /** Plain text of an HTML fragment, decoded, with whitespace collapsed for display. */
 export function plainText(html: string): string {
   const doc = host.implementation.createHTMLDocument("");
