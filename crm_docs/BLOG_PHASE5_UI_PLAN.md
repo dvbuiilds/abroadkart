@@ -575,3 +575,61 @@ Then check it in Chrome DevTools with JavaScript disabled. Everything except cop
 | Create (UI) | `src/components/blog/*` (§6) and `__tests__/`, `src/styles/blog.css` |
 | Create (routes) | `src/app/(public)/blogs/{layout,page}.tsx`, `src/app/(public)/blogs/[slug]/{page,not-found}.tsx`, `src/app/(public)/blogs/category/[slug]/page.tsx`, `src/app/api/blog-leads/route.ts` and tests, `e2e/blog-ui.spec.ts` |
 | Delete | `src/components/BlogTemplates/`, `src/components/BlogCard.tsx` |
+
+---
+
+## Implementation status (Phase 5)
+
+Commits on `fb_wp_blog_migration`, one per step, all test-first:
+
+| Step | Commit | Scope |
+|---|---|---|
+| 5.0 | `a24c24b` | Repository hardening (Keystone list queries, variables not query text, date mapping, related and category fixes) |
+| 5.1 | `3bd7fb7` | Inter via `next/font`, typography plugin, blog stylesheet |
+| 5.2 | `282d5cc` | Pure helpers: format, pagination, FAQ rule, share links, href classification, rate limit, lead schema |
+| 5.3 | `38e0218` | Leaf components: Breadcrumbs, CategoryChip, PostMeta, BlogCard, CategoryChips, Pagination |
+| 5.4 | `a361a3b` | Article components: ArticleBody, TableOfContents, TocHighlighter, FaqSection, FeaturedImage, ReadingProgress |
+| 5.5 | `bd544ac` | Lead pipeline: `/api/blog-leads`, `createBlogLead`, LeadForm, share bar, CTA dialog, related posts |
+| 5.6 | `39448ea` | Routes: post, index, category, not-found |
+| 5.6a | `bcdb065` | FAQ answers render as sanitised HTML; schema text derived from them |
+| 5.6b | `cfebb5d` | Legacy redirects take one hop, including trailing slashes |
+| 5.6c | `d6be3f3` | Revalidation hook: category scope, rejected-request handling, test runner |
+| 5.8a | `3c21658` | Remove legacy Template1 components |
+| 5.8b | `541f80e` | Browser tests for the blog UI (11 tests) |
+| 5.9 | `9f7dce5` | Accessibility fixes from Lighthouse; byline separators |
+
+**Step 5.7 (GA4)** is not done: it needs the Measurement ID, which is still outstanding.
+
+### Verification (run against the local stack, Keystone + Postgres + Next)
+
+- Unit and component tests: 292 passing across 37 files. Keystone suite: 112 passing. `tsc` and `eslint` clean in both apps.
+- Build passes with Keystone running, and also with Keystone stopped (`generateStaticParams` returns `[]`).
+- Redirects: 252 checks (110 slugs and 11 categories in both forms, the 9 legacy redirects, and the draft's 404). Every legacy URL is one 308 to a page that returns 200.
+- Content fidelity, all 110 published posts: visible text matches the stored HTML exactly for 84 posts. For the other 26 (table posts), the only difference is whitespace between table cells, and the text is identical once that whitespace is removed. H1, publish date, and "Updated" visibility and value match on every post.
+- Crawlability without JS: one H1, canonical, `og:title`, `og:image`, `article:published_time`, and a parseable `BlogPosting` / `BreadcrumbList` / `FAQPage` graph. FAQ answers are in the first response.
+- Lead pipeline: valid request 201 and stored; honeypot 200 and nothing stored; invalid email 400; sixth request 429; direct Keystone write without the key denied.
+- Browser spec (`e2e/blog-ui.spec.ts`): 11 of 11 passing.
+- Lighthouse, mobile, 3 posts: SEO 100; accessibility 99–100; CLS 0; best practices 96; **LCP 3.2–3.4 s (target < 2.5 s, not met)**.
+
+### Deviations from the plan
+
+1. **Typeface:** Inter throughout, as chosen. No serif.
+2. **Column breakpoint:** three columns (TOC, article, lead rail) from 1280px, not 1024px. At 1024px the article is too narrow. Between 1024 and 1279px the lead form sits after the FAQ.
+3. **Share bar:** moved from the rail into the hero, and again after the FAQ.
+4. **Reading progress:** CSS scroll-driven, not a client component.
+5. **Prose class:** `prose` (not `prose-lg`), because the typography theme already sets the sizes.
+6. **Not-found pages:** one `blogs/not-found.tsx` for listing pages, plus `blogs/[slug]/not-found.tsx` for posts.
+7. **FAQ answers:** stored as HTML fragments (120 of 262 answers contain leftover editor markup). They are rendered through an allow-list, and the FAQPage text is derived from the same markup. This was not in the plan.
+8. **Table headers:** the first row of a header-less table becomes `th scope="col"`. Text is unchanged. Found by Lighthouse.
+9. **Phase 3 and 4 corrections:** the legacy redirects were two hops for trailing-slash URLs. The revalidation hook never sent the category scope and let rejected requests escape; its test never ran, because it imported Vitest inside the `node:test` suite.
+
+### Open items
+
+- **Featured images return 404 until the R2 public bucket is set up and the image import is run.** The import ran with `--skip-images`, so the cards and the post hero show broken images. The alt text is visible in the meantime.
+- **One unresolved internal link:** `accommodation-for-students-in-the-usa` links to `/course-country-university-selection/`, which is not in the export. Decide what it maps to, then the import's zero-unknown-links exit criterion is met.
+- **Import is not a no-op on re-run:** a second run reports `updated: 111` rather than `unchanged: 111`. The row count stays at 111, but change detection needs looking at.
+- **LCP:** 3.0–3.4 s locally under Lighthouse's mobile throttling. The shared public layout is the main cost: `/about` on the same layout measures 3.7 s. Worth re-measuring on the real host before tuning shared code.
+- **Keystone outage:** `/blogs` and post pages return 500 when Keystone is unreachable. ISR-cached pages keep serving. A stale-data fallback would be a follow-up.
+- **Footer LinkedIn link** is still `href="#"`, carried over from the original site.
+- **Not run:** Google Rich Results Test, the Schema.org validator, and OG previews on a public URL. These need the production host.
+- **Hero copy on `/blogs`** is placeholder text. Confirm the wording before launch.
