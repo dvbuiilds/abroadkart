@@ -22,8 +22,31 @@ function isProtectedPath(pathname: string): boolean {
   );
 }
 
+/**
+ * Static pages that keep the trailing-slash redirect. Everything else with a
+ * trailing slash passes through, so legacy WordPress post URLs return a bare
+ * 404 (next.config sets skipTrailingSlashRedirect for this reason).
+ */
+const SLASH_NORMALISED_PAGES = [
+  "/about",
+  "/contact",
+  "/privacy-policy",
+  "/terms",
+  "/blogs",
+  "/sign-in",
+  "/sign-up",
+  "/forgot-password",
+];
+
 export default function middleware(request: NextRequest) {
-  if (!isProtectedPath(request.nextUrl.pathname)) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.endsWith("/") && SLASH_NORMALISED_PAGES.includes(pathname.slice(0, -1))) {
+    const target = new URL(pathname.slice(0, -1) + request.nextUrl.search, request.url);
+    return NextResponse.redirect(target, 308);
+  }
+
+  if (!isProtectedPath(pathname)) {
     return NextResponse.next();
   }
 

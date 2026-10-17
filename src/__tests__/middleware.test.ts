@@ -46,6 +46,25 @@ describe("legacy WordPress URLs fall through to a normal 404", () => {
   });
 });
 
+describe("trailing slashes", () => {
+  it.each([
+    ["/about/", "/about"],
+    ["/contact/", "/contact"],
+    ["/blogs/", "/blogs"],
+  ])("%s redirects once to %s", (path, target) => {
+    const response = middleware(request(path));
+    expect(response.status).toBe(308);
+    expect(new URL(response.headers.get("location") ?? "").pathname).toBe(target);
+  });
+
+  it.each(["/mba-vs-pgdm-guide/", "/category/visa/", "/feed/", "/x/"])(
+    "%s is not redirected (legacy URLs 404 directly)",
+    (path) => {
+      expect(passesThrough(path)).toBe(true);
+    },
+  );
+});
+
 describe("CRM areas still require a session", () => {
   it.each([
     "/consultant",
