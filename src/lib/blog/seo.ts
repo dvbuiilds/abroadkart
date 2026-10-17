@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getPublicAppUrl } from "@app/lib/public-urls";
 import type { BlogPost } from "./types";
+import { answerToPlainText } from "./faq";
 
 /**
  * Truncates a string to a maximum length at a word boundary, adding ellipsis.
@@ -160,7 +161,7 @@ export function buildPostJsonLd(post: BlogPost): SchemaOrgEntity {
         name: faq.question,
         acceptedAnswer: {
           "@type": "Answer",
-          text: faq.answer,
+          text: answerToPlainText(faq.answer),
         },
       })),
     });

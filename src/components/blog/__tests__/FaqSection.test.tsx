@@ -38,6 +38,22 @@ describe("FaqSection", () => {
     expect(summaries).toEqual(faqs.map((f) => f.question));
   });
 
+  it("renders HTML answers as formatting, without the source classes", () => {
+    const html = [
+      {
+        order: 0,
+        question: "Is it free?",
+        answer: '<div class="flex w-full"><p class="p1">Yes, <strong>mostly</strong>.</p><p>Check fees.</p></div>',
+      },
+    ];
+    const { container } = render(<FaqSection faqs={html} />);
+    const paragraphs = container.querySelectorAll("details p");
+    expect(paragraphs).toHaveLength(2);
+    paragraphs.forEach((p) => expect(p).not.toHaveAttribute("class"));
+    expect(container.querySelector("details strong")).toHaveTextContent("mostly");
+    expect(container.querySelector("details div.flex")).toBeNull();
+  });
+
   it("renders nothing when there are no FAQs", () => {
     const { container } = render(<FaqSection faqs={[]} />);
     expect(container).toBeEmptyDOMElement();

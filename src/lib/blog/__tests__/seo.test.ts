@@ -225,6 +225,18 @@ describe("SEO helpers", () => {
       expect((items[1]?.acceptedAnswer as Record<string, unknown>)?.text).toBe("Second answer");
     });
 
+    it("FAQPage text is plain text even when the stored answer contains markup", () => {
+      const post = {
+        ...postWithFaqs,
+        faqs: [{ order: 0, question: "Is it free?", answer: '<p class="p1">Yes, <strong>mostly</strong>.</p>' }],
+      };
+      const ld = buildPostJsonLd(post);
+      const graph = ld["@graph"] as Record<string, unknown>[];
+      const faqPage = graph.find((item) => (item as Record<string, unknown>)["@type"] === "FAQPage") as Record<string, unknown>;
+      const items = faqPage.mainEntity as Array<Record<string, unknown>>;
+      expect((items[0]?.acceptedAnswer as Record<string, unknown>)?.text).toBe("Yes, mostly.");
+    });
+
     it("survives JSON.parse(JSON.stringify(x))", () => {
       const ld = buildPostJsonLd(postWithFaqs);
       const serialized = JSON.stringify(ld);
