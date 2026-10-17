@@ -1,5 +1,12 @@
+import { cache } from "react";
 import { getKeystoneInternalUrl } from "@app/lib/keystone-url";
-import type { BlogPost, BlogPostSummary, BlogCategory } from "./types";
+import type {
+  BlogPost,
+  BlogPostSummary,
+  BlogCategory,
+  Faq,
+  Heading,
+} from "./types";
 
 interface GraphQLResponse<T> {
   data?: T;
@@ -37,6 +44,87 @@ async function graphqlRequest<T>(
 
   return result.data as T;
 }
+
+// ── Mapping: Keystone returns dates as ISO strings and may return nulls ──
+
+type RawDate = string | Date;
+
+function toDate(value: RawDate): Date {
+  return value instanceof Date ? value : new Date(value);
+}
+
+type RawSummary = Omit<BlogPostSummary, "publishedAt" | "modifiedAt"> & {
+  publishedAt: RawDate;
+  modifiedAt: RawDate;
+};
+
+function mapSummary(raw: RawSummary): BlogPostSummary {
+  return {
+    ...raw,
+    publishedAt: toDate(raw.publishedAt),
+    modifiedAt: toDate(raw.modifiedAt),
+  };
+}
+
+type RawPost = Omit<
+  BlogPost,
+  "publishedAt" | "modifiedAt" | "headings" | "faqs" | "categories"
+> & {
+  publishedAt: RawDate;
+  modifiedAt: RawDate;
+  headings?: Heading[] | null;
+  faqs?: Faq[] | null;
+  categories?: BlogCategory[] | null;
+};
+
+function mapPost(raw: RawPost): BlogPost {
+  return {
+    ...raw,
+    publishedAt: toDate(raw.publishedAt),
+    modifiedAt: toDate(raw.modifiedAt),
+    headings: raw.headings ?? [],
+    faqs: [...(raw.faqs ?? [])].sort((a, b) => a.order - b.order),
+    categories: raw.categories ?? [],
+  };
+}
+
+// ── Query fragments ──────────────────────────────────────────────────────
+
+const SUMMARY_FIELDS = `
+  id
+  slug
+  title
+  status
+  publishedAt
+  modifiedAt
+  authorName
+  excerpt
+  wordCount
+  readingTimeMinutes
+  featuredImageUrl
+  featuredImageAlt
+  featuredImageWidth
+  featuredImageHeight
+  primaryCategory {
+    id
+    name
+    slug
+  }
+`;
+
+const PUBLISHED = { status: { equals: "published" } };
+
+/** Matches a post whose primary category, or any of its categories, has this slug. */
+function inCategory(slug: string) {
+  return {
+    OR: [
+      { primaryCategory: { slug: { equals: slug } } },
+      { categories: { some: { slug: { equals: slug } } } },
+    ],
+  };
+}
+
+// ── Public API ───────────────────────────────────────────────────────────
 
 /**
  * Fetch a single blog post by slug, including contentHtml.
@@ -84,17 +172,20 @@ export async function getPostBySlug(slug: string): Promise<BlogPost | null> {
     }
   `;
 
-  try {
-    const response = await graphqlRequest<{ blogPosts: BlogPost[] }>(
-      query,
-      { slug },
-      [`blog:${slug}`, "blog:list"]
-    );
-    return response.blogPosts?.[0] ?? null;
-  } catch (error) {
-    throw error;
-  }
+  const response = await graphqlRequest<{ blogPosts: RawPost[] }>(
+    query,
+    { slug },
+    [`blog:${slug}`, "blog:list"]
+  );
+  const raw = response.blogPosts?.[0];
+  return raw ? mapPost(raw) : null;
 }
+
+/**
+ * Same as {@link getPostBySlug}, memoised per React request. Use it from
+ * `generateMetadata` and the page so the post is fetched once per render.
+ */
+export const getPostBySlugCached = cache(getPostBySlug);
 
 interface PostSummariesResult {
   items: BlogPostSummary[];
@@ -102,79 +193,45 @@ interface PostSummariesResult {
 }
 
 /**
- * Fetch blog post summaries with pagination.
+ * Fetch one page of published post summaries, newest first.
+ * The category filter is sent as a GraphQL variable, never as query text.
  * Does NOT include contentHtml.
  */
 export async function getPostSummaries({
-  page = 1,
-  pageSize = 10,
+  skip,
+  take,
   categorySlug,
 }: {
-  page?: number;
-  pageSize?: number;
+  skip: number;
+  take: number;
   categorySlug?: string;
 }): Promise<PostSummariesResult> {
-  const skip = (page - 1) * pageSize;
-
-  let whereClause = `where: { status: { equals: "published" }`;
-  if (categorySlug) {
-    whereClause += `, OR: [
-      { primaryCategory: { slug: { equals: "${categorySlug}" } } }
-      { categories: { some: { slug: { equals: "${categorySlug}" } } } }
-    ]`;
-  }
-  whereClause += " }";
+  const where = categorySlug
+    ? { ...PUBLISHED, ...inCategory(categorySlug) }
+    : PUBLISHED;
 
   const query = `
-    query GetPostSummaries($skip: Int!, $take: Int!, $categorySlug: String) {
-      blogPostsConnection(
-        ${whereClause}
+    query GetPostSummaries($where: BlogPostWhereInput!, $skip: Int!, $take: Int!) {
+      items: blogPosts(
+        where: $where
         orderBy: { publishedAt: desc }
         skip: $skip
         take: $take
       ) {
-        edges {
-          node {
-            id
-            slug
-            title
-            status
-            publishedAt
-            modifiedAt
-            authorName
-            excerpt
-            wordCount
-            readingTimeMinutes
-            featuredImageUrl
-            featuredImageAlt
-            featuredImageWidth
-            featuredImageHeight
-            primaryCategory {
-              id
-              name
-              slug
-            }
-          }
-        }
-        pageInfo {
-          hasNextPage
-        }
-        totalCount
+        ${SUMMARY_FIELDS}
       }
+      totalCount: blogPostsCount(where: $where)
     }
   `;
 
   const response = await graphqlRequest<{
-    blogPostsConnection: {
-      edges: Array<{ node: BlogPostSummary }>;
-      pageInfo: { hasNextPage: boolean };
-      totalCount: number;
-    };
-  }>(query, { skip, take: pageSize, categorySlug });
+    items: RawSummary[];
+    totalCount: number;
+  }>(query, { where, skip, take });
 
   return {
-    items: response.blogPostsConnection.edges.map((e) => e.node),
-    totalCount: response.blogPostsConnection.totalCount,
+    items: (response.items ?? []).map(mapSummary),
+    totalCount: response.totalCount ?? 0,
   };
 }
 
@@ -202,7 +259,8 @@ export async function getAllSlugs(): Promise<string[]> {
 }
 
 /**
- * Fetch all blog categories.
+ * Fetch categories that have at least one published post, busiest first.
+ * A post that is both primary and secondary in a category is counted once.
  */
 export async function getCategories(): Promise<BlogCategory[]> {
   const query = `
@@ -212,12 +270,33 @@ export async function getCategories(): Promise<BlogCategory[]> {
         name
         slug
         description
+        posts(where: { status: { equals: "published" } }) {
+          id
+        }
+        primaryPosts(where: { status: { equals: "published" } }) {
+          id
+        }
       }
     }
   `;
 
-  const response = await graphqlRequest<{ blogCategories: BlogCategory[] }>(query);
-  return response.blogCategories ?? [];
+  type RawCategory = BlogCategory & {
+    posts: Array<{ id: string }>;
+    primaryPosts: Array<{ id: string }>;
+  };
+
+  const response = await graphqlRequest<{ blogCategories: RawCategory[] }>(query);
+
+  return (response.blogCategories ?? [])
+    .map(({ posts, primaryPosts, ...category }) => ({
+      ...category,
+      postCount: new Set([...posts, ...primaryPosts].map((p) => p.id)).size,
+    }))
+    .filter((category) => (category.postCount ?? 0) > 0)
+    .sort(
+      (a, b) =>
+        (b.postCount ?? 0) - (a.postCount ?? 0) || a.name.localeCompare(b.name)
+    );
 }
 
 /**
@@ -244,56 +323,81 @@ export async function getCategoryBySlug(
   return response.blogCategories?.[0] ?? null;
 }
 
+const RELATED_IN_CATEGORY = `
+  query GetRelatedInCategory($categorySlug: String!, $limit: Int!, $exclude: String!) {
+    blogPosts(
+      where: {
+        status: { equals: "published" }
+        slug: { not: { equals: $exclude } }
+        primaryCategory: { slug: { equals: $categorySlug } }
+      }
+      orderBy: { publishedAt: desc }
+      take: $limit
+    ) {
+      ${SUMMARY_FIELDS}
+    }
+  }
+`;
+
+const LATEST_POSTS = `
+  query GetLatestPosts($limit: Int!) {
+    blogPosts(
+      where: { status: { equals: "published" } }
+      orderBy: { publishedAt: desc }
+      take: $limit
+    ) {
+      ${SUMMARY_FIELDS}
+    }
+  }
+`;
+
+async function fetchSummaries(
+  query: string,
+  variables: Record<string, unknown>
+): Promise<BlogPostSummary[]> {
+  const response = await graphqlRequest<{ blogPosts: RawSummary[] }>(
+    query,
+    variables
+  );
+  return (response.blogPosts ?? []).map(mapSummary);
+}
+
 /**
- * Get related posts from the same primary category.
+ * Posts to show under an article: the same primary category first, then the
+ * latest published posts to fill any gap. Never includes the current post and
+ * never repeats a post.
  * Does NOT include contentHtml.
  */
 export async function getRelatedPosts(
-  post: { primaryCategory?: BlogCategory },
+  post: { slug: string; primaryCategory?: BlogCategory },
   limit = 3
 ): Promise<BlogPostSummary[]> {
-  if (!post.primaryCategory) {
-    return [];
+  const sameCategory = post.primaryCategory
+    ? await fetchSummaries(RELATED_IN_CATEGORY, {
+        categorySlug: post.primaryCategory.slug,
+        limit,
+        exclude: post.slug,
+      })
+    : [];
+
+  const picked = sameCategory
+    .filter((p) => p.slug !== post.slug)
+    .slice(0, limit);
+  if (picked.length >= limit) return picked;
+
+  const taken = new Set([post.slug, ...picked.map((p) => p.slug)]);
+  const latest = await fetchSummaries(LATEST_POSTS, {
+    limit: limit + taken.size,
+  });
+
+  for (const candidate of latest) {
+    if (picked.length >= limit) break;
+    if (taken.has(candidate.slug)) continue;
+    taken.add(candidate.slug);
+    picked.push(candidate);
   }
 
-  const query = `
-    query GetRelatedPosts($categorySlug: String!, $limit: Int!) {
-      blogPosts(
-        where: {
-          status: { equals: "published" }
-          primaryCategory: { slug: { equals: $categorySlug } }
-        }
-        orderBy: { publishedAt: desc }
-        take: $limit
-      ) {
-        id
-        slug
-        title
-        status
-        publishedAt
-        modifiedAt
-        authorName
-        excerpt
-        wordCount
-        readingTimeMinutes
-        featuredImageUrl
-        featuredImageAlt
-        featuredImageWidth
-        featuredImageHeight
-        primaryCategory {
-          id
-          name
-          slug
-        }
-      }
-    }
-  `;
-
-  const response = await graphqlRequest<{ blogPosts: BlogPostSummary[] }>(query, {
-    categorySlug: post.primaryCategory.slug,
-    limit,
-  });
-  return response.blogPosts ?? [];
+  return picked;
 }
 
 /**

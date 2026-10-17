@@ -64,11 +64,7 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link
-                href="https://abroadkart.com"
-                target="_blank"
-                className="hover:text-white"
-              >
+              <Link href="/blogs" className="hover:text-white">
                 Blogs
               </Link>
             </li>

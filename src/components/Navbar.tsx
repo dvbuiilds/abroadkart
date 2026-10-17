@@ -76,7 +76,7 @@ export function Navbar() {
               <NavLink href="/" isHome={isHome}>
                 Home
               </NavLink>
-              <NavLink href="https://abroadkart.com" isHome={isHome}>
+              <NavLink href="/blogs" isHome={isHome}>
                 Blogs
               </NavLink>
               <NavLink href="/about" isHome={isHome}>
@@ -152,7 +152,7 @@ export function Navbar() {
                       Home
                     </MobileNavLink>
                     <MobileNavLink
-                      href="https://abroadkart.com"
+                      href="/blogs"
                       onClick={() => setIsOpen(false)}
                     >
                       Blogs

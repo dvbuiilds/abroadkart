@@ -24,6 +24,8 @@ export interface BlogCategory {
   name: string;
   slug: string;
   description?: string;
+  /** Published posts in this category. Set by getCategories(). */
+  postCount?: number;
 }
 
 export interface BlogPostSummary {
