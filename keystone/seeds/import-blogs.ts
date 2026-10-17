@@ -2,10 +2,11 @@
  * Imports the WordPress export in ../output into BlogCategory / BlogPost and writes
  * the legacy redirect rules for the Next.js app.
  *
- * Run (from keystone/):  yarn import:blogs [--dry-run] [--skip-images] [--verify]
- *   --dry-run      map and report only; writes nothing (no DB, no R2, no redirects file)
- *   --skip-images  do not upload featured images to the public R2 bucket
- *   --verify       compare the database with the export and exit non-zero on any difference
+ * Run (from keystone/):  yarn import:blogs [--dry-run] [--skip-images] [--verify] [--redirects-only]
+ *   --dry-run         map and report only; writes nothing (no DB, no R2, no redirects file)
+ *   --skip-images     do not upload featured images to the public R2 bucket
+ *   --verify          compare the database with the export and exit non-zero on any difference
+ *   --redirects-only  generate and write redirects only (no DB, no R2); useful before full import
  *
  * Safe to run repeatedly: categories upsert on slug, posts on postId.
  */
@@ -34,6 +35,7 @@ const args = new Set(process.argv.slice(2));
 const DRY_RUN = args.has("--dry-run");
 const SKIP_IMAGES = args.has("--skip-images");
 const VERIFY = args.has("--verify");
+const REDIRECTS_ONLY = args.has("--redirects-only");
 
 const load = <T>(file: string): T =>
   JSON.parse(readFileSync(path.join(OUTPUT, file), "utf8")) as T;
@@ -146,7 +148,7 @@ async function main() {
   const rules = buildLegacyRedirects(posts, redirects, manifest, cdnUrl);
 
   const report: Record<string, unknown> = {
-    mode: DRY_RUN ? "dry-run" : VERIFY ? "verify" : "import",
+    mode: DRY_RUN ? "dry-run" : REDIRECTS_ONLY ? "redirects-only" : VERIFY ? "verify" : "import",
     posts: posts.length,
     published: published.length,
     drafts: posts.length - published.length,
@@ -157,6 +159,17 @@ async function main() {
 
   if (DRY_RUN) {
     console.log(JSON.stringify(report, null, 2));
+    return;
+  }
+
+  // Write redirects and exit if --redirects-only
+  if (REDIRECTS_ONLY) {
+    const json = JSON.stringify(rules, null, 2) + "\n";
+    if (!existsSync(REDIRECTS_OUT) || readFileSync(REDIRECTS_OUT, "utf8") !== json) {
+      writeFileSync(REDIRECTS_OUT, json);
+      report.redirectsFile = "written";
+    } else report.redirectsFile = "unchanged";
+    console.log(JSON.stringify({ ...report }, null, 2));
     return;
   }
 

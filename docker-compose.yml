@@ -69,6 +69,8 @@ services:
       PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
       BETTER_AUTH_JWKS_URL: http://nextjs:3000/api/auth/jwks
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
+      NEXT_INTERNAL_URL: ${NEXT_INTERNAL_URL:-http://nextjs:3000}
     ports:
       - "3001:3001"
     networks:
@@ -116,6 +118,8 @@ services:
       PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
       KEYSTONE_INTERNAL_URL: http://keystone:3001
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
+      NEXT_INTERNAL_URL: ${NEXT_INTERNAL_URL:-http://nextjs:3000}
     ports:
       - "3000:3000"
     networks:

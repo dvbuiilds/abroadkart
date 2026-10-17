@@ -6,6 +6,7 @@
 import { list } from "@keystone-6/core";
 import { relationship, text } from "@keystone-6/core/fields";
 import { isSuperAdmin } from "../access/rules";
+import { revalidateBlogHook } from "../hooks/revalidateBlog";
 
 export const BlogCategory = list({
   access: {
@@ -31,6 +32,13 @@ export const BlogCategory = list({
       ref: "BlogPost.primaryCategory",
       many: true,
     }),
+  },
+  hooks: {
+    afterOperation: {
+      create: async (args) => revalidateBlogHook.afterOperation(args),
+      update: async (args) => revalidateBlogHook.afterOperation(args),
+      delete: async (args) => revalidateBlogHook.afterOperation(args),
+    },
   },
   ui: {
     labelField: "name",

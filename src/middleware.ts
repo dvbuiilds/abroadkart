@@ -18,6 +18,8 @@ function isPublicPath(pathname: string): boolean {
   if (pathname.startsWith("/sign-up")) return true;
   if (pathname.startsWith("/forgot-password")) return true;
   if (pathname.startsWith("/api/auth")) return true;
+  if (pathname.startsWith("/api/revalidate")) return true;
+  if (pathname.startsWith("/api/blog-leads")) return true;
   if (pathname.startsWith("/ba")) return true;
   return false;
 }

@@ -17,6 +17,7 @@ import {
   timestamp,
 } from "@keystone-6/core/fields";
 import { isSuperAdmin, isPublishedOrSuperAdmin } from "../access/rules";
+import { revalidateBlogHook } from "../hooks/revalidateBlog";
 
 export const BlogPost = list({
   access: {
@@ -87,6 +88,13 @@ export const BlogPost = list({
     focusKeywords: json({ ui: { description: "string[]" } }),
     wordCount: integer(),
     readingTimeMinutes: integer(),
+  },
+  hooks: {
+    afterOperation: {
+      create: async (args) => revalidateBlogHook.afterOperation(args),
+      update: async (args) => revalidateBlogHook.afterOperation(args),
+      delete: async (args) => revalidateBlogHook.afterOperation(args),
+    },
   },
   ui: {
     labelField: "title",

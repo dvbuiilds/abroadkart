@@ -1,4 +1,6 @@
 import type { NextConfig } from "next";
+import { existsSync, readFileSync } from "fs";
+import path from "path";
 
 const nextConfig: NextConfig = {
   /* config options here */
@@ -21,7 +23,19 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "img.freepik.com",
       },
+      {
+        protocol: "https",
+        hostname: "cdn.abroadkart.com",
+      },
     ],
+  },
+  redirects: async () => {
+    const redirectsPath = path.join(process.cwd(), "src", "lib", "blog", "legacy-redirects.json");
+    if (!existsSync(redirectsPath)) {
+      return [];
+    }
+    const content = readFileSync(redirectsPath, "utf-8");
+    return JSON.parse(content);
   },
 };
 
