@@ -35,9 +35,9 @@ export const BlogCategory = list({
   },
   hooks: {
     afterOperation: {
-      create: async (args) => revalidateBlogHook.afterOperation(args),
-      update: async (args) => revalidateBlogHook.afterOperation(args),
-      delete: async (args) => revalidateBlogHook.afterOperation(args),
+      create: async (args) => revalidateBlogHook.afterOperation({ ...args, scope: "categories" }),
+      update: async (args) => revalidateBlogHook.afterOperation({ ...args, scope: "categories" }),
+      delete: async (args) => revalidateBlogHook.afterOperation({ ...args, scope: "categories" }),
     },
   },
   ui: {
