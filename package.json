@@ -12,6 +12,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
+    "test:e2e:phase6": "playwright test e2e/crawlability e2e/content-fidelity e2e/legacy-urls e2e/lead-form e2e/seo-files",
     "auth:migrate": "npx @better-auth/cli@1.4.21 migrate --config src/lib/auth.ts --yes"
   },
   "dependencies": {
@@ -63,6 +64,7 @@
     "@testing-library/jest-dom": "^6",
     "@testing-library/react": "^16",
     "@testing-library/user-event": "^14",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
