@@ -7,7 +7,7 @@
 #
 # For LOCAL docker-compose: leave the default (http://localhost:3001).
 # For production: pass --build-arg PUBLIC_ADMIN_URL=https://admin.example.com
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
 # NEXT_PUBLIC_* must be set before `next build`.
@@ -28,7 +28,7 @@ RUN yarn build
 
 # ── Stage 2: Runner ───────────────────────────────────────────────────────────
 # Lean production image — only the built output, public assets, and node_modules.
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
