@@ -12,7 +12,7 @@
     "test:unit": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:phase6": "playwright test e2e/crawlability e2e/content-fidelity e2e/images e2e/legacy-urls e2e/lead-form e2e/seo-files",
+    "test:e2e:phase6": "playwright test e2e/category-pages e2e/crawlability e2e/content-fidelity e2e/images e2e/legacy-urls e2e/lead-form e2e/seo-files",
     "auth:migrate": "npx @better-auth/cli@1.4.21 migrate --config src/lib/auth.ts --yes"
   },
   "dependencies": {
