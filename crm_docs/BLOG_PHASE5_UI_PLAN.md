@@ -625,11 +625,17 @@ Commits on `fb_wp_blog_migration`, one per step, all test-first:
 
 ### Open items
 
-- **Featured images return 404 until the R2 public bucket is set up and the image import is run.** The import ran with `--skip-images`, so the cards and the post hero show broken images. The alt text is visible in the meantime.
-- **One unresolved internal link:** `accommodation-for-students-in-the-usa` links to `/course-country-university-selection/`, which is not in the export. Decide what it maps to, then the import's zero-unknown-links exit criterion is met.
-- **Import is not a no-op on re-run:** a second run reports `updated: 111` rather than `unchanged: 111`. The row count stays at 111, but change detection needs looking at.
-- **LCP:** 3.0–3.4 s locally under Lighthouse's mobile throttling. The shared public layout is the main cost: `/about` on the same layout measures 3.7 s. Worth re-measuring on the real host before tuning shared code.
-- **Keystone outage:** `/blogs` and post pages return 500 when Keystone is unreachable. ISR-cached pages keep serving. A stale-data fallback would be a follow-up.
-- **Footer LinkedIn link** is still `href="#"`, carried over from the original site.
-- **Not run:** Google Rich Results Test, the Schema.org validator, and OG previews on a public URL. These need the production host.
-- **Hero copy on `/blogs`** is placeholder text. Confirm the wording before launch.
+Status as of 2026-10-17. Nothing below is being worked on right now. Each item is waiting on the person or the environment named in the last column.
+
+| # | Item | Status | Waiting on |
+|---|---|---|---|
+| 1 | **Featured images return 404.** The R2 public bucket is not set up (plan §7), and the import ran with `--skip-images`. Cards and post heroes show broken images; alt text is visible meanwhile. | Blocked | Bucket, custom domain `cdn.abroadkart.com`, CORS, cache rule and scoped token (§7). Then re-run the import without `--skip-images`. |
+| 2 | **Unresolved internal link:** `accommodation-for-students-in-the-usa` links to `/course-country-university-selection/`, which is not in the export. | Needs a decision | Target slug from the product owner. Once mapped, the import's zero-unknown-links exit criterion is met. |
+| 3 | **LCP 3.0–3.4 s** (target < 2.5 s) under Lighthouse mobile throttling locally. The shared public layout is the main cost: `/about` on the same layout measures 3.7 s, so this is not blog-specific. | Deferred | Re-measure on the real host before tuning shared code. |
+| 4 | **Hero copy on `/blogs`** is placeholder text. | Needs a decision | Wording confirmed by the product owner before launch. |
+| 5 | **Footer LinkedIn link** is still `href="#"`, carried over from the original site. Labelled, target not changed. | Needs a decision | The company LinkedIn URL. |
+| 6 | **Import re-run reports `updated: 111`** rather than `unchanged: 111`. The row count stays at 111, so no duplicates, but the change detection needs a look. | Open, needs investigation | A look at the upsert comparison in `keystone/seeds/import-blogs.ts`. Not started. |
+| 7 | **Not run:** Google Rich Results Test, Schema.org validator and OG previews. | Blocked | Public production URL. |
+| 8 | **Local services still running:** Keystone (port 3001), Next (port 3000) and the Postgres container. | Housekeeping | Stop them when local testing is finished. |
+| – | **Keystone outage:** `/blogs` and post pages return 500 when Keystone is unreachable. ISR-cached pages keep serving. | Follow-up | A stale-data fallback, scheduled after launch. |
+| – | **GA4 (step 5.7)** is not done. | Blocked | GA4 Measurement ID. |

@@ -57,16 +57,30 @@ The LCP element on all three is the H1 text, not the hero image. The delay comes
 
 ## Open items and go-live gate
 
-| # | Item | Blocks go-live? |
-|---|---|---|
-| 1 | Featured images return 404 (R2 bucket and `cdn.abroadkart.com` not set up; import ran with `--skip-images`) | **Yes** |
-| 2 | Unresolved link `/course-country-university-selection/` in `accommodation-for-students-in-the-usa`. Allow-listed in `content-fidelity.spec.ts` until mapped. | **Yes**, decision needed |
-| 3 | `/blogs` hero copy is placeholder text | **Yes**, copy needed |
-| 4 | LCP 3.3–3.5 s (target < 2.5 s). Shared layout, LCP element is the H1. | No; re-measure on the real host |
-| 5 | Footer LinkedIn link is `href="#"` | No |
-| 6 | Import re-run reports `updated: 111` instead of `unchanged` (row count stays 111) | No; investigate change detection |
-| 7 | Rich Results, Schema.org and OG preview not run | Needs public URL |
-| 8 | GA4 (step 5.7) not done | No for launch; needed for conversion tracking |
+Status as of 2026-10-19. Local testing scope; production work is tracked separately.
+
+| # | Item | Status | Blocks go-live? |
+|---|---|---|---|
+| 1 | Featured images | **Resolved.** 110 images uploaded to `abroadkart-public` as `blog/<slug>.<ext>`. `cdn.abroadkart.com` serves them (200, correct type). Covered by `e2e/images.spec.ts`. | No |
+| 2 | Unresolved link `/course-country-university-selection/` | **Resolved.** Mapped to `/blogs/category/course-university-selection` via `LINK_OVERRIDES`. The fidelity allow-list is removed. | No |
+| 3 | `/blogs` hero copy is placeholder text | Open, needs copy | Yes |
+| 4 | LCP 3.3–3.5 s (target < 2.5 s). Shared layout; the LCP element is the H1. | Re-measure with the images live | No |
+| 5 | Footer LinkedIn link is `href="#"` | Open, needs the company URL | No |
+| 6 | Import re-run reports `updated: 111` | **Resolved.** The id was compared against the mapped input. Second run: `unchanged: 111`, images `skipped: 110`. | No |
+| 7 | Rich Results, Schema.org and OG preview | Not run. Needs a public URL, except the Rich Results and Schema.org code-snippet check. | No |
+| 8 | GA4 | Blocked on the Measurement ID. `LeadForm` already fires `generate_lead`. | No |
+| – | Keystone outage | **Mitigated.** `blogs/error.tsx` shows a retry page instead of a bare 500. | No |
+| – | Long meta titles (69 over 60 characters) | Accepted. Original Rank Math titles. | No |
+| – | Metadata `&amp;` in 5 titles | **Resolved.** Entities decoded at import. `e2e/seo-files.spec.ts` checks every title. | No |
+| – | Empty OG tags on 93 posts | **Resolved.** Focus keywords are used when a post has no tags. | No |
+
+Verification run on 2026-10-19 (production build, Keystone dev, Postgres in Docker):
+- `yarn test` (root): 324 / 324, 37 files.
+- Keystone `yarn test`: 118 / 118.
+- `test:e2e:phase6` plus the new `images` spec: 783 / 783 on a build with `PUBLIC_APP_URL` matching the test port.
+- `import:blogs` run twice, then `--verify`: `unchanged: 111` on the second run, zero problems, zero unknown links.
+
+Note: `robots.txt` and the sitemap are prerendered at build time, so `PUBLIC_APP_URL` must match the host the build is served from. A mismatch fails `seo-files.spec.ts`.
 
 ## Decisions made during Phase 6
 
