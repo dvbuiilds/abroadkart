@@ -3,3 +3,4 @@ export { rewriteInternalLinks } from "./rewriteInternalLinks";
 export { toBlogPostInput } from "./toBlogPostInput";
 export type { ImportContext } from "./toBlogPostInput";
 export { buildRedirectMap } from "./buildRedirectMap";
+export { decodeText } from "./decodeText";

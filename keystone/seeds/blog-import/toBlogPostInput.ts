@@ -1,6 +1,7 @@
 import path from "node:path";
 import { sanitizeContent } from "./sanitizeContent";
 import { rewriteInternalLinks } from "./rewriteInternalLinks";
+import { decodeText } from "./decodeText";
 import type { BlogPostInput, WpPost } from "./types";
 
 export type ImportContext = {
@@ -34,7 +35,7 @@ export function toBlogPostInput(
       publishedAt: new Date(wp.publishedAt),
       modifiedAt: new Date(wp.updatedAt),
       authorName: wp.author.name,
-      excerpt: wp.excerpt,
+      excerpt: decodeText(wp.excerpt),
       contentHtml: html,
       headings: wp.headings,
       faqs: wp.faqs,
@@ -42,11 +43,11 @@ export function toBlogPostInput(
       featuredImageUrl: img
         ? `${ctx.cdnUrl}/blog/${wp.slug}${path.extname(img.stagedPath)}`
         : "",
-      featuredImageAlt: img?.alt ?? "",
+      featuredImageAlt: decodeText(img?.alt ?? ""),
       featuredImageWidth: img?.width ?? null,
       featuredImageHeight: img?.height ?? null,
-      metaTitle: wp.seo.metaTitle || wp.title,
-      metaDescription: wp.seo.metaDescription || wp.excerpt,
+      metaTitle: decodeText(wp.seo.metaTitle || wp.title),
+      metaDescription: decodeText(wp.seo.metaDescription || wp.excerpt),
       focusKeywords: wp.seo.focusKeywords ?? [],
       wordCount: wp.stats.wordCount,
       readingTimeMinutes: wp.stats.readingTimeMinutes,

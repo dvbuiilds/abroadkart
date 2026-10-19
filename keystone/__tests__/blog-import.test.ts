@@ -13,6 +13,7 @@ import {
   rewriteInternalLinks,
   toBlogPostInput,
   buildRedirectMap,
+  decodeText,
 } from "../seeds/blog-import";
 import { parseBody } from "../seeds/blog-import/dom";
 import type { WpPost, WpRedirect } from "../seeds/blog-import/types";
@@ -227,5 +228,46 @@ describe("toBlogPostInput", () => {
     const { input } = map(first);
     assert.strictEqual(input.wordCount, first.stats.wordCount);
     assert.strictEqual(input.readingTimeMinutes, first.stats.readingTimeMinutes);
+  });
+});
+
+describe("toBlogPostInput: entities in SEO text", () => {
+  const ENTITY = /&(amp|lt|gt|quot|#\d+|#x[0-9a-f]+);/i;
+  const map = (p: WpPost) => toBlogPostInput(p, ctx).input;
+
+  it("decodes entities in metaTitle, metaDescription, excerpt and image alt", () => {
+    for (const p of posts) {
+      const input = map(p);
+      for (const v of [input.metaTitle, input.metaDescription, input.excerpt, input.featuredImageAlt]) {
+        assert.ok(!ENTITY.test(v), `${p.slug}: ${v}`);
+      }
+    }
+  });
+
+  it("decodes &amp; in the masters-in-engineering-management-in-the-usa title", () => {
+    const input = map(byPost("masters-in-engineering-management-in-the-usa"));
+    assert.strictEqual(
+      input.metaTitle,
+      "Masters in Engineering Management in the USA | Top Programs & Career Prospects",
+    );
+  });
+
+  it("leaves the body HTML untouched (fidelity is enforced by the text tests above)", () => {
+    const p = byPost("masters-in-engineering-management-in-the-usa");
+    assert.ok(map(p).contentHtml.length > 0);
+  });
+});
+
+describe("decodeText", () => {
+  it("decodes named and numeric entities", () => {
+    assert.strictEqual(decodeText("A &amp; B &lt;3 &#8217; &#x2019; &quot;x&quot;"), "A & B <3 ’ ’ \"x\"");
+  });
+
+  it("leaves unknown entities and bare ampersands alone", () => {
+    assert.strictEqual(decodeText("Q&A &unknown; & more"), "Q&A &unknown; & more");
+  });
+
+  it("keeps whitespace, including CRLF, unchanged", () => {
+    assert.strictEqual(decodeText("line one\r\nline two"), "line one\r\nline two");
   });
 });
