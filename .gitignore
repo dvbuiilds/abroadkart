@@ -41,6 +41,9 @@ yarn-error.log*
 
 # env files
 .env*
+# Example files hold placeholders only and are tracked
+!.env.example
+!**/.env.example
 
 # typescript
 *.tsbuildinfo
