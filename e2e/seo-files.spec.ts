@@ -2,6 +2,7 @@ import { test, expect } from "@playwright/test";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { published, draft, categories } from "./helpers/source";
+import { parseDocument } from "./helpers/text";
 
 // The sitemap is generated (src/app/sitemap.ts). Expected size is fixed:
 // 4 static pages + 11 category archives + 110 published posts = 125.
@@ -130,4 +131,20 @@ test.describe("static leftovers are removed", () => {
     expect(existsSync(path.join(publicDir, "robots.txt"))).toBe(false);
     expect(existsSync(path.join(publicDir, "sitemap.xml"))).toBe(false);
   });
+});
+
+test.describe("post titles", () => {
+  test.describe.configure({ mode: "parallel" });
+
+  // The export stores some SEO titles with HTML entities ("&amp;"). The import
+  // decodes them, so the <title> must show the character and never the entity.
+  for (const post of published) {
+    test(`${post.slug}: <title> has no encoded entity`, async ({ request }) => {
+      const response = await request.get(`/blogs/${post.slug}`);
+      expect(response.status()).toBe(200);
+      const title = parseDocument(await response.text()).title;
+      expect(title, post.slug).not.toMatch(/&(amp|lt|gt|quot|#\d+);/);
+      expect(title.length, post.slug).toBeGreaterThan(0);
+    });
+  }
 });
