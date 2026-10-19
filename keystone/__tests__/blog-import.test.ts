@@ -136,9 +136,25 @@ describe("rewriteInternalLinks", () => {
     assert.deepStrictEqual(unknown, ["/no-such-page/"]);
   });
 
-  it("reports exactly one unknown link across all posts", () => {
+  it("reports no unknown links across all posts", () => {
     const all = posts.flatMap((p) => rewriteInternalLinks(p.contentHtml, slugSet, redirectMap).unknown);
-    assert.deepStrictEqual(all, ["/course-country-university-selection/"]);
+    assert.deepStrictEqual(all, []);
+  });
+
+  it("maps a known dead path to its replacement, not /blogs", () => {
+    const { html, unknown } = run(`<a href="/course-country-university-selection/">cost</a>`);
+    assert.strictEqual(html, `<a href="/blogs/category/course-university-selection">cost</a>`);
+    assert.deepStrictEqual(unknown, []);
+  });
+
+  it("applies overrides from the map it is given", () => {
+    const { html } = rewriteInternalLinks(
+      `<a href="/gone/">x</a>`,
+      slugSet,
+      redirectMap,
+      { "/gone/": "/blogs/category/visa" },
+    );
+    assert.strictEqual(html, `<a href="/blogs/category/visa">x</a>`);
   });
 
   it("only changes href attributes (text stays identical for all posts)", () => {

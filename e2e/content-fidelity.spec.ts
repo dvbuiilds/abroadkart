@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { published, type SourcePost } from "./helpers/source";
+import { categories, published, type SourcePost } from "./helpers/source";
 import { comparableText, parseDocument } from "./helpers/text";
 
 // Content fidelity (plan §5): for every published post the rendered article
@@ -10,13 +10,6 @@ import { comparableText, parseDocument } from "./helpers/text";
 //
 // A failure here is a real fidelity bug. Do not loosen the comparison to make
 // it pass.
-
-// Known unresolved link (open item 2 in BLOG_PHASE5_UI_PLAN.md). The target
-// slug is not in the export, so the link is allowed through until the product
-// owner provides a mapping.
-const KNOWN_UNRESOLVED: Record<string, string[]> = {
-  "accommodation-for-students-in-the-usa": ["/course-country-university-selection/"],
-};
 
 const WP_STYLE_HREF = /^\/[a-z0-9-]+\/?$/i;
 
@@ -80,15 +73,15 @@ function checkDates(doc: Document, post: SourcePost) {
 
 function checkInternalLinks(doc: Document, post: SourcePost) {
   const article = doc.querySelector("article#article-body")!;
-  const allowed = new Set(KNOWN_UNRESOLVED[post.slug] ?? []);
-
   for (const anchor of article.querySelectorAll("a[href]")) {
     const href = anchor.getAttribute("href")!;
-    if (allowed.has(href)) continue;
 
     if (href === "/blogs") continue; // the blog index, which is an app route
     expect(href, `no WordPress-style link in ${post.slug}`).not.toMatch(WP_STYLE_HREF);
-    if (href.startsWith("/blogs/")) {
+    if (href.startsWith("/blogs/category/")) {
+      const slug = href.slice("/blogs/category/".length);
+      expect(categories.some((c) => c.slug === slug), `${post.slug} links to ${href}`).toBe(true);
+    } else if (href.startsWith("/blogs/")) {
       const slug = href.slice("/blogs/".length);
       expect(published.some((p) => p.slug === slug), `${post.slug} links to ${href}`).toBe(true);
     }
