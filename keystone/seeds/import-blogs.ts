@@ -13,6 +13,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { toBlogPostInput, buildRedirectMap } from "./blog-import";
+import { comparable, sameCategories } from "./blog-import/comparable";
 import type {
   BlogPostInput,
   ImageManifestRow,
@@ -38,35 +39,6 @@ const POST_FIELDS = [
   "metaTitle metaDescription focusKeywords wordCount readingTimeMinutes",
   "primaryCategory { slug } categories(orderBy: { slug: asc }) { slug }",
 ].join(" ");
-
-/** Scalar part of a post, in a form that compares equal between the DB and the mapper. */
-function comparable(p: Record<string, unknown>) {
-  const { primaryCategorySlug, categorySlugs, ...rest } = p as Record<string, unknown> & {
-    primaryCategorySlug?: string | null;
-    categorySlugs?: string[];
-  };
-  void primaryCategorySlug;
-  void categorySlugs;
-  const out: Record<string, unknown> = { ...rest };
-  delete out.primaryCategory;
-  delete out.categories;
-  for (const k of ["publishedAt", "modifiedAt"]) {
-    out[k] = new Date(out[k] as string | Date).toISOString();
-  }
-  for (const k of ["featuredImageWidth", "featuredImageHeight"]) out[k] = out[k] ?? null;
-  return JSON.stringify(out, Object.keys(out).sort());
-}
-
-function sameCategories(
-  existing: { primaryCategory: { slug: string } | null; categories: { slug: string }[] },
-  input: BlogPostInput,
-) {
-  return (
-    (existing.primaryCategory?.slug ?? null) === input.primaryCategorySlug &&
-    JSON.stringify(existing.categories.map((c) => c.slug).sort()) ===
-      JSON.stringify([...input.categorySlugs].sort())
-  );
-}
 
 async function uploadImages(posts: WpPost[], manifest: ImageManifestRow[]) {
   const { R2_ENDPOINT, R2_PUBLIC_BUCKET_NAME, R2_PUBLIC_ACCESS_KEY_ID, R2_PUBLIC_SECRET_ACCESS_KEY } =
