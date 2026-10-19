@@ -5,3 +5,4 @@ export { toBlogPostInput } from "./toBlogPostInput";
 export type { ImportContext } from "./toBlogPostInput";
 export { buildRedirectMap } from "./buildRedirectMap";
 export { decodeText } from "./decodeText";
+export { CATEGORY_DESCRIPTIONS, resolveCategoryDescription } from "./categoryDescriptions";

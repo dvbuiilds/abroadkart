@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { toBlogPostInput, buildRedirectMap } from "./blog-import";
+import { toBlogPostInput, buildRedirectMap, resolveCategoryDescription } from "./blog-import";
 import { comparable, sameCategories } from "./blog-import/comparable";
 import type {
   BlogPostInput,
@@ -152,7 +152,11 @@ async function main() {
   const catIds = new Map<string, string>();
   const cat = { created: 0, updated: 0, unchanged: 0 };
   for (const c of categories) {
-    const data = { name: c.name, slug: c.slug, description: c.description ?? "" };
+    const data = {
+      name: c.name,
+      slug: c.slug,
+      description: resolveCategoryDescription(c.slug, c.description),
+    };
     const [found] = (await db.query.BlogCategory.findMany({
       where: { slug: { equals: c.slug } },
       query: "id name description",
