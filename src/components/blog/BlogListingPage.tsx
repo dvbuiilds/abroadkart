@@ -47,11 +47,13 @@ export function BlogListingPage({
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
             {eyebrow}
           </p>
-          <h1 className="mt-3 text-4xl font-bold leading-[1.05] tracking-[-0.03em] text-gray-900 md:text-6xl">
+          {/* Slots sized to the longest title (2 lines) and intro (5 lines on phones,
+              3 wider) so the chip bar does not move between categories. */}
+          <h1 className="mt-3 min-h-[2lh] text-4xl font-bold leading-[1.05] tracking-[-0.03em] text-gray-900 md:text-6xl">
             {title}
           </h1>
           {intro && (
-            <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-600">
+            <p className="mx-auto mt-5 min-h-[5lh] max-w-2xl text-lg leading-relaxed text-gray-600 md:min-h-[3lh]">
               {intro}
             </p>
           )}

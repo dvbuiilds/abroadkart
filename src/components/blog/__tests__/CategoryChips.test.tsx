@@ -42,4 +42,19 @@ describe("CategoryChips", () => {
     expect(screen.getByRole("link", { name: /Counselling/ })).toHaveTextContent("20");
     expect(screen.getByRole("link", { name: /Visa/ })).toHaveTextContent("7");
   });
+
+  it("lays out All and every category chip the same way, with a border", () => {
+    render(<CategoryChips categories={categories} activeSlug="visa" />);
+    const nav = screen.getByRole("navigation", { name: "Blog categories" });
+    for (const link of within(nav).getAllByRole("link")) {
+      expect(link).toHaveClass("inline-flex", "items-center", "border");
+    }
+  });
+
+  it("renders the post count in gray-500, which meets text contrast", () => {
+    render(<CategoryChips categories={categories} />);
+    const count = screen.getByRole("link", { name: /Counselling/ }).querySelector("span");
+    expect(count).toHaveClass("text-gray-500");
+    expect(count).not.toHaveClass("text-gray-400");
+  });
 });
