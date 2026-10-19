@@ -169,6 +169,18 @@ describe("SEO helpers", () => {
       const meta = buildPostMetadata(post);
       expect((meta.openGraph as Record<string, unknown>)?.tags).toEqual(["tag1", "tag2"]);
     });
+
+    it("falls back to focus keywords when a post has no tags", () => {
+      const post = { ...publishedPost, tags: [], focusKeywords: ["visa", "f-1"] };
+      const meta = buildPostMetadata(post);
+      expect((meta.openGraph as Record<string, unknown>)?.tags).toEqual(["visa", "f-1"]);
+    });
+
+    it("prefers tags over focus keywords when both exist", () => {
+      const post = { ...publishedPost, tags: ["tag1"], focusKeywords: ["visa"] };
+      const meta = buildPostMetadata(post);
+      expect((meta.openGraph as Record<string, unknown>)?.tags).toEqual(["tag1"]);
+    });
   });
 
   describe("buildPostJsonLd", () => {

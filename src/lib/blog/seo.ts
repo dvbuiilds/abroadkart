@@ -27,7 +27,7 @@ function truncateAtWordBoundary(text: string, maxLength = 160): string {
  * - Title: `metaTitle || title`
  * - Description: `metaDescription || excerpt`, max 160 chars at word boundary
  * - Canonical: absolute URL
- * - OpenGraph: article type, publish/mod times, section, tags, images
+ * - OpenGraph: article type, publish/mod times, section, tags (or focus keywords), images
  * - Twitter: summary_large_image
  * - Robots: index for published, noindex for drafts
  */
@@ -55,7 +55,8 @@ export function buildPostMetadata(post: BlogPost): Metadata {
       publishedTime: post.publishedAt.toISOString(),
       modifiedTime: post.modifiedAt.toISOString(),
       section: post.primaryCategory?.name,
-      tags: post.tags,
+      // Most posts have no tags. Their focus keywords are the next best description of the topic.
+      tags: post.tags?.length ? post.tags : post.focusKeywords,
       images: post.featuredImageUrl
         ? [
             {
