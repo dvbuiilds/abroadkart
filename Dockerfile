@@ -37,6 +37,9 @@ COPY --from=builder /app/.next        ./.next
 COPY --from=builder /app/public       ./public
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+# `next start` reloads next.config at runtime; without it images.remotePatterns
+# is empty and every /_next/image request for a remote host returns 400.
+COPY --from=builder /app/next.config.ts ./next.config.ts
 
 EXPOSE 3000
 
