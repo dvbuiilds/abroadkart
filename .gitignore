@@ -60,3 +60,6 @@ keystone/node_modules/
 18-apr.pub
 
 output/
+# claude code
+.claude/
+CLAUDE.md
