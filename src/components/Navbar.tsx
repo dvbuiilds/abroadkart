@@ -76,7 +76,7 @@ export function Navbar() {
               <NavLink href="/" isHome={isHome}>
                 Home
               </NavLink>
-              <NavLink href="https://abroadkart.com" isHome={isHome}>
+              <NavLink href="/blogs" isHome={isHome}>
                 Blogs
               </NavLink>
               <NavLink href="/about" isHome={isHome}>
@@ -117,6 +117,7 @@ export function Navbar() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    aria-label={isOpen ? "Close menu" : "Open menu"}
                     className={
                       isHome
                         ? "nav-icon-animate hover:bg-white/10"
@@ -152,7 +153,7 @@ export function Navbar() {
                       Home
                     </MobileNavLink>
                     <MobileNavLink
-                      href="https://abroadkart.com"
+                      href="/blogs"
                       onClick={() => setIsOpen(false)}
                     >
                       Blogs

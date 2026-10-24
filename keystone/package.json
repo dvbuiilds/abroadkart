@@ -10,7 +10,8 @@
     "postinstall": "keystone postinstall",
     "seed": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed.ts",
     "seed:students": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/seed-students.ts",
-    "test": "node -r ts-node/register/transpile-only --test __tests__/access.test.ts __tests__/verifyBetterAuthJwt.test.ts __tests__/betterAuthSession.test.ts",
+    "import:blogs": "dotenv -e .env -- node -r ts-node/register/transpile-only seeds/import-blogs.ts",
+    "test": "node -r ts-node/register/transpile-only --test __tests__/*.test.ts",
     "generate": "rm -rf .keystone && keystone build && prisma db push",
     "db:push": "prisma db push",
     "db:validate": "keystone postinstall"
@@ -27,9 +28,11 @@
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20.0.0",
     "@types/pg": "^8.10.0",
     "dotenv-cli": "^11.0.0",
+    "jsdom": "^26",
     "ts-node": "^10.9.0",
     "typescript": "^5.0.0"
   }

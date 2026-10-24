@@ -2,6 +2,7 @@
 
 > On approval, the first step is to save this document to `crm_docs/BLOG_MIGRATION_PLAN.md`.
 > Status: **Final**. Decisions are locked using the stakeholder answers from 2026-10-11.
+> Amended 2026-10-17: legacy URL redirects are removed. See D3.
 
 ## 1. Context
 
@@ -12,7 +13,7 @@
 | `blogs.json` | 111 posts: 110 published and 1 draft |
 | `categories.json` | 11 categories |
 | `authors.json` | 2 authors |
-| `redirects.json` | 9 legacy redirects |
+| `redirects.json` | 9 legacy redirects, used only to rewrite internal links |
 | `images-manifest.json` and `images/` | 110 featured images, 7.7 MB |
 
 These posts carry the site's organic SEO. In about one month, WordPress will be switched off. From then on, the Next.js app (currently `app.abroadkart.com`) will serve everything on `abroadkart.com`, with blogs at **`abroadkart.com/blogs/<slug>`**.
@@ -20,7 +21,7 @@ These posts carry the site's organic SEO. In about one month, WordPress will be 
 **Goals:**
 - Keep the content **byte-for-byte the same**: title, headings, body, FAQs, and the publish and modified dates. Only the template changes.
 - The new template must look elegant and modern, be fully crawlable without JS, and generate meta, OG and JSON-LD from the content.
-- Keep ranking loss small with one-hop 301 redirects for every legacy URL.
+- No legacy URL redirects. Old WordPress URLs return 404 after cutover (decided 2026-10-17).
 - Collect blog leads into Keystone.
 - Use **test-driven development** throughout: write tests first, then code.
 - **Prerequisite:** stop bypassing build errors (`ignoreBuildErrors`, `ignoreDuringBuilds`) and fix what they hide **before** any blog work starts.
@@ -109,14 +110,10 @@ The models are written in Keystone `list()` style, matching `keystone/schema/Int
 - `/blogs/<slug>` is the post. It has no trailing slash, which is the Next.js default.
 - There are no tag or author archive pages.
 
-**Redirects:** all are permanent (308), and every chain is flattened to **one hop**.
-- **Source of the rules:** they are generated into `src/lib/blog/legacy-redirects.json` by the import script and loaded in `next.config.ts` → `redirects()`.
-- **Rules:**
-  1. `/<slug>` and `/<slug>/` → `/blogs/<slug>`, for all 110 published slugs.
-  2. The 9 entries in `redirects.json` → `/blogs/<final-slug>`.
-  3. `/category/:c` and `/category/:c/` → `/blogs/category/:c`.
-  4. `/author/:a*`, `/tag/:t*`, `/feed` and `/blog/:path*` → `/blogs`.
-  5. `/wp-content/uploads/:path*` → the CDN URL of the matching featured image. Unmatched paths go to `/blogs`.
+**Legacy URLs are not redirected** (decided 2026-10-17).
+- The WordPress URLs (`/<slug>`, `/<slug>/`, `/category/*`, `/author/*`, `/tag/*`, `/feed`, `/blog/*`, `/wp-content/uploads/*`) return 404 after cutover.
+- `next.config.ts` has no `redirects()` function, and no `src/lib/blog/legacy-redirects.json` is generated.
+- Links inside article bodies still point at `/blogs/<slug>`. The import rewrites them using the 9 entries in `redirects.json`, so they resolve in one step without an HTTP redirect.
 - **Host redirect:** `app.abroadkart.com/*` → `abroadkart.com/*`, set up as a Cloudflare redirect rule (§8).
 
 ### D4. Images
@@ -280,17 +277,11 @@ The script is `keystone/seeds/import-blogs.ts`, and its pure helpers live in `ke
   - The author email is absent from the output.
   - `metaDescription` falls back to `excerpt`.
   - The draft keeps `status: draft`.
-- `buildLegacyRedirects(posts, redirects)`:
-  - There are no chains: no destination is also a source.
-  - The 110 root slugs are covered, with and without a trailing slash.
-  - Draft slugs are excluded.
-
 **Then implement** the helpers and the script. The script:
 1. upserts categories;
 2. uploads images to the public bucket with the S3 SDK, skipping files that already exist;
 3. upserts posts by `postId`;
-4. writes `src/lib/blog/legacy-redirects.json`;
-5. prints a report.
+4. prints a report.
 
 **Exit criteria:** running the script twice gives an identical database (idempotent), 0 unknown internal links, and 110 published posts plus 1 draft.
 
@@ -303,7 +294,6 @@ The script is `keystone/seeds/import-blogs.ts`, and its pure helpers live in `ke
   - **Drafts:** they get `noindex`.
   - **JSON-LD:** the author has a name only (no URL or image); FAQPage appears only when FAQs exist and its text equals the source; BreadcrumbList has 3 items.
 - `src/lib/blog/__tests__/toc.test.ts`: `buildToc(headings)` nests H3s under H2s and leaves out H4 and H5.
-- `src/lib/blog/__tests__/redirects.test.ts`: the loaded redirects are valid for Next.js (`source` starts with `/` and `permanent: true`), with no duplicate sources and fewer than 1,000 entries.
 - `src/app/__tests__/robots-sitemap.test.ts`:
   - `robots()` disallows the private areas and points to the sitemap.
   - `sitemap()` includes published posts with `lastModified` and excludes the draft. The repository is mocked.
@@ -311,7 +301,7 @@ The script is `keystone/seeds/import-blogs.ts`, and its pure helpers live in `ke
 
 **Then implement:**
 - `src/lib/blog/repository.ts`, `seo.ts`, `toc.ts` and `types.ts`;
-- `next.config.ts` → `redirects()` and the `images.remotePatterns` entry for `cdn.abroadkart.com`;
+- the `images.remotePatterns` entry for `cdn.abroadkart.com` in `next.config.ts` (no `redirects()`);
 - `src/app/robots.ts` and `src/app/sitemap.ts`, then delete `public/robots.txt`, `public/sitemap.xml` and `src/app/api/update-sitemap/`;
 - `src/app/api/revalidate/route.ts` and the Keystone `afterOperation` hook (`keystone/hooks/revalidateBlog.ts`);
 - the `(public)/layout.tsx` metadata defaults.
@@ -364,9 +354,10 @@ The script is `keystone/seeds/import-blogs.ts`, and its pure helpers live in `ke
   - the rendered article's text equals the text of the source `contentHtml`;
   - the H1 equals `title`;
   - the dates equal the source dates.
-- **`redirects.spec.ts`:**
-  - Every legacy URL returns exactly one 308 whose `Location` equals the final URL, and that URL returns 200. Legacy URLs include the 110 root slugs (with and without a trailing slash), the 9 legacy redirects, `/category/*` and a sample of `/wp-content/uploads/*`.
+- **`legacy-urls.spec.ts`:**
+  - Every legacy URL returns 404 with no redirect. Legacy URLs include the 110 root slugs (with and without a trailing slash), the 9 legacy slugs, `/category/*` and a sample of `/wp-content/uploads/*`.
   - The draft slug returns 404.
+  - Each published post's `/blogs/<slug>` URL returns 200.
 - **`lead-form.spec.ts`:** a submission creates a `BlogLead` in the test database and shows the success state.
 - **`seo-files.spec.ts`:** `/robots.txt` and `/sitemap.xml` are valid, the sitemap has 110 posts and 11 categories, and it has no draft.
 
@@ -382,8 +373,8 @@ See §8 for the host migration checklist and §9 for analytics.
 1. Before cutover: baseline in Google Search Console (§9).
 2. Deploy to production on `app.abroadkart.com` and check everything there.
 3. Cut over the host (§8).
-4. Within the first hour, run `redirects.spec.ts` against production and submit the sitemap in GSC.
-5. Monitor for 2–6 weeks: watch the GSC **Pages** report (404s and "Page with redirect"), track impressions against the baseline, and fix any missing redirects.
+4. Within the first hour, run `legacy-urls.spec.ts` against production and submit the sitemap in GSC.
+5. Monitor for 2–6 weeks: watch the GSC **Pages** report (404s), track impressions against the baseline, and review 404s for pages that deserve new content. No redirects are added.
 6. Keep the WordPress backup archived for at least 6 months.
 
 ---
@@ -394,7 +385,7 @@ See §8 for the host migration checklist and §9 for analytics.
 |---|---|
 | Phase 0 | `next.config.ts`, `src/components/consultant/students/form/StudentTestScoresSection.tsx`, `src/components/consultant/students/StudentEditSheet.tsx`, `src/lib/students/helpers.ts`, and the 13 files ESLint flags |
 | Keystone | `keystone/schema/{BlogPost,BlogCategory,BlogLead}.ts`, `keystone/access/rules.ts`, `keystone/hooks/revalidateBlog.ts`, `keystone/keystone.ts`, `keystone/seeds/import-blogs.ts`, `keystone/seeds/blog-import/*`, `keystone/__tests__/{blog-access,blog-import}.test.ts`, `keystone/package.json` |
-| Next lib | `src/lib/blog/{repository,seo,toc,types}.ts`, `src/lib/blog/legacy-redirects.json`, `src/lib/validations/blog-lead.ts` |
+| Next lib | `src/lib/blog/{repository,seo,toc,types}.ts`, `src/lib/validations/blog-lead.ts` |
 | Next routes | `src/app/(public)/blogs/**`, `src/app/api/{revalidate,blog-leads}/route.ts`, `src/app/{robots,sitemap}.ts`, `src/app/(public)/layout.tsx` |
 | UI | `src/components/blog/*`, `tailwind.config.ts` (the typography plugin) |
 | Tests and config | `vitest.config.ts`, `playwright.config.ts`, `e2e/*.spec.ts`, `package.json` |
@@ -458,7 +449,7 @@ See §8 for the host migration checklist and §9 for analytics.
 - the consultant dashboard loads its data (proves the JWT round trip);
 - a document upload works;
 - `/admin` works;
-- the blog redirects pass;
+- the legacy URLs return 404 and the blog URLs return 200;
 - `/robots.txt` and `/sitemap.xml` are served from the new host.
 
 ## 9. Analytics and Search Console: steps for you

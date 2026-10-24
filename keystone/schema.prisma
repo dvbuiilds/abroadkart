@@ -406,3 +406,57 @@ model Payment {
   @@index([tenantId])
   @@index([studentId])
 }
+
+model BlogPost {
+  id                  String         @id @default(uuid()) @postgresql.Uuid
+  postId              Int            @unique
+  slug                String         @unique @default("")
+  title               String         @default("")
+  status              String         @default("draft")
+  publishedAt         DateTime
+  modifiedAt          DateTime
+  authorName          String         @default("")
+  excerpt             String         @default("")
+  contentHtml         String         @default("") @postgresql.Text
+  headings            Json?
+  faqs                Json?
+  primaryCategory     BlogCategory?  @relation("BlogPost_primaryCategory", fields: [primaryCategoryId], references: [id])
+  primaryCategoryId   String?        @map("primaryCategory") @postgresql.Uuid
+  categories          BlogCategory[] @relation("BlogCategory_posts")
+  tags                Json?
+  featuredImageUrl    String         @default("")
+  featuredImageAlt    String         @default("")
+  featuredImageWidth  Int?
+  featuredImageHeight Int?
+  metaTitle           String         @default("")
+  metaDescription     String         @default("")
+  focusKeywords       Json?
+  wordCount           Int?
+  readingTimeMinutes  Int?
+
+  @@index([primaryCategoryId])
+}
+
+model BlogCategory {
+  id           String     @id @default(uuid()) @postgresql.Uuid
+  name         String     @default("")
+  slug         String     @unique @default("")
+  description  String     @default("")
+  posts        BlogPost[] @relation("BlogCategory_posts")
+  primaryPosts BlogPost[] @relation("BlogPost_primaryCategory")
+}
+
+model BlogLead {
+  id          String    @id @default(uuid()) @postgresql.Uuid
+  email       String    @default("")
+  name        String    @default("")
+  phone       String    @default("")
+  message     String    @default("")
+  sourceSlug  String    @default("")
+  sourceUrl   String    @default("")
+  utmSource   String    @default("")
+  utmMedium   String    @default("")
+  utmCampaign String    @default("")
+  status      String    @default("new")
+  createdAt   DateTime? @default(now())
+}

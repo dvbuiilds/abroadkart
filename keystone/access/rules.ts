@@ -5,6 +5,7 @@
  * so there is no { data: … } wrapper.
  */
 
+import { timingSafeEqual } from "node:crypto";
 import { Role, isFulfilmentRole, isConsultantRole } from "./roles";
 
 /**
@@ -109,4 +110,32 @@ export function filterByTenant(args: {
  */
 export function canUpdateLoanStatus(args: { session: Session }): boolean {
   return isFulfilment(args);
+}
+
+/**
+ * Public blog reads: superAdmin sees everything, everyone else sees published posts only.
+ * Use as: access.filter.query = isPublishedOrSuperAdmin
+ */
+export function isPublishedOrSuperAdmin(args: {
+  session?: Session;
+}): boolean | { status: { equals: "published" } } {
+  if (isSuperAdmin(args.session)) return true;
+  return { status: { equals: "published" } };
+}
+
+/**
+ * Server-to-server check for the Next.js app. Compares the x-internal-key header
+ * with LEADS_INTERNAL_KEY in constant time. Fails closed when the key is unset.
+ */
+export function hasInternalKey(args: {
+  context?: { req?: { headers?: Record<string, unknown> } };
+}): boolean {
+  const expected = process.env.LEADS_INTERNAL_KEY;
+  if (!expected) return false;
+  const provided = args.context?.req?.headers?.["x-internal-key"];
+  if (typeof provided !== "string") return false;
+  const a = Buffer.from(provided);
+  const b = Buffer.from(expected);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }

@@ -4,18 +4,22 @@
 # schema.prisma file; it does NOT need a live database connection.
 # All real secrets are injected at runtime by docker-compose via env_file.
 #
-# WHY node:20-slim (Debian) and NOT node:20-alpine:
+# WHY node:22.23.4-slim (Debian) and NOT node:22.23.4-alpine:
 # Prisma auto-detects the OpenSSL version at client-generation time and picks
 # the matching query-engine binary. Alpine 3.17+ ships OpenSSL 3.x but Prisma
 # sometimes resolves to the "openssl-1.1.x" musl binary (libssl.so.1.1),
 # which no longer exists on modern Alpine — causing a crash on startup.
-# Debian bookworm (slim) ships glibc + OpenSSL 3.x and Prisma resolves
+# Debian (slim) ships glibc + OpenSSL 3.x and Prisma resolves
 # correctly to linux-arm64-openssl-3.0.x without any manual overrides.
-FROM node:20-slim AS builder
+#
+# Node is pinned to a patched release. 22.23.4 fixes CVE-2026-111497 (Node2Shell,
+# Brotli decoder). Node 20 is end-of-life and gets no fix, so do not go back to it.
+# Bump this tag with each Node security release.
+FROM node:22.23.4-slim AS builder
 WORKDIR /app
 
 # Install openssl BEFORE anything Prisma-related.
-# node:20-slim is a bare Debian image with no openssl pre-installed.
+# node:22.23.4-slim is a bare Debian image with no openssl pre-installed.
 # Without it, Prisma cannot detect the system OpenSSL version and silently
 # defaults to generating the "openssl-1.1.x" query-engine binary, which then
 # fails to load at runtime because libssl.so.1.1 doesn't exist on modern Debian.
@@ -45,7 +49,7 @@ RUN DATABASE_URL=postgresql://dummy:dummy@localhost:5432/dummy \
 # ── Stage 2: Runner ───────────────────────────────────────────────────────────
 # Must match the builder base image so the Prisma query-engine binary
 # (linux-arm64-openssl-3.0.x) links against the same OpenSSL library.
-FROM node:20-slim AS runner
+FROM node:22.23.4-slim AS runner
 WORKDIR /app
 
 # Same openssl install as the builder — the query-engine .so file dynamically

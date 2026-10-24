@@ -8,7 +8,11 @@
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "yarn typecheck && yarn lint",
+    "test": "yarn typecheck && yarn lint && yarn test:unit",
+    "test:unit": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "test:e2e:phase6": "playwright test e2e/category-pages e2e/category-bar e2e/crawlability e2e/content-fidelity e2e/images e2e/legacy-urls e2e/lead-form e2e/seo-files",
     "auth:migrate": "npx @better-auth/cli@1.4.21 migrate --config src/lib/auth.ts --yes"
   },
   "dependencies": {
@@ -53,15 +57,25 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.49",
+    "@tailwindcss/typography": "^0.5.16",
     "@tanstack/react-query-devtools": "^5.91.3",
+    "@testing-library/dom": "^10",
+    "@testing-library/jest-dom": "^6",
+    "@testing-library/react": "^16",
+    "@testing-library/user-event": "^14",
+    "@types/jsdom": "^30.0.0",
     "@types/node": "^20",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4",
     "eslint": "^9",
     "eslint-config-next": "15.2.8",
+    "jsdom": "^26",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3"
   }
 }

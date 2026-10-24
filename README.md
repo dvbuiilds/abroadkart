@@ -37,7 +37,7 @@ abroadkart/
 
 ## Prerequisites
 
-- Node.js 20 LTS or higher
+- Node.js 22.23.4 or higher (earlier 22.x and all 20.x releases have CVE-2026-111497)
 - Docker and Docker Compose
 - Postgres reachable for app + `auth` schema (see below)
 - Cloudflare account (for R2 storage)

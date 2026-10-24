@@ -2084,6 +2084,343 @@ input PaymentCreateInput {
   createdAt: DateTime
 }
 
+type BlogPost {
+  id: ID!
+  postId: Int
+  slug: String
+  title: String
+  status: String
+  publishedAt: DateTime
+  modifiedAt: DateTime
+  authorName: String
+  excerpt: String
+  contentHtml: String
+  headings: JSON
+  faqs: JSON
+  primaryCategory: BlogCategory
+  categories(where: BlogCategoryWhereInput! = {}, orderBy: [BlogCategoryOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogCategoryWhereUniqueInput): [BlogCategory!]
+  categoriesCount(where: BlogCategoryWhereInput! = {}): Int
+  tags: JSON
+  featuredImageUrl: String
+  featuredImageAlt: String
+  featuredImageWidth: Int
+  featuredImageHeight: Int
+  metaTitle: String
+  metaDescription: String
+  focusKeywords: JSON
+  wordCount: Int
+  readingTimeMinutes: Int
+}
+
+input BlogPostWhereUniqueInput {
+  id: ID
+  postId: Int
+  slug: String
+}
+
+input BlogPostWhereInput {
+  AND: [BlogPostWhereInput!]
+  OR: [BlogPostWhereInput!]
+  NOT: [BlogPostWhereInput!]
+  id: IDFilter
+  postId: IntFilter
+  slug: StringFilter
+  title: StringFilter
+  status: StringFilter
+  publishedAt: DateTimeFilter
+  modifiedAt: DateTimeFilter
+  authorName: StringFilter
+  excerpt: StringFilter
+  contentHtml: StringFilter
+  primaryCategory: BlogCategoryWhereInput
+  categories: BlogCategoryManyRelationFilter
+  featuredImageUrl: StringFilter
+  featuredImageAlt: StringFilter
+  featuredImageWidth: IntNullableFilter
+  featuredImageHeight: IntNullableFilter
+  metaTitle: StringFilter
+  metaDescription: StringFilter
+  wordCount: IntNullableFilter
+  readingTimeMinutes: IntNullableFilter
+}
+
+input DateTimeFilter {
+  equals: DateTime
+  in: [DateTime!]
+  notIn: [DateTime!]
+  lt: DateTime
+  lte: DateTime
+  gt: DateTime
+  gte: DateTime
+  not: DateTimeFilter
+}
+
+input BlogCategoryManyRelationFilter {
+  every: BlogCategoryWhereInput
+  some: BlogCategoryWhereInput
+  none: BlogCategoryWhereInput
+}
+
+input BlogPostOrderByInput {
+  id: OrderDirection
+  postId: OrderDirection
+  slug: OrderDirection
+  title: OrderDirection
+  status: OrderDirection
+  publishedAt: OrderDirection
+  modifiedAt: OrderDirection
+  authorName: OrderDirection
+  excerpt: OrderDirection
+  contentHtml: OrderDirection
+  featuredImageUrl: OrderDirection
+  featuredImageAlt: OrderDirection
+  featuredImageWidth: OrderDirection
+  featuredImageHeight: OrderDirection
+  metaTitle: OrderDirection
+  metaDescription: OrderDirection
+  wordCount: OrderDirection
+  readingTimeMinutes: OrderDirection
+}
+
+input BlogPostUpdateInput {
+  postId: Int
+  slug: String
+  title: String
+  status: String
+  publishedAt: DateTime
+  modifiedAt: DateTime
+  authorName: String
+  excerpt: String
+  contentHtml: String
+  headings: JSON
+  faqs: JSON
+  primaryCategory: BlogCategoryRelateToOneForUpdateInput
+  categories: BlogCategoryRelateToManyForUpdateInput
+  tags: JSON
+  featuredImageUrl: String
+  featuredImageAlt: String
+  featuredImageWidth: Int
+  featuredImageHeight: Int
+  metaTitle: String
+  metaDescription: String
+  focusKeywords: JSON
+  wordCount: Int
+  readingTimeMinutes: Int
+}
+
+input BlogCategoryRelateToOneForUpdateInput {
+  create: BlogCategoryCreateInput
+  connect: BlogCategoryWhereUniqueInput
+  disconnect: Boolean
+}
+
+input BlogCategoryRelateToManyForUpdateInput {
+  disconnect: [BlogCategoryWhereUniqueInput!]
+  set: [BlogCategoryWhereUniqueInput!]
+  create: [BlogCategoryCreateInput!]
+  connect: [BlogCategoryWhereUniqueInput!]
+}
+
+input BlogPostUpdateArgs {
+  where: BlogPostWhereUniqueInput!
+  data: BlogPostUpdateInput!
+}
+
+input BlogPostCreateInput {
+  postId: Int
+  slug: String
+  title: String
+  status: String
+  publishedAt: DateTime
+  modifiedAt: DateTime
+  authorName: String
+  excerpt: String
+  contentHtml: String
+  headings: JSON
+  faqs: JSON
+  primaryCategory: BlogCategoryRelateToOneForCreateInput
+  categories: BlogCategoryRelateToManyForCreateInput
+  tags: JSON
+  featuredImageUrl: String
+  featuredImageAlt: String
+  featuredImageWidth: Int
+  featuredImageHeight: Int
+  metaTitle: String
+  metaDescription: String
+  focusKeywords: JSON
+  wordCount: Int
+  readingTimeMinutes: Int
+}
+
+input BlogCategoryRelateToOneForCreateInput {
+  create: BlogCategoryCreateInput
+  connect: BlogCategoryWhereUniqueInput
+}
+
+input BlogCategoryRelateToManyForCreateInput {
+  create: [BlogCategoryCreateInput!]
+  connect: [BlogCategoryWhereUniqueInput!]
+}
+
+type BlogCategory {
+  id: ID!
+  name: String
+  slug: String
+  description: String
+  posts(where: BlogPostWhereInput! = {}, orderBy: [BlogPostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogPostWhereUniqueInput): [BlogPost!]
+  postsCount(where: BlogPostWhereInput! = {}): Int
+  primaryPosts(where: BlogPostWhereInput! = {}, orderBy: [BlogPostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogPostWhereUniqueInput): [BlogPost!]
+  primaryPostsCount(where: BlogPostWhereInput! = {}): Int
+}
+
+input BlogCategoryWhereUniqueInput {
+  id: ID
+  slug: String
+}
+
+input BlogCategoryWhereInput {
+  AND: [BlogCategoryWhereInput!]
+  OR: [BlogCategoryWhereInput!]
+  NOT: [BlogCategoryWhereInput!]
+  id: IDFilter
+  name: StringFilter
+  slug: StringFilter
+  description: StringFilter
+  posts: BlogPostManyRelationFilter
+  primaryPosts: BlogPostManyRelationFilter
+}
+
+input BlogPostManyRelationFilter {
+  every: BlogPostWhereInput
+  some: BlogPostWhereInput
+  none: BlogPostWhereInput
+}
+
+input BlogCategoryOrderByInput {
+  id: OrderDirection
+  name: OrderDirection
+  slug: OrderDirection
+  description: OrderDirection
+}
+
+input BlogCategoryUpdateInput {
+  name: String
+  slug: String
+  description: String
+  posts: BlogPostRelateToManyForUpdateInput
+  primaryPosts: BlogPostRelateToManyForUpdateInput
+}
+
+input BlogPostRelateToManyForUpdateInput {
+  disconnect: [BlogPostWhereUniqueInput!]
+  set: [BlogPostWhereUniqueInput!]
+  create: [BlogPostCreateInput!]
+  connect: [BlogPostWhereUniqueInput!]
+}
+
+input BlogCategoryUpdateArgs {
+  where: BlogCategoryWhereUniqueInput!
+  data: BlogCategoryUpdateInput!
+}
+
+input BlogCategoryCreateInput {
+  name: String
+  slug: String
+  description: String
+  posts: BlogPostRelateToManyForCreateInput
+  primaryPosts: BlogPostRelateToManyForCreateInput
+}
+
+input BlogPostRelateToManyForCreateInput {
+  create: [BlogPostCreateInput!]
+  connect: [BlogPostWhereUniqueInput!]
+}
+
+type BlogLead {
+  id: ID!
+  email: String
+  name: String
+  phone: String
+  message: String
+  sourceSlug: String
+  sourceUrl: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
+  status: String
+  createdAt: DateTime
+}
+
+input BlogLeadWhereUniqueInput {
+  id: ID
+}
+
+input BlogLeadWhereInput {
+  AND: [BlogLeadWhereInput!]
+  OR: [BlogLeadWhereInput!]
+  NOT: [BlogLeadWhereInput!]
+  id: IDFilter
+  email: StringFilter
+  name: StringFilter
+  phone: StringFilter
+  message: StringFilter
+  sourceSlug: StringFilter
+  sourceUrl: StringFilter
+  utmSource: StringFilter
+  utmMedium: StringFilter
+  utmCampaign: StringFilter
+  status: StringFilter
+  createdAt: DateTimeNullableFilter
+}
+
+input BlogLeadOrderByInput {
+  id: OrderDirection
+  email: OrderDirection
+  name: OrderDirection
+  phone: OrderDirection
+  message: OrderDirection
+  sourceSlug: OrderDirection
+  sourceUrl: OrderDirection
+  utmSource: OrderDirection
+  utmMedium: OrderDirection
+  utmCampaign: OrderDirection
+  status: OrderDirection
+  createdAt: OrderDirection
+}
+
+input BlogLeadUpdateInput {
+  email: String
+  name: String
+  phone: String
+  message: String
+  sourceSlug: String
+  sourceUrl: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
+  status: String
+  createdAt: DateTime
+}
+
+input BlogLeadUpdateArgs {
+  where: BlogLeadWhereUniqueInput!
+  data: BlogLeadUpdateInput!
+}
+
+input BlogLeadCreateInput {
+  email: String
+  name: String
+  phone: String
+  message: String
+  sourceSlug: String
+  sourceUrl: String
+  utmSource: String
+  utmMedium: String
+  utmCampaign: String
+  status: String
+  createdAt: DateTime
+}
+
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -2180,6 +2517,24 @@ type Mutation {
   updatePayments(data: [PaymentUpdateArgs!]!): [Payment]
   deletePayment(where: PaymentWhereUniqueInput!): Payment
   deletePayments(where: [PaymentWhereUniqueInput!]!): [Payment]
+  createBlogPost(data: BlogPostCreateInput!): BlogPost
+  createBlogPosts(data: [BlogPostCreateInput!]!): [BlogPost]
+  updateBlogPost(where: BlogPostWhereUniqueInput!, data: BlogPostUpdateInput!): BlogPost
+  updateBlogPosts(data: [BlogPostUpdateArgs!]!): [BlogPost]
+  deleteBlogPost(where: BlogPostWhereUniqueInput!): BlogPost
+  deleteBlogPosts(where: [BlogPostWhereUniqueInput!]!): [BlogPost]
+  createBlogCategory(data: BlogCategoryCreateInput!): BlogCategory
+  createBlogCategories(data: [BlogCategoryCreateInput!]!): [BlogCategory]
+  updateBlogCategory(where: BlogCategoryWhereUniqueInput!, data: BlogCategoryUpdateInput!): BlogCategory
+  updateBlogCategories(data: [BlogCategoryUpdateArgs!]!): [BlogCategory]
+  deleteBlogCategory(where: BlogCategoryWhereUniqueInput!): BlogCategory
+  deleteBlogCategories(where: [BlogCategoryWhereUniqueInput!]!): [BlogCategory]
+  createBlogLead(data: BlogLeadCreateInput!): BlogLead
+  createBlogLeads(data: [BlogLeadCreateInput!]!): [BlogLead]
+  updateBlogLead(where: BlogLeadWhereUniqueInput!, data: BlogLeadUpdateInput!): BlogLead
+  updateBlogLeads(data: [BlogLeadUpdateArgs!]!): [BlogLead]
+  deleteBlogLead(where: BlogLeadWhereUniqueInput!): BlogLead
+  deleteBlogLeads(where: [BlogLeadWhereUniqueInput!]!): [BlogLead]
   endSession: Boolean!
 }
 
@@ -2229,6 +2584,15 @@ type Query {
   payment(where: PaymentWhereUniqueInput!): Payment
   payments(where: PaymentWhereInput! = {}, orderBy: [PaymentOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: PaymentWhereUniqueInput): [Payment!]
   paymentsCount(where: PaymentWhereInput! = {}): Int
+  blogPost(where: BlogPostWhereUniqueInput!): BlogPost
+  blogPosts(where: BlogPostWhereInput! = {}, orderBy: [BlogPostOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogPostWhereUniqueInput): [BlogPost!]
+  blogPostsCount(where: BlogPostWhereInput! = {}): Int
+  blogCategory(where: BlogCategoryWhereUniqueInput!): BlogCategory
+  blogCategories(where: BlogCategoryWhereInput! = {}, orderBy: [BlogCategoryOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogCategoryWhereUniqueInput): [BlogCategory!]
+  blogCategoriesCount(where: BlogCategoryWhereInput! = {}): Int
+  blogLead(where: BlogLeadWhereUniqueInput!): BlogLead
+  blogLeads(where: BlogLeadWhereInput! = {}, orderBy: [BlogLeadOrderByInput!]! = [], take: Int, skip: Int! = 0, cursor: BlogLeadWhereUniqueInput): [BlogLead!]
+  blogLeadsCount(where: BlogLeadWhereInput! = {}): Int
   keystone: KeystoneMeta!
 }
 

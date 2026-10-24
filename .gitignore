@@ -12,6 +12,10 @@
 
 # testing
 /coverage
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
 
 # next.js
 /.next/
@@ -37,6 +41,9 @@ yarn-error.log*
 
 # env files
 .env*
+# Example files hold placeholders only and are tracked
+!.env.example
+!**/.env.example
 
 # typescript
 *.tsbuildinfo
@@ -53,3 +60,6 @@ keystone/node_modules/
 18-apr.pub
 
 output/
+# claude code
+.claude/
+CLAUDE.md
