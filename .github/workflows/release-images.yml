@@ -38,10 +38,11 @@ jobs:
           yarn install --frozen-lockfile
           yarn test
 
-      - name: Keystone tests
+      - name: Keystone typecheck and tests
         working-directory: keystone
         run: |
           yarn install --frozen-lockfile
+          npx tsc --noEmit
           yarn test
 
   images:
