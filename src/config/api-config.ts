@@ -1,11 +1,14 @@
 const apiEndPoints = {
   development: "http://localhost:3000",
-  preview: "https://abroadkart-git-integration-dvbuiilds-projects.vercel.app",
+  preview:
+    process.env.NEXT_PUBLIC_PREVIEW_APP_URL?.replace(/\/$/, "") ||
+    "http://localhost:3000",
   production: "https://app.abroadkart.com",
 };
 
 const ENV =
-  process.env.VERCEL_ENV || process.env.NEXT_PUBLIC_ENVIRONMENT || "production";
+  process.env.NEXT_PUBLIC_ENVIRONMENT ||
+  (process.env.NODE_ENV === "development" ? "development" : "production");
 
 export const apiEndPoint =
   ENV === "production"
@@ -13,8 +16,6 @@ export const apiEndPoint =
     : ENV === "preview"
     ? apiEndPoints.preview
     : apiEndPoints.development;
-
-console.log("@@ VERCEL_ENV", ENV);
 
 export const apiPath = {
   signup: "/api/auth/signup",

@@ -1,0 +1,133 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# AbroadKart — full local stack
+#
+# Prerequisites: copy .env.example to .env in this directory (gitignored).
+# Docker Compose loads .env for variable substitution in this file only.
+#
+# Root `.env` is the single Next.js env file; `keystone/.env` is the single Keystone file.
+# DATABASE_URL is set below so the containers use the hostname `postgres` instead of
+# the localhost URL in those files.
+# Next.js server-side proxies use KEYSTONE_INTERNAL_URL=http://keystone:3001 (inside the Docker
+# network). Browsers use PUBLIC_APP_URL / PUBLIC_ADMIN_URL, read at runtime (see `.env.example`).
+# Keystone fetches JWKS from Next.js via BETTER_AUTH_JWKS_URL=http://nextjs:3000/... (internal).
+#
+# Start order (enforced by depends_on + healthchecks):
+#   1. postgres  ──▶  2. keystone
+#   3. nextjs (waits for postgres healthy; creates the Better Auth tables on boot)
+#
+# Images: `image:` names the GHCR tag that the release workflow publishes
+# (.github/workflows/release-images.yml). Production runs `docker compose pull`, which
+# fetches prebuilt images, so the droplet never compiles anything. Locally, `docker compose
+# build` tags the same names as `:local`.
+#
+# Postgres `db/init/` runs on first volume init. Better Auth tables are created by Next.js on startup.
+#
+# First-time Keystone schema — after `keystone` is up:
+#   docker exec -it abroadkart-keystone node_modules/.bin/prisma db push
+#   docker exec -it abroadkart-keystone yarn seed   (optional)
+#
+# Endpoints (local):
+#   Next.js frontend     → http://localhost:3000
+#   Keystone GraphQL     → http://localhost:3001/api/graphql
+#   Keystone Admin UI    → http://localhost:3001/admin
+#
+# For DigitalOcean deployment, see DEPLOY.md.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Log rotation for every container, so logs cannot fill the droplet's disk.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  # ── 1. PostgreSQL ────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: abroadkart-postgres
+    logging: *default-logging
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: abroadkart
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - abroadkart
+    # Keep port mapping for connecting with a local DB client (TablePlus, etc.)
+    # Remove in production if you don't need external DB access (see DEPLOY.md).
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── 2. KeystoneJS ─────────────────────────────────────────────────────────────
+  keystone:
+    image: ghcr.io/dvbuiilds/abroadkart-keystone:${IMAGE_TAG:-local}
+    build:
+      context: ./keystone
+      dockerfile: Dockerfile
+    container_name: abroadkart-keystone
+    logging: *default-logging
+    env_file:
+      - ./keystone/.env
+    environment:
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
+      BETTER_AUTH_JWKS_URL: http://nextjs:3000/api/auth/jwks
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
+      NEXT_INTERNAL_URL: ${NEXT_INTERNAL_URL:-http://nextjs:3000}
+      NODE_OPTIONS: --max-old-space-size=512
+    ports:
+      - "3001:3001"
+    networks:
+      - abroadkart
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── 3. Next.js ────────────────────────────────────────────────────────────────
+  # On boot, src/instrumentation.ts creates the Better Auth `auth` schema and tables
+  # (idempotent). The server fails to start if that fails, and Docker retries it.
+  nextjs:
+    image: ghcr.io/dvbuiilds/abroadkart-web:${IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: abroadkart-nextjs
+    logging: *default-logging
+    env_file:
+      - .env
+    environment:
+      PUBLIC_APP_URL: ${PUBLIC_APP_URL:-http://localhost:3000}
+      PUBLIC_ADMIN_URL: ${PUBLIC_ADMIN_URL:-http://localhost:3001}
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/abroadkart
+      KEYSTONE_INTERNAL_URL: http://keystone:3001
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-change-me}
+      NEXT_INTERNAL_URL: ${NEXT_INTERNAL_URL:-http://nextjs:3000}
+      NODE_OPTIONS: --max-old-space-size=384
+    ports:
+      - "3000:3000"
+    networks:
+      - abroadkart
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keystone:
+        condition: service_started
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  abroadkart:
+    driver: bridge

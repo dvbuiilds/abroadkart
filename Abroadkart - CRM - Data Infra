@@ -1,0 +1,237 @@
+# AbroadKart
+## CRM Platform — Data & Infrastructure Specification
+**Internal Architecture Document** | **Version 1.0** | **July 2026**
+
+---
+
+### Purpose
+This document defines all data entities, fields, and relationships required to build the AbroadKart CRM system for students abroad consultancies.
+
+---
+
+### 1. Overview
+AbroadKart CRM is purpose-built for students abroad consultancies. It manages the full lifecycle of a student — from first contact through counselling, document collection, university application, visa filing, and final enrolment.
+
+The system is structured around 7 core entities:
+
+| # | Entity | Purpose |
+| :--- | :--- | :--- |
+| 1 | Student (Lead/Contact) | Master record for every prospective student |
+| 2 | Interaction / Activity Log | Every touchpoint — calls, WhatsApp, emails, meetings |
+| 3 | Application | University applications filed on behalf of the student |
+| 4 | Document Checklist | Status tracking for all required documents |
+| 5 | Payments / Fees | Consultancy fees, commissions, and invoices |
+| 6 | Counsellor / Staff | Internal team members and their assignments |
+| 7 | University Master | Reference data for universities worldwide |
+
+---
+
+### 2. Entity: Student (Lead / Contact)
+The Student entity is the core of the CRM. Every other entity links back to it. A student enters as a lead and progresses through stages until enrolment or drop-off.
+
+#### 2.1 Identity & Contact
+* **id** — Unique identifier
+* **name** — Full name
+* **email** — Primary email
+* **phone** — WhatsApp-preferred mobile number
+* **city, state, country_of_origin** — Current location
+* **dob** — Date of birth
+* **gender**
+* **source** — How they found AbroadKart — Reddit, Instagram, Referral, Walk-in, Google, etc.
+
+#### 2.2 Academic Background
+* **highest_qualification** — 10th / 12th / UG / PG
+* **stream** — Science / Commerce / Arts / Engineering / etc.
+* **subjects** — Relevant subjects studied
+* **percentage / cgpa** — Academic score
+* **backlog_count** — Number of backlogs (if any)
+* **year_of_passing**
+* **institution_name** — Last attended college or school
+
+#### 2.3 English & Standardised Test Scores
+* **ielts_score** — Overall band score
+* **toefl_score**
+* **pte_score**
+* **duolingo_score**
+* **gre_score** — For US/Canada PG applicants
+* **gmat_score** — For MBA applicants
+* **sat_score** — For UG US applicants
+* **test_appearing_date** — If test not yet taken
+
+#### 2.4 Work Experience
+* **work_experience_years** — Total years of professional experience
+* **employer** — Current or most recent employer
+* **designation** — Job title
+* **gap_explanation** — If there is an education or employment gap
+
+#### 2.5 Study Abroad Goals
+* **target_countries[ ]** — Array: UK, Canada, Australia, Germany, USA, Ireland, etc.
+* **target_courses[ ]** — Array of preferred course names
+* **study_level** — Undergraduate / Postgraduate / PhD / Diploma / Certificate
+* **preferred_intake** — January / May / September
+* **target_year** — E.g. 2025, 2026
+
+#### 2.6 Financial Profile
+* **budget_tuition** — Annual tuition budget (in USD / GBP / CAD)
+* **budget_living** — Annual living expense budget
+* **funding_type** — Self-funded / Education loan / Scholarship / Parents
+* **loan_pre_approved** — Boolean — has bank pre-approved a loan?
+
+#### 2.7 Visa & Travel History
+* **prior_visa_refusals** — Boolean — critical for application strategy
+* **refusal_countries[ ]** — Which countries refused
+* **refusal_reason** — Free text explanation
+* **passport_available** — Boolean
+* **passport_expiry** — Date
+
+#### 2.8 CRM Status Fields
+* **lead_stage** — New → Contacted → Counselled → Docs Collection → Applied → Visa → Enrolled → Lost
+* **assigned_counsellor_id** — FK to Counsellor entity
+* **priority** — Hot / Warm / Cold
+* **lost_reason** — Why the student dropped off (if applicable)
+* **created_at, updated_at** — Timestamps
+
+---
+
+### 3. Lead Stage Pipeline
+Every student moves through the following pipeline. Each stage change should be logged as an interaction.
+
+| Stage | Description | Trigger |
+| :--- | :--- | :--- |
+| **New Lead** | Just entered the system | Form submission, walk-in, DM |
+| **Contacted** | First outreach made | Call placed / WhatsApp sent |
+| **Counselling Done** | Full profile captured, goals set | Counselling session completed |
+| **Docs Collection** | Gathering SOP, transcripts, LORs | Counsellor requests documents |
+| **Applied** | Applications submitted to universities | At least 1 application filed |
+| **Offer Received** | Offer letter in hand | University responds positively |
+| **Visa Filed** | Visa application submitted | Visa docs submitted to embassy |
+| **Enrolled** | Student has confirmed enrolment | Enrollment confirmed |
+| **Lost / Dropped** | Student not proceeding | Student unresponsive or chose competitor |
+
+---
+
+### 4. Entity: Interaction / Activity Log
+Every touchpoint with a student must be logged. This is the audit trail of all CRM activity and the primary source of accountability for counsellors.
+
+* **id** — Unique identifier
+* **student_id** — FK to Student
+* **counsellor_id** — FK to Counsellor who made contact
+* **type** — Call / WhatsApp / Email / In-person Meeting / Reddit / Walk-in
+* **direction** — Inbound (student reached out) / Outbound (we reached out)
+* **notes** — Free-text summary of the interaction
+* **next_action** — What needs to happen next
+* **next_action_date** — Follow-up due date
+* **created_at** — Timestamp
+
+---
+
+### 5. Entity: Application
+A student can have multiple applications — to different universities or intakes. Each is tracked independently.
+
+* **id** — Unique identifier
+* **student_id** — FK to Student
+* **university_name** — Name of the institution
+* **country** — Country of the university
+* **course** — Course name
+* **level** — UG / PG / PhD / Diploma
+* **intake_month, intake_year** — E.g. September 2025
+* **status** — Draft / Submitted / Under Review / Offer Received / Conditional / Rejected / Accepted / Deferred
+* **offer_letter_url** — Link to uploaded offer letter
+* **conditional_requirements** — Any conditions attached to the offer
+* **tuition_fee** — Offered tuition fee per year
+* **scholarship_awarded** — Amount of scholarship if any
+* **applied_on** — Date application was submitted
+* **decision_date** — Date university responded
+
+---
+
+### 6. Entity: Document Checklist
+Each student has a checklist of documents needed for applications and visa. Status is tracked per document.
+
+* **id** — Unique identifier
+* **student_id** — FK to Student
+* **application_id** — FK to Application (optional — some docs are student-level)
+* **doc_type** — SOP / LOR / Transcript / Mark Sheet / Bank Statement / Passport / IELTS Score Card / CV / Visa Form / Photo / etc.
+* **status** — Pending / Received / Verified / Uploaded to Portal / Rejected
+* **file_url** — Cloud storage link
+* **remarks** — Counsellor notes on the document
+* **due_date** — When this document must be ready
+
+---
+
+### 7. Entity: Payments / Fees
+Tracks all financial transactions between the consultancy and the student.
+
+* **id** — Unique identifier
+* **student_id** — FK to Student
+* **fee_type** — Consultation Fee / Application Fee / Visa Filing Fee / Commission / Misc
+* **amount** — Amount charged
+* **currency** — INR / USD / GBP / CAD / AUD
+* **payment_status** — Pending / Partial / Paid
+* **payment_date** — Date of payment
+* **payment_method** — Cash / UPI / Bank Transfer / Card
+* **invoice_url** — Link to generated invoice
+
+---
+
+### 8. Entity: Counsellor / Staff
+Internal team members who manage student relationships. Role-based access control should be implemented on top of this entity.
+
+* **id** — Unique identifier
+* **name** — Full name
+* **email** — Work email (used for login)
+* **phone** — Mobile number
+* **role** — Admin / Senior Counsellor / Counsellor / Visa Specialist / Document Executive
+* **assigned_students[ ]** — Array of student IDs currently assigned
+* **specialization_countries[ ]** — E.g. [UK, Canada] — countries they specialise in
+
+---
+
+### 9. Entity: University Master
+Reference data for all universities the consultancy works with. Used to auto-populate application fields and filter matches for students.
+
+* **id** — Unique identifier
+* **name** — Full university name
+* **country, city** — Location
+* **ranking** — QS / THE / national ranking
+* **popular_courses[ ]** — Top courses this university is known for
+* **intake_months[ ]** — Available intakes — e.g. [January, September]
+* **tuition_range_min, tuition_range_max** — Annual tuition in USD
+* **acceptance_rate** — Percentage
+* **min_ielts** — Minimum IELTS band required
+* **min_cgpa** — Minimum academic score required
+* **application_fee** — In USD
+* **application_portal_url** — Direct link to their application portal
+
+---
+
+### 10. Key Technology Decisions
+
+| Layer | Recommended | Notes |
+| :--- | :--- | :--- |
+| **Database** | PostgreSQL | Relational — suits FK-heavy CRM structure; easy to query across entities |
+| **Backend** | Node.js + Express OR Python FastAPI | FastAPI preferred if team knows Python; Node if JS-first |
+| **Frontend** | React (web) | Mobile-responsive; role-based views per counsellor |
+| **Auth** | Role-based (RBAC) | Admin / Counsellor / Visa Exec — field-level visibility control |
+| **File Storage** | AWS S3 or Cloudflare R2 | For all uploaded documents, offer letters, invoices |
+| **Notifications** | WhatsApp API (WATI / Interakt) | Automated follow-up reminders; key for Indian market |
+| **Email** | SendGrid / Resend | Offer letter emails, fee receipts, status updates |
+| **Hosting** | Railway / AWS / GCP | Railway for MVP; AWS for scale |
+
+---
+
+### 11. Entity Relationship Summary
+
+| From | To | Relationship |
+| :--- | :--- | :--- |
+| **Student** | Interaction Log | One student → many interactions |
+| **Student** | Application | One student → many applications |
+| **Student** | Document Checklist | One student → many documents |
+| **Student** | Payment | One student → many payment records |
+| **Application** | Document Checklist | One application → specific document set |
+| **Counsellor** | Student | One counsellor → many assigned students |
+| **University Master** | Application | One university → referenced in many applications |
+
+---
+
+*AbroadKart | Confidential | Not for external distribution without approval*

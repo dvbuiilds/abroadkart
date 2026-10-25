@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Instagram, Youtube, Linkedin, MapPin, Mail } from "lucide-react";
+import { Linkedin, MapPin, Mail } from "lucide-react";
 import { BsWhatsapp } from "react-icons/bs";
 import Image from "next/image";
 
@@ -31,6 +31,7 @@ export function Footer() {
             <Link
               href="#"
               target="_blank"
+              aria-label="AbroadKart on LinkedIn"
               className="text-gray-400 hover:text-white"
             >
               <Linkedin className="w-5 h-5" />
@@ -38,6 +39,7 @@ export function Footer() {
             <Link
               href="https://wa.me/+918318899608"
               target="_blank"
+              aria-label="Chat with AbroadKart on WhatsApp"
               className="text-gray-400 hover:text-white"
             >
               <BsWhatsapp className="w-5 h-5" />
@@ -64,11 +66,7 @@ export function Footer() {
               </Link>
             </li>
             <li>
-              <Link
-                href="https://abroadkart.com"
-                target="_blank"
-                className="hover:text-white"
-              >
+              <Link href="/blogs" className="hover:text-white">
                 Blogs
               </Link>
             </li>
@@ -85,7 +83,7 @@ export function Footer() {
       </div>
 
       {/* Bottom Section - Copyright */}
-      <div className="py-4 text-center text-gray-500 text-sm">
+      <div className="py-4 text-center text-gray-400 text-sm">
         © 2025 AbroadKart. All Rights Reserved.
       </div>
     </footer>

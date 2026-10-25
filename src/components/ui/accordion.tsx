@@ -15,7 +15,6 @@ import { ChevronDown } from "lucide-react";
 import { cn } from "@app/lib/utils";
 
 const Accordion = Root;
-forwardRef;
 const AccordionItem = forwardRef<
   ElementRef<typeof Item>,
   ComponentPropsWithoutRef<typeof Item>

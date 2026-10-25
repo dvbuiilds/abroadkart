@@ -94,7 +94,7 @@ export const Form = ({ formData, currentStep, onDataChange }: FormProps) => {
                     {questionObj.options.map((opt, i) => (
                       <SelectItem
                         key={i}
-                        value={opt}
+                        value={opt || `option-${i}`}
                         className="cursor-pointer"
                       >
                         {opt}
