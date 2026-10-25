@@ -6,7 +6,7 @@
 
 import { describe, it } from "node:test";
 import assert from "node:assert";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import {
   sanitizeContent,
@@ -18,12 +18,15 @@ import {
 import { parseBody } from "../seeds/blog-import/dom";
 import type { WpPost, WpRedirect } from "../seeds/blog-import/types";
 
+// The export is gitignored, so CI has no copy. Its tests are skipped when it is absent.
 const OUTPUT = path.join(__dirname, "..", "..", "output");
+const EXPORT_PRESENT = existsSync(path.join(OUTPUT, "blogs.json"));
+const describeWithExport = EXPORT_PRESENT ? describe : describe.skip;
 const load = <T>(file: string): T =>
   JSON.parse(readFileSync(path.join(OUTPUT, file), "utf8")) as T;
 
-const posts = load<WpPost[]>("blogs.json");
-const redirects = load<WpRedirect[]>("redirects.json");
+const posts = EXPORT_PRESENT ? load<WpPost[]>("blogs.json") : [];
+const redirects = EXPORT_PRESENT ? load<WpRedirect[]>("redirects.json") : [];
 
 const published = posts.filter((p) => p.status === "published");
 const slugSet = new Set(published.map((p) => p.slug));
@@ -36,7 +39,7 @@ const body = parseBody;
 const text = (html: string) => norm(body(html).textContent ?? "");
 const byPost = (slug: string) => posts.find((p) => p.slug === slug)!;
 
-describe("sanitizeContent", () => {
+describeWithExport("sanitizeContent", () => {
   it("preserves visible text for all posts", () => {
     for (const p of posts) {
       assert.strictEqual(text(sanitizeContent(p.contentHtml)), text(p.contentHtml), p.slug);
@@ -95,7 +98,7 @@ describe("sanitizeContent", () => {
   });
 });
 
-describe("rewriteInternalLinks", () => {
+describeWithExport("rewriteInternalLinks", () => {
   const run = (html: string) => rewriteInternalLinks(html, slugSet, redirectMap);
   const aSlug = [...slugSet][0];
 
@@ -165,7 +168,7 @@ describe("rewriteInternalLinks", () => {
   });
 });
 
-describe("toBlogPostInput", () => {
+describeWithExport("toBlogPostInput", () => {
   const first = byPost("one-year-masters-in-usa-for-indian-students");
   const map = (p: WpPost) => toBlogPostInput(p, ctx);
 
@@ -247,7 +250,7 @@ describe("toBlogPostInput", () => {
   });
 });
 
-describe("toBlogPostInput: entities in SEO text", () => {
+describeWithExport("toBlogPostInput: entities in SEO text", () => {
   const ENTITY = /&(amp|lt|gt|quot|#\d+|#x[0-9a-f]+);/i;
   const map = (p: WpPost) => toBlogPostInput(p, ctx).input;
 
