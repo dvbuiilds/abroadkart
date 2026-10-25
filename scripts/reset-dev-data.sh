@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Reset Postgres volume, push Keystone schema, run Better Auth migrations via compose.
+# Reset Postgres volume, run Better Auth migrations against the local Postgres, push Keystone schema.
 # Usage (from repo root): ./scripts/reset-dev-data.sh
 # Requires: Docker, `.env` with POSTGRES_PASSWORD + BETTER_AUTH_* (Compose loads these for migrate).
 
@@ -29,8 +29,8 @@ docker compose up -d postgres
 echo "Waiting for Postgres..."
 until docker exec abroadkart-postgres pg_isready -U postgres >/dev/null 2>&1; do sleep 1; done
 
-echo "Running Better Auth migrations (nextjs-migrate)..."
-docker compose run --rm nextjs-migrate
+echo "Running Better Auth migrations..."
+DATABASE_URL="postgresql://postgres:${POSTGRES_PASSWORD}@localhost:5432/abroadkart" yarn auth:migrate
 
 ( cd keystone && yarn db:push )
 

@@ -12,6 +12,8 @@ Work through the parts in order. Parts 1–3 do not change what visitors see. Pa
 | `admin.abroadkart.com` | droplet | Keystone admin and GraphQL API |
 | `cdn.abroadkart.com` | Cloudflare R2 (unchanged) | Blog images |
 
+Images are built in GitHub Actions and pulled from GHCR, so the droplet never runs a build.
+
 On the droplet, Caddy terminates HTTPS on ports 80 and 443 and forwards to containers bound to localhost only:
 
 | Container | Bound to | Used by |
@@ -26,7 +28,7 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
 
 ## Part 1 — Prepare the droplet (once)
 
-1. **Create the droplet.** Ubuntu 24.04, 2 vCPU / 4 GB RAM (1 GB is too small for `next build`). Add your SSH key and note the public IP as `<DROPLET_IP>`.
+1. **Create the droplet.** Ubuntu 24.04, 1 vCPU / 2 GB RAM. The droplet only pulls prebuilt images, so it never runs a build. Add your SSH key and note the public IP as `<DROPLET_IP>`.
 
 2. **Install Docker and Caddy.**
    ```bash
@@ -45,6 +47,14 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
    ufw enable
    ```
    UFW does not filter ports that Docker publishes. Step 6 binds the app ports to `127.0.0.1`, and that binding is what keeps them private.
+
+   Then add a 2 GB swap file. It is a safety net for memory spikes on the 2 GB droplet:
+   ```bash
+   fallocate -l 2G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile
+   echo '/swapfile none swap sw 0 0' >> /etc/fstab
+   echo 'vm.swappiness=10' > /etc/sysctl.d/99-swap.conf && sysctl -p /etc/sysctl.d/99-swap.conf
+   swapon --show && free -h
+   ```
 
 4. **Get the code.**
    ```bash
@@ -73,6 +83,7 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
    | `LEADS_INTERNAL_KEY` | new secret, same value as in `keystone/.env` |
    | `REVALIDATE_SECRET` | new secret, same value as in `keystone/.env` |
    | `BLOG_CDN_URL` | `https://cdn.abroadkart.com` |
+   | `IMAGE_TAG` | the release tag being deployed, for example `v2026.10.24`. Set it in Part 3, step 3 and on every release. |
 
    **`keystone/.env`:**
 
@@ -122,7 +133,7 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
 
 ## Part 3 — First start (once)
 
-0. **On your laptop**, create and push the release tag as described in Part 4, "On your laptop". The droplet can only check out pushed tags.
+0. **On your laptop**, create and push the release tag as described in Part 4, "On your laptop". The droplet can only check out pushed tags. Pushing the tag also starts the image build in GitHub Actions; see step 3.
 
 1. **Configure Caddy.** Replace `/etc/caddy/Caddyfile`:
    ```
@@ -154,10 +165,13 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
    git checkout v2026.10.24
    ```
 
-3. **Build the images.** Compose reads `PUBLIC_ADMIN_URL` from `.env` and bakes it into the Next.js bundle, so no build flags are needed. Changing that URL later requires a rebuild. `--pull` refreshes the base images, so the patched Node is used.
+3. **Get the images.** The `release-images` workflow in GitHub Actions runs the test gate, then builds and publishes both images when the tag is pushed. Wait for that run to go green in the repo's Actions tab. The first time only, open each of `abroadkart-web` and `abroadkart-keystone` under your GitHub Packages, choose **Change visibility**, and set it to **Public**. Public packages pull without a login. Then set the release tag on the droplet and pull:
    ```bash
-   docker compose build --pull
+   cd /opt/abroadkart
+   grep -q '^IMAGE_TAG=' .env && sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v2026.10.24/' .env || echo 'IMAGE_TAG=v2026.10.24' >> .env
+   docker compose pull
    ```
+   Settings such as `PUBLIC_ADMIN_URL` are read when a container starts, so they do not need a new image.
 
 4. **Start Postgres and create the schema.** There are no migration files yet, so `prisma db push` is how the schema reaches the database.
    ```bash
@@ -169,11 +183,11 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
 
 5. **Start everything.**
    ```bash
-   docker compose up -d
+   docker compose up -d --no-build
    docker compose ps
    ss -ltn | grep -E ':(3000|3001|5432) '
    ```
-   `nextjs-migrate` creates the Better Auth tables and exits with code 0, then `nextjs` starts. Every line from `ss` should show `127.0.0.1:` before the port.
+   On its first start, `nextjs` creates the Better Auth tables. Confirm with `docker compose logs nextjs | grep auth-migrate`. Every line from `ss` should show `127.0.0.1:` before the port.
 
 6. **Check from your laptop, before DNS points at the droplet.** `--resolve` sends the request to the droplet without changing DNS. `-k` is needed because curl does not trust the origin certificate.
    ```bash
@@ -224,7 +238,7 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
 
 1. **Use `main` for releases.** `fb_wp_blog_migration` is 111 commits ahead of `main`. Merge it through a pull request before the next release, so `main` matches production. Until then, the first release is tagged on the branch.
 
-2. **Run the gate** from the repo root, on Node 22.23.4 or newer (`node -v`). It must finish without errors.
+2. **Run the gate** from the repo root, on Node 22.23.4 or newer (`node -v`). It must finish without errors. The release workflow runs the same gate when the tag is pushed, so this local run is an early check.
    ```bash
    yarn test && yarn build && (cd keystone && yarn test)
    ```
@@ -236,6 +250,8 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
    git push origin v2026.10.24
    ```
    Tags are named `vYYYY.MM.DD`. For a second release on the same day, use `v2026.10.24-2`.
+
+   The push starts the `release-images` workflow. Wait for it to go green before you continue on the droplet. If the gate fails, nothing is published and the droplet keeps running the previous tag.
 
 ### On the droplet
 
@@ -264,15 +280,17 @@ Never edit tracked files on the droplet. Releases are checkouts of tags, and loc
    git diff <previous-tag> v2026.10.24 -- .env.example keystone/.env.example
    ```
 
-5. **Build, apply the schema if it changed, and start.**
+5. **Pull, apply the schema if it changed, and start.**
    ```bash
-   docker compose build --pull
+   sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=v2026.10.24/' .env
+   docker compose pull
    docker compose up -d postgres
    # only if the schema changed:
    git diff --quiet <previous-tag> v2026.10.24 -- keystone/schema.prisma || \
      docker compose run --rm --no-deps keystone node_modules/.bin/prisma db push
-   docker compose up -d
+   docker compose up -d --no-build
    docker compose ps
+   docker image prune -a -f   # removes images from earlier releases; they stay in GHCR
    ```
    `keystone/schema.prisma` is tracked in git and generated from `keystone/schema/`, so this check catches every schema change. If `db push` asks about dropping data, answer **no** and stop.
 
@@ -289,9 +307,11 @@ Code:
 ```bash
 cd /opt/abroadkart
 git checkout <previous-tag>
-docker compose build
-docker compose up -d
+sed -i 's/^IMAGE_TAG=.*/IMAGE_TAG=<previous-tag>/' .env
+docker compose pull
+docker compose up -d --no-build
 ```
+The previous release's images stay in GHCR, so `docker compose pull` fetches them again even after `docker image prune`.
 
 Database (last resort; erases everything written since the backup):
 ```bash
@@ -316,7 +336,7 @@ This replaces the live WordPress site. Start only when every item below is true:
 Steps:
 
 1. **Record the current DNS records** for `@` and `www` in Cloudflare (type and content). This is your rollback.
-2. **Check the settings.** `.env` has `PUBLIC_APP_URL=https://abroadkart.com`, and `keystone/.env` has no `BETTER_AUTH_ISSUER` or `BETTER_AUTH_AUDIENCE` lines. If you change either, run `docker compose up -d`. A rebuild is not needed, because `PUBLIC_APP_URL` is read at runtime.
+2. **Check the settings.** `.env` has `PUBLIC_APP_URL=https://abroadkart.com`, and `keystone/.env` has no `BETTER_AUTH_ISSUER` or `BETTER_AUTH_AUDIENCE` lines. If you change either, run `docker compose up -d --no-build`. No new image is needed, because `PUBLIC_APP_URL` is read at runtime.
 3. **Point the apex and www at the droplet.** In Cloudflare DNS, set `@` and `www` to type `A`, content `<DROPLET_IP>`, proxy **Proxied**. Remove any other records for those names.
 4. **Create the superadmin.** Sign up at `https://abroadkart.com/sign-up` with the email in `ABROADKART_BOOTSTRAP_SUPERADMIN_EMAIL`. That account becomes superAdmin, and every other sign-up starts as `pending`. Then open `https://admin.abroadkart.com/admin` and sign in.
 5. **Check the public site.** Load `https://abroadkart.com`, a `/blogs` post, `https://abroadkart.com/sitemap.xml` and `https://abroadkart.com/robots.txt`. Then watch the logs for 15 minutes: `docker compose logs -f nextjs keystone`.
@@ -329,10 +349,10 @@ Steps:
 
 ```bash
 cp .env.example .env && cp keystone/.env.example keystone/.env
+docker compose build
 docker compose up -d postgres
-docker compose up -d --build keystone
-docker exec -it abroadkart-keystone node_modules/.bin/prisma db push   # first time only
-docker compose up -d --build nextjs
+docker compose run --rm --no-deps keystone node_modules/.bin/prisma db push   # first time only
+docker compose up -d
 ```
 
 Open http://localhost:3000. The Keystone admin is at http://localhost:3001/admin.
@@ -341,7 +361,8 @@ Open http://localhost:3000. The Keystone admin is at http://localhost:3001/admin
 
 ## Checklist
 
-- [ ] Both Dockerfiles pin Node 22.23.4 or newer (`grep '^FROM' Dockerfile keystone/Dockerfile`). Node 20 is end-of-life and has no fix for CVE-2026-111497 (Node2Shell).
+- [ ] Both Dockerfiles pin Node 22.23.4 or newer (`grep '^FROM' Dockerfile keystone/Dockerfile`). Node 20 is end-of-life and has no fix for CVE-2026-111497 (Node2Shell). Bumping Node means editing both Dockerfiles and `node-version` in `.github/workflows/release-images.yml`.
+- [ ] Swap is active on the droplet (`swapon --show`, `free -h`). The 2 GB swap file from Part 1 is a safety net, so it must survive reboots (`/etc/fstab`).
 - [ ] Secrets are new and unique. None are `change-me`, and none match your laptop's values.
 - [ ] `ss -ltn` on the droplet shows ports 3000, 3001 and 5432 on `127.0.0.1` only.
 - [ ] Caddy serves `abroadkart.com`, `www` and `admin` with the origin certificate.
@@ -364,3 +385,6 @@ Open http://localhost:3000. The Keystone admin is at http://localhost:3001/admin
 | Blog list is empty after the import | Run the revalidate call in Part 3, step 7. |
 | Sign-in works but admin refuses access | The account is `pending`. Only the `ABROADKART_BOOTSTRAP_SUPERADMIN_EMAIL` account is created as superAdmin. |
 | Keystone rejects tokens | `BETTER_AUTH_ISSUER` or `BETTER_AUTH_AUDIENCE` is set in `keystone/.env` and no longer matches `PUBLIC_APP_URL`. Delete both lines. |
+| `manifest unknown` or `denied` on `docker compose pull` | The tag has not finished building in the `release-images` workflow, or the package is still private. Check the Actions run, then the package visibility (Part 3, step 3). |
+| Container restarting, or killed (OOM) | Check `docker stats --no-stream` for memory use, and `dmesg \| grep -i oom` for kills. The `nextjs` and `keystone` containers have Node heap caps in `docker-compose.yml`. |
+| `nextjs` exits on start with an auth-migrate error | Check `docker compose logs nextjs`. Confirm the `auth` schema exists with `docker exec abroadkart-postgres psql -U postgres -d abroadkart -c '\dn'`. The server retries on restart, so fix the cause (usually the database) and wait. |

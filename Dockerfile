@@ -1,51 +1,55 @@
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
-# Installs all deps and runs `next build`.
-#
-# PUBLIC_ADMIN_URL is the public Keystone origin. At build time it is copied into
-# NEXT_PUBLIC_KEYSTONE_URL so the Next.js client bundle has the correct admin/API host.
-# Server-side code reads PUBLIC_ADMIN_URL at runtime (see src/lib/public-urls.ts).
-#
-# For LOCAL docker-compose: leave the default (http://localhost:3001).
-# For production: pass --build-arg PUBLIC_ADMIN_URL=https://admin.example.com
+# ── Stage 1: Dependencies ─────────────────────────────────────────────────────
+# Installs all deps (dev deps included, needed by `next build`). Re-runs only when
+# package.json or yarn.lock changes. The yarn cache is a BuildKit cache mount, so
+# retries and later releases reuse downloaded packages instead of refetching them.
 #
 # Node is pinned to a patched release. 22.23.4 fixes CVE-2026-111497 (Node2Shell,
-# Brotli decoder). Bump this tag with each Node security release.
-FROM node:22.23.4-alpine AS builder
+# Brotli decoder). Bump this tag with each Node security release, and bump
+# `node-version` in .github/workflows/release-images.yml to match.
+FROM node:22.23.4-alpine AS deps
 WORKDIR /app
-
-# NEXT_PUBLIC_* must be set before `next build`.
-ARG PUBLIC_ADMIN_URL=http://localhost:3001
-
-ENV NEXT_PUBLIC_KEYSTONE_URL=$PUBLIC_ADMIN_URL
-
-# Install dependencies first (better layer caching)
+ENV YARN_CACHE_FOLDER=/yarn-cache
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+# The install is retried because the npm registry sometimes returns an empty tarball
+# for a package, which fails yarn's integrity check on that attempt.
+RUN --mount=type=cache,target=/yarn-cache,sharing=locked \
+    for attempt in 1 2 3; do \
+      yarn install --frozen-lockfile --network-timeout 600000 --network-concurrency 4 && exit 0; \
+      echo "yarn install failed on attempt ${attempt}, retrying"; sleep 15; \
+    done; \
+    exit 1
 
-# Copy the full source
+
+# ── Stage 2: Build ────────────────────────────────────────────────────────────
+# `output: "standalone"` is enabled by NEXT_OUTPUT (see next.config.ts). The build
+# needs no runtime secrets, and the browser reads its Keystone URL at runtime
+# (src/lib/graphql-client.ts), so one image runs in every environment.
+FROM deps AS builder
+WORKDIR /app
+ENV NEXT_TELEMETRY_DISABLED=1 \
+    NEXT_OUTPUT=standalone
 COPY . .
-
-# Build the Next.js application
 RUN yarn build
 
 
-# ── Stage 2: Runner ───────────────────────────────────────────────────────────
-# Lean production image — only the built output, public assets, and node_modules.
+# ── Stage 3: Runner ───────────────────────────────────────────────────────────
+# Only the traced server, static assets and public files. No dev deps, source
+# or lockfile. Runs as the unprivileged `node` user.
 FROM node:22.23.4-alpine AS runner
 WORKDIR /app
 
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    NEXT_TELEMETRY_DISABLED=1 \
+    PORT=3000 \
+    HOSTNAME=0.0.0.0
 
-COPY --from=builder /app/.next        ./.next
-COPY --from=builder /app/public       ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./package.json
-# `next start` reloads next.config at runtime; without it images.remotePatterns
-# is empty and every /_next/image request for a remote host returns 400.
-COPY --from=builder /app/next.config.ts ./next.config.ts
+COPY --from=builder --chown=node:node /app/.next/standalone ./
+COPY --from=builder --chown=node:node /app/.next/static ./.next/static
+COPY --from=builder --chown=node:node /app/public ./public
 
+USER node
 EXPOSE 3000
 
-# `next start` reads env vars (including NEXT_PUBLIC_* for server-side code)
-# from docker-compose env_file at container startup.
-CMD ["node_modules/.bin/next", "start"]
+# Runtime env (DATABASE_URL, PUBLIC_*, secrets) comes from docker-compose.
+# Better Auth tables are created at startup by src/instrumentation.ts.
+CMD ["node", "server.js"]
