@@ -8,7 +8,7 @@ import { nextCookies } from "better-auth/next-js";
 import { Kysely, PostgresDialect } from "kysely";
 import { syncKeystoneUserFromAuthUser } from "@app/lib/sync-keystone-user";
 import { touchLastLoginForAuthUser } from "@app/lib/touch-last-login";
-import { getPool } from "@app/lib/db-pool";
+import { getAuthPool } from "@app/lib/db-pool";
 import { getPublicAdminUrl, getPublicAppUrl } from "@app/lib/public-urls";
 
 const googleConfigured =
@@ -17,7 +17,7 @@ const googleConfigured =
 function createAuthInstance() {
   const baseURL = getPublicAppUrl();
   const db = new Kysely({
-    dialect: new PostgresDialect({ pool: getPool() }),
+    dialect: new PostgresDialect({ pool: getAuthPool() }),
   }).withSchema("auth");
 
   return betterAuth({
