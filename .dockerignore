@@ -8,3 +8,13 @@ e2e
 test-results
 playwright-report
 coverage
+.git
+output
+crm_docs
+db
+scripts
+.claude
+.cursor
+*.md
+tsconfig.tsbuildinfo
+.DS_Store
